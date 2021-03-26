@@ -49,7 +49,7 @@ class Hydrator implements HydratorInterface
      */
     public function __construct()
     {
-        $this->annotationReader = new SimpleAnnotationReader();
+        $this->annotationReader = /** @scrutinizer ignore-deprecated */ new SimpleAnnotationReader();
         $this->annotationReader->addNamespace(Annotation::class);
     }
 
@@ -82,8 +82,7 @@ class Hydrator implements HydratorInterface
             }
 
             $key = $property->getName();
-            $alias = /** @scrutinizer ignore-deprecated */  $this->annotationReader
-                ->getPropertyAnnotation($property, Annotation\Alias::class);
+            $alias =  $this->annotationReader->getPropertyAnnotation($property, Annotation\Alias::class);
             if ($alias instanceof Annotation\Alias) {
                 $key = $alias->value;
             }
