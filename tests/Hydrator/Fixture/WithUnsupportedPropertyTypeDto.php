@@ -12,5 +12,5 @@ use Sunrise\Hydrator\HydrableObjectInterface;
  */
 final class WithUnsupportedPropertyTypeDto implements HydrableObjectInterface
 {
-    public \Unknown $value;
+    public \Traversable $value;
 }

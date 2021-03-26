@@ -119,7 +119,7 @@ class HydratorTest extends TestCase
 
         $this->expectException(Exception\UnsupportedObjectPropertyTypeException::class);
         $this->expectExceptionMessage('The <WithUnsupportedPropertyTypeDto.value> property ' .
-                                      'contains the <Unknown> unhydrable type.');
+                                      'contains the <Traversable> unhydrable type.');
 
         $hydrator->hydrate($object, [
             'value' => 'foo',
