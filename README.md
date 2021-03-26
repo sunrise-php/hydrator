@@ -90,6 +90,19 @@ $dto = new FooDto();
 var_dump($dto);
 ```
 
+### Property aliases
+
+```php
+final class FooDto implements HydrableObjectInterface
+{
+
+    /**
+     * @Alias("snake_case")
+     */
+    public string $camelCase;
+}
+```
+
 ---
 
 ## Test run
