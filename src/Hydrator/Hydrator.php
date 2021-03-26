@@ -19,7 +19,7 @@ use ArrayAccess;
 use DateTimeInterface;
 use ReflectionClass;
 use ReflectionProperty;
-use ReflectionType;
+use ReflectionNamedType;
 
 /**
  * Import functions
@@ -82,7 +82,8 @@ class Hydrator implements HydratorInterface
             }
 
             $key = $property->getName();
-            $alias = $this->annotationReader->getPropertyAnnotation($property, Annotation\Alias::class);
+            $alias = /** @scrutinizer ignore-deprecated */  $this->annotationReader
+                ->getPropertyAnnotation($property, Annotation\Alias::class);
             if ($alias instanceof Annotation\Alias) {
                 $key = $alias->value;
             }
@@ -119,7 +120,7 @@ class Hydrator implements HydratorInterface
      * @param HydrableObjectInterface $object
      * @param ReflectionClass $class
      * @param ReflectionProperty $property
-     * @param ReflectionType $type
+     * @param ReflectionNamedType $type
      * @param mixed $value
      *
      * @return void
@@ -134,7 +135,7 @@ class Hydrator implements HydratorInterface
         HydrableObjectInterface $object,
         ReflectionClass $class,
         ReflectionProperty $property,
-        ReflectionType $type,
+        ReflectionNamedType $type,
         $value
     ) : void {
         if (null === $value) {
@@ -181,7 +182,7 @@ class Hydrator implements HydratorInterface
      * @param HydrableObjectInterface $object
      * @param ReflectionClass $class
      * @param ReflectionProperty $property
-     * @param ReflectionType $type
+     * @param ReflectionNamedType $type
      *
      * @return void
      *
@@ -192,7 +193,7 @@ class Hydrator implements HydratorInterface
         HydrableObjectInterface $object,
         ReflectionClass $class,
         ReflectionProperty $property,
-        ReflectionType $type
+        ReflectionNamedType $type
     ) : void {
         if (!$type->allowsNull()) {
             throw new Exception\InvalidValueException(sprintf(
@@ -211,7 +212,7 @@ class Hydrator implements HydratorInterface
      * @param HydrableObjectInterface $object
      * @param ReflectionClass $class
      * @param ReflectionProperty $property
-     * @param ReflectionType $type
+     * @param ReflectionNamedType $type
      * @param mixed $value
      *
      * @return void
@@ -223,7 +224,7 @@ class Hydrator implements HydratorInterface
         HydrableObjectInterface $object,
         ReflectionClass $class,
         ReflectionProperty $property,
-        ReflectionType $type,
+        ReflectionNamedType $type,
         $value
     ) : void {
         if (!is_scalar($value)) {
@@ -256,7 +257,7 @@ class Hydrator implements HydratorInterface
      * @param HydrableObjectInterface $object
      * @param ReflectionClass $class
      * @param ReflectionProperty $property
-     * @param ReflectionType $type
+     * @param ReflectionNamedType $type
      * @param mixed $value
      *
      * @return void
@@ -268,7 +269,7 @@ class Hydrator implements HydratorInterface
         HydrableObjectInterface $object,
         ReflectionClass $class,
         ReflectionProperty $property,
-        ReflectionType $type,
+        ReflectionNamedType $type,
         $value
     ) : void {
         if (!is_array($value)) {
@@ -294,7 +295,7 @@ class Hydrator implements HydratorInterface
      * @param HydrableObjectInterface $object
      * @param ReflectionClass $class
      * @param ReflectionProperty $property
-     * @param ReflectionType $type
+     * @param ReflectionNamedType $type
      * @param mixed $value
      *
      * @return void
@@ -306,7 +307,7 @@ class Hydrator implements HydratorInterface
         HydrableObjectInterface $object,
         ReflectionClass $class,
         ReflectionProperty $property,
-        ReflectionType $type,
+        ReflectionNamedType $type,
         $value
     ) : void {
         if (!is_string($value) || false === strtotime($value)) {
@@ -328,7 +329,7 @@ class Hydrator implements HydratorInterface
      * @param HydrableObjectInterface $object
      * @param ReflectionClass $class
      * @param ReflectionProperty $property
-     * @param ReflectionType $type
+     * @param ReflectionNamedType $type
      * @param mixed $value
      *
      * @return void
@@ -340,7 +341,7 @@ class Hydrator implements HydratorInterface
         HydrableObjectInterface $object,
         ReflectionClass $class,
         ReflectionProperty $property,
-        ReflectionType $type,
+        ReflectionNamedType $type,
         $value
     ) : void {
         if (!is_array($value)) {
@@ -363,7 +364,7 @@ class Hydrator implements HydratorInterface
      * @param HydrableObjectInterface $object
      * @param ReflectionClass $class
      * @param ReflectionProperty $property
-     * @param ReflectionType $type
+     * @param ReflectionNamedType $type
      * @param mixed $value
      *
      * @return void
@@ -375,7 +376,7 @@ class Hydrator implements HydratorInterface
         HydrableObjectInterface $object,
         ReflectionClass $class,
         ReflectionProperty $property,
-        ReflectionType $type,
+        ReflectionNamedType $type,
         $value
     ) : void {
         if (!is_array($value)) {
