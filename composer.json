@@ -1,0 +1,46 @@
+{
+    "name": "sunrise/hydrator",
+    "homepage": "https://github.com/sunrise-php/hydrator",
+    "description": "Sunrise // Hydrator for PHP 7.4+ (incl. PHP 8)",
+    "license": "MIT",
+    "keywords": [
+        "fenric",
+        "sunrise",
+        "hydrator",
+        "mapper",
+        "DTO",
+        "php7",
+        "php8"
+    ],
+    "authors": [
+        {
+            "name": "Anatoly Fenric",
+            "email": "anatoly@fenric.ru",
+            "homepage": "https://anatoly.fenric.ru/"
+        }
+    ],
+    "require": {
+        "php": "^7.4|^8.0",
+        "doctrine/annotations": "^1.12"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "9.5.3",
+        "sunrise/coding-standard": "1.0.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sunrise\\Hydrator\\": "src/Hydrator"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Sunrise\\Hydrator\\Tests\\": "tests/Hydrator"
+        }
+    },
+    "scripts": {
+        "test": [
+            "phpcs",
+            "phpunit --colors=always --coverage-text"
+        ]
+    }
+}
