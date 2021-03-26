@@ -1,10 +1,18 @@
 build:
   nodes:
     analysis:
+      environment:
+        php:
+          version: '8.0'
       tests:
         override:
           - php-scrutinizer-run
     coverage:
+      environment:
+        php:
+          version: '8.0'
+          ini:
+            'xdebug.mode': 'coverage'
       tests:
         override:
           - command: php vendor/bin/phpunit --coverage-clover coverage.xml
