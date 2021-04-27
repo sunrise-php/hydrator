@@ -25,6 +25,7 @@ final class FooDto implements HydrableObjectInterface
     public DateTimeImmutable $dateTime;
     public BarDto $barDto;
     public BarDtoCollection $barDtoCollection;
+    public array $simpleArray;
 
     /**
      * @Alias("alias")

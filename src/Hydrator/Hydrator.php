@@ -72,7 +72,7 @@ class Hydrator implements HydratorInterface
      *         If one of the properties of the given object contains an unsupported type.
      *         * DTO error.
      */
-    public function hydrate(HydrableObjectInterface $object, array $data) : void
+    public function hydrate(HydrableObjectInterface $object, array $data) : HydrableObjectInterface
     {
         $class = new ReflectionClass($object);
         $properties = $class->getProperties();
@@ -82,12 +82,13 @@ class Hydrator implements HydratorInterface
             }
 
             $key = $property->getName();
-            $alias =  $this->annotationReader->getPropertyAnnotation($property, Annotation\Alias::class);
-            if ($alias instanceof Annotation\Alias) {
-                $key = $alias->value;
-            }
 
-            $property->setAccessible(true);
+            if (!array_key_exists($key, $data)) {
+                $alias =  $this->annotationReader->getPropertyAnnotation($property, Annotation\Alias::class);
+                if ($alias instanceof Annotation\Alias) {
+                    $key = $alias->value;
+                }
+            }
 
             if (!array_key_exists($key, $data)) {
                 if (!$property->isInitialized($object)) {
@@ -109,8 +110,12 @@ class Hydrator implements HydratorInterface
                 ));
             }
 
+            $property->setAccessible(true);
+
             $this->hydrateProperty($object, $class, $property, $property->getType(), $data[$key]);
         }
+
+        return $object;
     }
 
     /**
@@ -147,7 +152,7 @@ class Hydrator implements HydratorInterface
             return;
         }
 
-        if (is_subclass_of($type->getName(), ArrayAccess::class)) {
+        if ('array' === $type->getName() || is_subclass_of($type->getName(), ArrayAccess::class)) {
             $this->hydratePropertyWithArray($object, $class, $property, $type, $value);
             return;
         }
@@ -277,6 +282,11 @@ class Hydrator implements HydratorInterface
                 $class->getShortName(),
                 $property->getName(),
             ));
+        }
+
+        if ('array' === $type->getName()) {
+            $property->setValue($object, $value);
+            return;
         }
 
         $arrayClassName = $type->getName();

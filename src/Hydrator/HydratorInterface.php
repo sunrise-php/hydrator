@@ -23,10 +23,11 @@ interface HydratorInterface
      * @param HydrableObjectInterface $object
      * @param array $data
      *
-     * @return void
+     * @return HydrableObjectInterface
+     *         The given object after hydration.
      *
      * @throws Exception\HydrationException
      *         If any error occurred during the hydration process.
      */
-    public function hydrate(HydrableObjectInterface $object, array $data);
+    public function hydrate(HydrableObjectInterface $object, array $data) : HydrableObjectInterface;
 }
