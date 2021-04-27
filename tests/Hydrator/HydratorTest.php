@@ -56,6 +56,10 @@ class HydratorTest extends TestCase
                     'value' => 'bar',
                 ],
             ],
+            'simpleArray' => [
+                'foo',
+                'bar',
+            ],
             'alias' => 'value',
         ];
 
@@ -75,6 +79,7 @@ class HydratorTest extends TestCase
         $this->assertSame($data['barDto']['value'], $object->barDto->value);
         $this->assertSame($data['barDtoCollection'][0]['value'], $object->barDtoCollection->getIterator()[0]->value);
         $this->assertSame($data['barDtoCollection'][1]['value'], $object->barDtoCollection->getIterator()[1]->value);
+        $this->assertSame($data['simpleArray'], $object->simpleArray);
         $this->assertSame($data['alias'], $object->hidden);
     }
 
