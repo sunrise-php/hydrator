@@ -14,7 +14,7 @@
 ## Installation
 
 ```bash
-composer require 'sunrise/hydrator:^1.0'
+composer require 'sunrise/hydrator:^1.2'
 ```
 
 ## How to use?
