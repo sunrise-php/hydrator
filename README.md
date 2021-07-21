@@ -14,7 +14,7 @@
 ## Installation
 
 ```bash
-composer require 'sunrise/hydrator:^1.0'
+composer require 'sunrise/hydrator:^1.2'
 ```
 
 ## How to use?
@@ -39,6 +39,7 @@ $payload = [
             'value' => 'bar',
         ],
     ],
+    'enumerableValue' => 'FOO',
 ];
 ```
 
@@ -59,6 +60,7 @@ final class FooDto implements HydrableObjectInterface
     public DateTimeImmutable $dateTime;
     public BarDto $barDto;
     public BarDtoCollection $barDtoCollection;
+    public TestEnumerableObject $enumerableValue;
 }
 ```
 
@@ -77,6 +79,15 @@ use Sunrise\Hydrator\HydrableObjectCollection;
 final class BarDtoCollection extends HydrableObjectCollection
 {
     public const T = BarDto::class;
+}
+```
+
+```php
+use Sunrise\Hydrator\EnumerableObject;
+
+final class TestEnumerableObject extends EnumerableObject
+{
+    public const FOO = 'foo';
 }
 ```
 

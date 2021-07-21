@@ -247,6 +247,34 @@ class HydratorTest extends TestCase
         ]);
     }
 
+    public function testEnumerableValue() : void
+    {
+        $object = (new Hydrator)->hydrate(new Fixture\TestEnumDto(), ['foo' => 'A']);
+        $this->assertSame('A:value', $object->foo->getValue());
+
+        $object = (new Hydrator)->hydrate(new Fixture\TestEnumDto(), ['foo' => 'B']);
+        $this->assertSame('B:value', $object->foo->getValue());
+
+        $object = (new Hydrator)->hydrate(new Fixture\TestEnumDto(), ['foo' => 'C']);
+        $this->assertSame('C:value', $object->foo->getValue());
+    }
+
+    public function testUnknownEnumerableValue() : void
+    {
+        $this->expectException(Exception\InvalidValueException::class);
+        $this->expectExceptionMessage('The <TestEnumDto.foo> property only accepts one of the <TestEnum> enum values.');
+
+        (new Hydrator)->hydrate(new Fixture\TestEnumDto(), ['foo' => 'D']);
+    }
+
+    public function testInvalidEnumerableValue() : void
+    {
+        $this->expectException(Exception\InvalidValueException::class);
+        $this->expectExceptionMessage('The <TestEnumDto.foo> property only accepts a string.');
+
+        (new Hydrator)->hydrate(new Fixture\TestEnumDto(), ['foo' => []]);
+    }
+
     /**
      * @return array<array>
      */
