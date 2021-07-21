@@ -25,6 +25,9 @@ use ReflectionNamedType;
  * Import functions
  */
 use function array_key_exists;
+use function class_exists;
+use function constant;
+use function defined;
 use function in_array;
 use function is_array;
 use function is_scalar;
@@ -49,8 +52,10 @@ class Hydrator implements HydratorInterface
      */
     public function __construct()
     {
-        $this->annotationReader = /** @scrutinizer ignore-deprecated */ new SimpleAnnotationReader();
-        $this->annotationReader->addNamespace(Annotation::class);
+        if (class_exists(SimpleAnnotationReader::class)) {
+            $this->annotationReader = /** @scrutinizer ignore-deprecated */ new SimpleAnnotationReader();
+            $this->annotationReader->addNamespace(Annotation::class);
+        }
     }
 
     /**
@@ -77,13 +82,15 @@ class Hydrator implements HydratorInterface
         $class = new ReflectionClass($object);
         $properties = $class->getProperties();
         foreach ($properties as $property) {
+            $property->setAccessible(true);
+
             if ($property->isStatic()) {
                 continue;
             }
 
             $key = $property->getName();
 
-            if (!array_key_exists($key, $data)) {
+            if (isset($this->annotationReader) && !array_key_exists($key, $data)) {
                 $alias =  $this->annotationReader->getPropertyAnnotation($property, Annotation\Alias::class);
                 if ($alias instanceof Annotation\Alias) {
                     $key = $alias->value;
@@ -109,8 +116,6 @@ class Hydrator implements HydratorInterface
                     $property->getName(),
                 ));
             }
-
-            $property->setAccessible(true);
 
             $this->hydrateProperty($object, $class, $property, $property->getType(), $data[$key]);
         }
@@ -159,6 +164,11 @@ class Hydrator implements HydratorInterface
 
         if (is_subclass_of($type->getName(), DateTimeInterface::class)) {
             $this->hydratePropertyWithDateTime($object, $class, $property, $type, $value);
+            return;
+        }
+
+        if (is_subclass_of($type->getName(), EnumerableObjectInterface::class)) {
+            $this->hydratePropertyWithEnumerableValue($object, $class, $property, $type, $value);
             return;
         }
 
@@ -296,6 +306,49 @@ class Hydrator implements HydratorInterface
         }
 
         $property->setValue($object, $array);
+    }
+
+    /**
+     * Hydrates the given property with the given enumerable value
+     *
+     * @param HydrableObjectInterface $object
+     * @param ReflectionClass $class
+     * @param ReflectionProperty $property
+     * @param ReflectionNamedType $type
+     * @param mixed $value
+     *
+     * @return void
+     *
+     * @throws Exception\InvalidValueException
+     *         If the given value isn't valid.
+     */
+    private function hydratePropertyWithEnumerableValue(
+        HydrableObjectInterface $object,
+        ReflectionClass $class,
+        ReflectionProperty $property,
+        ReflectionNamedType $type,
+        $value
+    ) : void {
+        if (!is_string($value)) {
+            throw new Exception\InvalidValueException(sprintf(
+                'The <%s.%s> property only accepts a string.',
+                $class->getShortName(),
+                $property->getName(),
+            ));
+        }
+
+        $enum = $type->getName();
+        $constant = sprintf('%s::%s', $enum, $value);
+        if (!defined($constant)) {
+            throw new Exception\InvalidValueException(sprintf(
+                'The <%s.%s> property only accepts one of the <%s> enum values.',
+                $class->getShortName(),
+                $property->getName(),
+                (new ReflectionClass($enum))->getShortName(),
+            ));
+        }
+
+        $property->setValue($object, new $enum(constant($constant)));
     }
 
     /**
