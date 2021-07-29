@@ -27,14 +27,24 @@ use ReflectionNamedType;
 use function array_key_exists;
 use function class_exists;
 use function constant;
+use function ctype_digit;
 use function defined;
 use function in_array;
 use function is_array;
+use function is_int;
 use function is_scalar;
 use function is_string;
 use function is_subclass_of;
+use function json_decode;
+use function json_last_error;
+use function json_last_error_msg;
 use function sprintf;
 use function strtotime;
+
+/**
+ * Import constants
+ */
+use const JSON_ERROR_NONE;
 
 /**
  * Hydrator
@@ -169,6 +179,11 @@ class Hydrator implements HydratorInterface
 
         if (is_subclass_of($type->getName(), EnumerableObjectInterface::class)) {
             $this->hydratePropertyWithEnumerableValue($object, $class, $property, $type, $value);
+            return;
+        }
+
+        if (is_subclass_of($type->getName(), JsonableObjectInterface::class)) {
+            $this->hydratePropertyWithJsonOneToOneAssociation($object, $class, $property, $type, $value);
             return;
         }
 
@@ -329,12 +344,17 @@ class Hydrator implements HydratorInterface
         ReflectionNamedType $type,
         $value
     ) : void {
-        if (!is_string($value)) {
+        if (!is_int($value) && !is_string($value)) {
             throw new Exception\InvalidValueException(sprintf(
-                'The <%s.%s> property only accepts a string.',
+                'The <%s.%s> property only accepts an integer or a string.',
                 $class->getShortName(),
                 $property->getName(),
             ));
+        }
+
+        // support for integer cases...
+        if (is_int($value) || ctype_digit($value)) {
+            $value = '_' . $value;
         }
 
         $enum = $type->getName();
@@ -383,6 +403,49 @@ class Hydrator implements HydratorInterface
         $dateTimeClassName = $type->getName();
         $dateTime = new $dateTimeClassName($value);
         $property->setValue($object, $dateTime);
+    }
+
+    /**
+     * Hydrates the given property with the given JSON one-to-one value
+     *
+     * @param HydrableObjectInterface $object
+     * @param ReflectionClass $class
+     * @param ReflectionProperty $property
+     * @param ReflectionNamedType $type
+     * @param mixed $value
+     *
+     * @return void
+     *
+     * @throws Exception\InvalidValueException
+     *         If the given value isn't valid.
+     */
+    public function hydratePropertyWithJsonOneToOneAssociation(
+        HydrableObjectInterface $object,
+        ReflectionClass $class,
+        ReflectionProperty $property,
+        ReflectionNamedType $type,
+        $value
+    ) : void {
+        if (!is_string($value)) {
+            throw new Exception\InvalidValueException(sprintf(
+                'The <%s.%s> property only accepts a string.',
+                $class->getShortName(),
+                $property->getName(),
+            ));
+        }
+
+        json_decode(''); // reset previous error...
+        $value = (array) json_decode($value, true);
+        if (JSON_ERROR_NONE <> json_last_error()) {
+            throw new Exception\InvalidValueException(sprintf(
+                'The <%s.%s> property only accepts valid JSON data (%s).',
+                $class->getShortName(),
+                $property->getName(),
+                json_last_error_msg(),
+            ));
+        }
+
+        $this->hydratePropertyWithOneToOneAssociation($object, $class, $property, $type, $value);
     }
 
     /**
