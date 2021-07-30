@@ -86,7 +86,80 @@ class HydratorTest extends TestCase
     /**
      * @return void
      */
-    public function testJson() : void
+    public function testJsonTypeArrayAccess() : void
+    {
+        $object = (new Hydrator)->hydrate(new Fixture\TestJsonTypeDto(), ['json' => '[]']);
+
+        $this->assertFalse(isset($object->json['foo']));
+        $this->assertNull($object->json['foo']);
+
+        $object->json['foo'] = 1;
+        $this->assertTrue(isset($object->json['foo']));
+        $this->assertSame(1, $object->json['foo']);
+
+        unset($object->json['foo']);
+        $this->assertFalse(isset($object->json['foo']));
+        $this->assertNull($object->json['foo']);
+    }
+
+    /**
+     * @return void
+     */
+    public function testJsonTypeJsonSerialize() : void
+    {
+        $object = (new Hydrator)->hydrate(new Fixture\TestJsonTypeDto(), ['json' => '[]']);
+
+        $object->json['foo'] = 1;
+        $object->json['bar'] = 2;
+
+        $this->assertSame([
+            'foo' => 1,
+            'bar' => 2,
+        ], $object->json->jsonSerialize());
+    }
+
+    /**
+     * @return void
+     */
+    public function testJsonTypeDeserializeJson() : void
+    {
+        $json = '{"foo":1,"bar":2,"baz":{"qux":3}}';
+
+        $object = (new Hydrator)->hydrate(new Fixture\TestJsonTypeDto(), ['json' => $json]);
+
+        $this->assertSame(1, $object->json['foo']);
+        $this->assertSame(2, $object->json['bar']);
+        $this->assertSame(3, $object->json['baz']['qux']);
+    }
+
+    /**
+     * @return void
+     */
+    public function testJsonTypeInvalidJsonSyntax() : void
+    {
+        $this->expectException(Exception\InvalidValueException::class);
+        $this->expectExceptionMessage(
+            'The <TestJsonTypeDto.json> property only accepts valid JSON data (Syntax error).'
+        );
+
+        (new Hydrator)->hydrate(new Fixture\TestJsonTypeDto(), ['json' => '{']);
+    }
+
+    /**
+     * @return void
+     */
+    public function testJsonTypeInvalidJsonType() : void
+    {
+        $this->expectException(Exception\InvalidValueException::class);
+        $this->expectExceptionMessage('The <TestJsonTypeDto.json> property only accepts a string.');
+
+        (new Hydrator)->hydrate(new Fixture\TestJsonTypeDto(), ['json' => []]);
+    }
+
+    /**
+     * @return void
+     */
+    public function testJsonableObjectDeserializeJson() : void
     {
         $json = '{"foo":"foo:value","bar":"bar:value"}';
 
@@ -99,7 +172,7 @@ class HydratorTest extends TestCase
     /**
      * @return void
      */
-    public function testInvalidSyntaxJson() : void
+    public function testJsonableObjectInvalidJsonSyntax() : void
     {
         $this->expectException(Exception\InvalidValueException::class);
         $this->expectExceptionMessage('The <TestJsonDto.json> property only accepts valid JSON data (Syntax error).');
@@ -110,7 +183,7 @@ class HydratorTest extends TestCase
     /**
      * @return void
      */
-    public function testInvalidJsonType() : void
+    public function testJsonableObjectInvalidJsonType() : void
     {
         $this->expectException(Exception\InvalidValueException::class);
         $this->expectExceptionMessage('The <TestJsonDto.json> property only accepts a string.');

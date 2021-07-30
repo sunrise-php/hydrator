@@ -167,6 +167,11 @@ class Hydrator implements HydratorInterface
             return;
         }
 
+        if (Json::class === $type->getName()) {
+            $this->hydratePropertyWithJson($object, $class, $property, $type, $value);
+            return;
+        }
+
         if ('array' === $type->getName() || is_subclass_of($type->getName(), ArrayAccess::class)) {
             $this->hydratePropertyWithArray($object, $class, $property, $type, $value);
             return;
@@ -278,6 +283,49 @@ class Hydrator implements HydratorInterface
                 $property->setValue($object, (string) $value);
                 break;
         }
+    }
+
+    /**
+     * Hydrates the given property with the given json value
+     *
+     * @param HydrableObjectInterface $object
+     * @param ReflectionClass $class
+     * @param ReflectionProperty $property
+     * @param ReflectionNamedType $type
+     * @param mixed $value
+     *
+     * @return void
+     *
+     * @throws Exception\InvalidValueException
+     *         If the given value isn't valid.
+     */
+    private function hydratePropertyWithJson(
+        HydrableObjectInterface $object,
+        ReflectionClass $class,
+        ReflectionProperty $property,
+        ReflectionNamedType $type,
+        $value
+    ) : void {
+        if (!is_string($value)) {
+            throw new Exception\InvalidValueException(sprintf(
+                'The <%s.%s> property only accepts a string.',
+                $class->getShortName(),
+                $property->getName(),
+            ));
+        }
+
+        json_decode(''); // reset previous error...
+        $value = (array) json_decode($value, true);
+        if (JSON_ERROR_NONE <> json_last_error()) {
+            throw new Exception\InvalidValueException(sprintf(
+                'The <%s.%s> property only accepts valid JSON data (%s).',
+                $class->getShortName(),
+                $property->getName(),
+                json_last_error_msg(),
+            ));
+        }
+
+        $property->setValue($object, new Json($value));
     }
 
     /**
