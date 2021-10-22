@@ -116,6 +116,11 @@ class HydratorTest extends TestCase
 
     public function testUnionPropertyType() : void
     {
+        if (8 > \PHP_MAJOR_VERSION) {
+            $this->markTestSkipped('PHP 8 is required...');
+            return;
+        }
+
         $this->expectException(Exception\UnsupportedPropertyTypeException::class);
         $this->expectExceptionMessage('The ObjectWithUnionPropertyType.value property ' .
                                       'contains an union type that is not supported.');
