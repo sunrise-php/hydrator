@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Hydrator\Tests\Fixtures;
 
-final class BarDto
+final class UnsupportedPropertyType
 {
-    public string $value;
+    public iterable $value;
 }
