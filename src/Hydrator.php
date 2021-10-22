@@ -17,7 +17,6 @@ namespace Sunrise\Hydrator;
 use Doctrine\Common\Annotations\SimpleAnnotationReader;
 use Sunrise\Hydrator\Annotation\Alias;
 use InvalidArgumentException;
-use DateTimeInterface;
 use ReflectionClass;
 use ReflectionProperty;
 use ReflectionNamedType;
@@ -58,6 +57,20 @@ use const PHP_MAJOR_VERSION;
  */
 class Hydrator implements HydratorInterface
 {
+
+    /**
+     * @var array<string, string>
+     */
+    private const PROPERTY_HYDRATOR_MAP = [
+        'bool' => 'hydratePropertyWithBooleanValue',
+        'int' => 'hydratePropertyWithIntegerNumber',
+        'float' => 'hydratePropertyWithNumber',
+        'string' => 'hydratePropertyWithString',
+        'array' => 'hydratePropertyWithArray',
+        'object' => 'hydratePropertyWithObject',
+        'DateTime' => 'hydratePropertyWithTimestamp',
+        'DateTimeImmutable' => 'hydratePropertyWithTimestamp',
+    ];
 
     /**
      * @var SimpleAnnotationReader|null
@@ -134,12 +147,9 @@ class Hydrator implements HydratorInterface
 
             if ($property->getType() instanceof ReflectionUnionType) {
                 throw new Exception\UnsupportedPropertyTypeException(sprintf(
-                    'The <%s.%s> property contains an unsupported type <%s>.',
+                    'The <%s.%s> property contains an union type that is not supported.',
                     $class->getShortName(),
-                    $property->getName(),
-                    \implode('|', \array_map(function (ReflectionNamedType $type) : string {
-                        return $type->getName();
-                    }, $property->getType()->getTypes()))
+                    $property->getName()
                 ));
             }
 
@@ -279,38 +289,8 @@ class Hydrator implements HydratorInterface
             return;
         }
 
-        if ('bool' === $type->getName()) {
-            $this->hydratePropertyWithBooleanValue($object, $class, $property, $type, $value);
-            return;
-        }
-
-        if ('int' === $type->getName()) {
-            $this->hydratePropertyWithIntegerNumber($object, $class, $property, $type, $value);
-            return;
-        }
-
-        if ('float' === $type->getName()) {
-            $this->hydratePropertyWithNumber($object, $class, $property, $type, $value);
-            return;
-        }
-
-        if ('string' === $type->getName()) {
-            $this->hydratePropertyWithString($object, $class, $property, $type, $value);
-            return;
-        }
-
-        if ('array' === $type->getName()) {
-            $this->hydratePropertyWithArray($object, $class, $property, $type, $value);
-            return;
-        }
-
-        if ('object' === $type->getName()) {
-            $this->hydratePropertyWithObject($object, $class, $property, $type, $value);
-            return;
-        }
-
-        if (is_subclass_of($type->getName(), DateTimeInterface::class)) {
-            $this->hydratePropertyWithTimestamp($object, $class, $property, $type, $value);
+        if (isset(self::PROPERTY_HYDRATOR_MAP[$type->getName()])) {
+            $this->{self::PROPERTY_HYDRATOR_MAP[$type->getName()]}($object, $class, $property, $type, $value);
             return;
         }
 
