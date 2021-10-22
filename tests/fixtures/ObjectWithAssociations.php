@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Hydrator\Tests\Fixtures;
 
-final class UnionPropertyType
+final class ObjectWithAssociations
 {
-    public int|float $value;
+    public BarCollection $value;
 }

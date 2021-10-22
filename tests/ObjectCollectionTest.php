@@ -36,13 +36,24 @@ class ObjectCollectionTest extends TestCase
         $this->assertSame($store, $collection->all());
     }
 
+    public function testUntypedCollection() : void
+    {
+        $collection = new Fixtures\UntypedCollection();
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('The ' . Fixtures\UntypedCollection::class . ' collection ' .
+                                      'must contain the T constant.');
+
+        $collection->add(0, new Fixtures\Bar());
+    }
+
     public function testUnexpectedObject() : void
     {
         $collection = new Fixtures\BarCollection();
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('The <' . Fixtures\BarCollection::class . '> collection ' .
-                                      'must contain the <' . Fixtures\Bar::class . '> objects only.');
+        $this->expectExceptionMessage('The ' . Fixtures\BarCollection::class . ' collection ' .
+                                      'can contain the ' . Fixtures\Bar::class . ' objects only.');
 
         $collection->add(0, new Fixtures\Foo());
     }
