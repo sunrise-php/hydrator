@@ -19,8 +19,13 @@ composer require 'sunrise/hydrator:^2.0'
 ## How to use?
 
 ```php
+// hydrate an object with array:
 $object = (new \Sunrise\Hydrator\Hydrator)->hydrate(Foo::class, $data);
 
+// or you can hydrate the object with JSON:
+$object = (new \Sunrise\Hydrator\Hydrator)->hydrate(Foo::class, $json);
+
+// output the result:
 var_dump($object);
 ```
 
@@ -44,8 +49,8 @@ final class Foo
     private \DateTime $dateTime; // accepts timestamps and string date-time
     private \DateTimeImmutable $dateTimeImmutable; // accepts timestamps and string date-time
 
-    private Bar $bar;
-    private BarCollection $barCollection;
+    private Bar $bar; // see bellow...
+    private BarCollection $barCollection; // see bellow...
 
     /**
      * @Alias("non-normalized")
@@ -65,8 +70,11 @@ final class Bar
 ```
 
 ```php
+use Sunrise\Hydrator\ObjectCollection;
+
 final class BarCollection extends ObjectCollection
 {
+    // the collection will contain only the specified objects
     public const T = Bar::class;
 }
 ```
