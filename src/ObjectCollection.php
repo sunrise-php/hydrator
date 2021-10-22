@@ -31,16 +31,14 @@ abstract class ObjectCollection implements ObjectCollectionInterface
     /**
      * The type of objects in the collection
      *
-     * @var class-string<T>
-     *
-     * @template T
+     * @var class-string
      */
     public const T = null;
 
     /**
      * The collection objects
      *
-     * @var array<int|string, T>
+     * @var array<int|string, object>
      */
     private $objects = [];
 

@@ -90,7 +90,7 @@ class Hydrator implements HydratorInterface
 
         if (class_exists(SimpleAnnotationReader::class)) {
             $this->annotationReader = /** @scrutinizer ignore-deprecated */ new SimpleAnnotationReader();
-            $this->annotationReader->addNamespace(Annotation::class);
+            $this->annotationReader->addNamespace('Sunrise\Hydrator\Annotation');
         }
 
         return $this;

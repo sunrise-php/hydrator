@@ -25,9 +25,7 @@ interface ObjectCollectionInterface
     /**
      * Gets the type of objects in the collection
      *
-     * @return class-string<T>
-     *
-     * @template T
+     * @return class-string
      */
     public function getItemClassName() : string;
 
@@ -35,7 +33,7 @@ interface ObjectCollectionInterface
      * Adds the given object to the collection by the given key
      *
      * @param int|string $key
-     * @param T $object
+     * @param object $object
      *
      * @return void
      *
@@ -49,14 +47,14 @@ interface ObjectCollectionInterface
      *
      * @param int|string $key
      *
-     * @return T|null
+     * @return object|null
      */
     public function get($key) : ?object;
 
     /**
      * Gets all objects of the collection
      *
-     * @return array<int|string, T>
+     * @return array<int|string, object>
      */
     public function all() : array;
 }
