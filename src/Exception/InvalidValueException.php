@@ -44,6 +44,8 @@ class InvalidValueException extends HydrationException
         int $code = 0,
         ?Throwable $previous = null
     ) {
+        $property->setAccessible(false);
+
         $this->property = $property;
 
         parent::__construct($message, $code, $previous);
@@ -54,7 +56,7 @@ class InvalidValueException extends HydrationException
      *
      * @return ReflectionProperty
      */
-    public function getProperty() : ReflectionProperty
+    final public function getProperty() : ReflectionProperty
     {
         return $this->property;
     }

@@ -32,7 +32,7 @@ interface ObjectCollectionInterface
     /**
      * Adds the given object to the collection by the given key
      *
-     * @param int|string $key
+     * @param array-key $key
      * @param object $object
      *
      * @return void
@@ -45,7 +45,7 @@ interface ObjectCollectionInterface
     /**
      * Gets an object from the collection by the given key
      *
-     * @param int|string $key
+     * @param array-key $key
      *
      * @return object|null
      */
@@ -54,7 +54,7 @@ interface ObjectCollectionInterface
     /**
      * Gets all objects of the collection
      *
-     * @return array<int|string, object>
+     * @return array<array-key, object>
      */
     public function all() : array;
 }

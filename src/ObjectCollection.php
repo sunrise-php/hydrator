@@ -38,7 +38,7 @@ abstract class ObjectCollection implements ObjectCollectionInterface
     /**
      * The collection objects
      *
-     * @var array<int|string, object>
+     * @var array<array-key, object>
      */
     private $objects = [];
 
