@@ -9,11 +9,11 @@
  * @link https://github.com/sunrise-php/hydrator
  */
 
-namespace Sunrise\Hydrator;
+namespace Sunrise\Hydrator\Exception;
 
 /**
- * JsonableObjectInterface
+ * UntypedPropertyException
  */
-interface JsonableObjectInterface extends HydrableObjectInterface
+class UntypedPropertyException extends InvalidObjectException
 {
 }

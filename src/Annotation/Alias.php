@@ -12,19 +12,41 @@
 namespace Sunrise\Hydrator\Annotation;
 
 /**
- * Alias
+ * Import classes
+ */
+use Attribute;
+
+/**
+ * A property alias
  *
  * @Annotation
  *
  * @Target({"PROPERTY"})
+ *
+ * @NamedArgumentConstructor
+ *
+ * @Attributes({
+ *   @Attribute("value", type="string", required=true),
+ * })
  */
+#[Attribute(Attribute::TARGET_PROPERTY)]
 final class Alias
 {
 
     /**
-     * @Required
+     * The attribute value
      *
      * @var string
      */
     public $value;
+
+    /**
+     * Constructor of the class
+     *
+     * @param string $value
+     */
+    public function __construct(string $value)
+    {
+        $this->value = $value;
+    }
 }

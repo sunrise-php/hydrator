@@ -9,18 +9,11 @@
  * @link https://github.com/sunrise-php/hydrator
  */
 
-namespace Sunrise\Hydrator;
+namespace Sunrise\Hydrator\Exception;
 
 /**
- * EnumerableObjectInterface
+ * UnsupportedPropertyTypeException
  */
-interface EnumerableObjectInterface
+class UnsupportedPropertyTypeException extends InvalidObjectException
 {
-
-    /**
-     * Gets the enum value
-     *
-     * @return mixed
-     */
-    public function getValue();
 }
