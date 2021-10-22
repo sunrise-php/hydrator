@@ -54,7 +54,7 @@ abstract class ObjectCollection implements ObjectCollectionInterface
     {
         if (null === static::T) {
             throw new RuntimeException(sprintf(
-                'The <%s> collection must contain the <T> constant.',
+                'The %s collection must contain the T constant.',
                 static::class
             ));
         }
@@ -71,7 +71,7 @@ abstract class ObjectCollection implements ObjectCollectionInterface
 
         if (!($object instanceof $type)) {
             throw new InvalidArgumentException(sprintf(
-                'The <%s> collection must contain the <%s> objects only.',
+                'The %s collection can contain the %s objects only.',
                 static::class,
                 $type
             ));

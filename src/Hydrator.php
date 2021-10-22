@@ -78,18 +78,6 @@ class Hydrator implements HydratorInterface
     private $annotationReader = null;
 
     /**
-     * Constructor of the class
-     */
-    public function __construct()
-    {
-        if (PHP_MAJOR_VERSION < 8) {
-            // @codeCoverageIgnoreStart
-            $this->useAnnotations();
-            // @codeCoverageIgnoreEnd
-        }
-    }
-
-    /**
      * Enables support for annotations
      *
      * @return self
@@ -139,7 +127,7 @@ class Hydrator implements HydratorInterface
 
             if (!$property->hasType()) {
                 throw new Exception\UntypedPropertyException(sprintf(
-                    'The <%s.%s> property is not typed.',
+                    'The %s.%s property is not typed.',
                     $class->getShortName(),
                     $property->getName()
                 ));
@@ -147,7 +135,7 @@ class Hydrator implements HydratorInterface
 
             if ($property->getType() instanceof ReflectionUnionType) {
                 throw new Exception\UnsupportedPropertyTypeException(sprintf(
-                    'The <%s.%s> property contains an union type that is not supported.',
+                    'The %s.%s property contains an union type that is not supported.',
                     $class->getShortName(),
                     $property->getName()
                 ));
@@ -163,8 +151,8 @@ class Hydrator implements HydratorInterface
 
             if (!array_key_exists($key, $data)) {
                 if (!$property->isInitialized($object)) {
-                    throw new Exception\MissingRequiredValueException(sprintf(
-                        'The <%s.%s> property is required.',
+                    throw new Exception\MissingRequiredValueException($property, sprintf(
+                        'The %s.%s property is required.',
                         $class->getShortName(),
                         $property->getName()
                     ));
@@ -305,7 +293,7 @@ class Hydrator implements HydratorInterface
         }
 
         throw new Exception\UnsupportedPropertyTypeException(sprintf(
-            'The <%s.%s> property contains an unsupported type <%s>.',
+            'The %s.%s property contains an unsupported type %s.',
             $class->getShortName(),
             $property->getName(),
             $type->getName()
@@ -332,8 +320,8 @@ class Hydrator implements HydratorInterface
         ReflectionNamedType $type
     ) : void {
         if (!$type->allowsNull()) {
-            throw new Exception\InvalidValueException(sprintf(
-                'The <%s.%s> property cannot accept null.',
+            throw new Exception\InvalidValueException($property, sprintf(
+                'The %s.%s property cannot accept null.',
                 $class->getShortName(),
                 $property->getName()
             ));
@@ -370,8 +358,8 @@ class Hydrator implements HydratorInterface
             $value = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
 
             if (!isset($value)) {
-                throw new Exception\InvalidValueException(sprintf(
-                    'The <%s.%s> property accepts a boolean value only.',
+                throw new Exception\InvalidValueException($property, sprintf(
+                    'The %s.%s property accepts a boolean value only.',
                     $class->getShortName(),
                     $property->getName()
                 ));
@@ -411,8 +399,8 @@ class Hydrator implements HydratorInterface
             $value = filter_var($value, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE);
 
             if (!isset($value)) {
-                throw new Exception\InvalidValueException(sprintf(
-                    'The <%s.%s> property accepts an integer number only.',
+                throw new Exception\InvalidValueException($property, sprintf(
+                    'The %s.%s property accepts an integer number only.',
                     $class->getShortName(),
                     $property->getName()
                 ));
@@ -450,8 +438,8 @@ class Hydrator implements HydratorInterface
             $value = filter_var($value, FILTER_VALIDATE_FLOAT, FILTER_NULL_ON_FAILURE);
 
             if (!isset($value)) {
-                throw new Exception\InvalidValueException(sprintf(
-                    'The <%s.%s> property accepts a number only.',
+                throw new Exception\InvalidValueException($property, sprintf(
+                    'The %s.%s property accepts a number only.',
                     $class->getShortName(),
                     $property->getName()
                 ));
@@ -483,8 +471,8 @@ class Hydrator implements HydratorInterface
         $value
     ) : void {
         if (!is_string($value)) {
-            throw new Exception\InvalidValueException(sprintf(
-                'The <%s.%s> property accepts a string only.',
+            throw new Exception\InvalidValueException($property, sprintf(
+                'The %s.%s property accepts a string only.',
                 $class->getShortName(),
                 $property->getName()
             ));
@@ -515,8 +503,8 @@ class Hydrator implements HydratorInterface
         $value
     ) : void {
         if (!is_array($value)) {
-            throw new Exception\InvalidValueException(sprintf(
-                'The <%s.%s> property accepts an array only.',
+            throw new Exception\InvalidValueException($property, sprintf(
+                'The %s.%s property accepts an array only.',
                 $class->getShortName(),
                 $property->getName()
             ));
@@ -547,8 +535,8 @@ class Hydrator implements HydratorInterface
         $value
     ) : void {
         if (!is_object($value)) {
-            throw new Exception\InvalidValueException(sprintf(
-                'The <%s.%s> property accepts an object only.',
+            throw new Exception\InvalidValueException($property, sprintf(
+                'The %s.%s property accepts an object only.',
                 $class->getShortName(),
                 $property->getName()
             ));
@@ -578,20 +566,20 @@ class Hydrator implements HydratorInterface
         ReflectionNamedType $type,
         $value
     ) : void {
-        $target = $type->getName();
+        $prototype = $type->getName();
 
         if (is_int($value) || ctype_digit($value)) {
-            $property->setValue($object, (new $target)->setTimestamp($value));
+            $property->setValue($object, (new $prototype)->setTimestamp((int) $value));
             return;
         }
 
         if (is_string($value) && false !== strtotime($value)) {
-            $property->setValue($object, new $target($value));
+            $property->setValue($object, new $prototype($value));
             return;
         }
 
-        throw new Exception\InvalidValueException(sprintf(
-            'The <%s.%s> property accepts a valid date-time string or a timestamp only.',
+        throw new Exception\InvalidValueException($property, sprintf(
+            'The %s.%s property accepts a valid date-time string or a timestamp only.',
             $class->getShortName(),
             $property->getName()
         ));
@@ -619,19 +607,19 @@ class Hydrator implements HydratorInterface
         $value
     ) : void {
         if (!is_array($value)) {
-            throw new Exception\InvalidValueException(sprintf(
-                'The <%s.%s> property accepts an array only.',
+            throw new Exception\InvalidValueException($property, sprintf(
+                'The %s.%s property accepts an array only.',
                 $class->getShortName(),
                 $property->getName()
             ));
         }
 
-        $target = $type->getName();
-        $collection = new $target();
+        $prototype = $type->getName();
+        $collection = new $prototype();
         foreach ($value as $key => $item) {
             if (!is_array($item)) {
-                throw new Exception\InvalidValueException(sprintf(
-                    'The <%s.%s> property accepts an array with arrays only.',
+                throw new Exception\InvalidValueException($property, sprintf(
+                    'The %s.%s property accepts an array with arrays only.',
                     $class->getShortName(),
                     $property->getName()
                 ));
@@ -665,8 +653,8 @@ class Hydrator implements HydratorInterface
         $value
     ) : void {
         if (!is_array($value)) {
-            throw new Exception\InvalidValueException(sprintf(
-                'The <%s.%s> property accepts an array only.',
+            throw new Exception\InvalidValueException($property, sprintf(
+                'The %s.%s property accepts an array only.',
                 $class->getShortName(),
                 $property->getName()
             ));

@@ -17,8 +17,6 @@ namespace Sunrise\Hydrator\Annotation;
 use Attribute;
 
 /**
- * A property alias
- *
  * @Annotation
  *
  * @Target({"PROPERTY"})

@@ -12,8 +12,50 @@
 namespace Sunrise\Hydrator\Exception;
 
 /**
+ * Import classes
+ */
+use ReflectionProperty;
+use Throwable;
+
+/**
  * InvalidValueException
  */
 class InvalidValueException extends HydrationException
 {
+
+    /**
+     * The problem property
+     *
+     * @var ReflectionProperty
+     */
+    private $property;
+
+    /**
+     * Constructor of the class
+     *
+     * @param ReflectionProperty $property
+     * @param string             $message
+     * @param int                $code
+     * @param Throwable|null     $previous
+     */
+    public function __construct(
+        ReflectionProperty $property,
+        string $message,
+        int $code = 0,
+        ?Throwable $previous = null
+    ) {
+        $this->property = $property;
+
+        parent::__construct($message, $code, $previous);
+    }
+
+    /**
+     * Gets the problem property
+     *
+     * @return ReflectionProperty
+     */
+    public function getProperty() : ReflectionProperty
+    {
+        return $this->property;
+    }
 }
