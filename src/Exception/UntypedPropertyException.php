@@ -12,8 +12,8 @@
 namespace Sunrise\Hydrator\Exception;
 
 /**
- * InvalidValueException
+ * UntypedPropertyException
  */
-class InvalidValueException extends HydrationException
+class UntypedPropertyException extends InvalidObjectException
 {
 }
