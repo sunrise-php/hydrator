@@ -1,18 +1,13 @@
-<?php declare(strict_types=1);
+<?php
 
-namespace Sunrise\Hydrator\Tests\Fixture;
+declare(strict_types=1);
 
-/**
- * Import classes
- */
-use Sunrise\Hydrator\HydrableObjectInterface;
-use ArrayIterator;
+namespace Sunrise\Hydrator\Tests\Fixtures;
+
 use DateTimeImmutable;
+use Sunrise\Hydrator\Annotation\Alias;
 
-/**
- * FooDto
- */
-final class FooDto implements HydrableObjectInterface
+final class FooDto
 {
     public static string $static = 'default value';
     public string $valuable = 'default value';
@@ -21,7 +16,6 @@ final class FooDto implements HydrableObjectInterface
     public int $int;
     public float $float;
     public string $string;
-    public ArrayIterator $array;
     public DateTimeImmutable $dateTime;
     public BarDto $barDto;
     public BarDtoCollection $barDtoCollection;
@@ -30,5 +24,6 @@ final class FooDto implements HydrableObjectInterface
     /**
      * @Alias("alias")
      */
+    #[Alias('alias')]
     public string $hidden;
 }
