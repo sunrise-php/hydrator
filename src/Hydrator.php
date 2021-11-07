@@ -173,10 +173,10 @@ class Hydrator implements HydratorInterface
      * @throws InvalidArgumentException
      *         If the given JSON cannot be decoded.
      */
-    public function hydrateWithJson($object, string $json) : object
+    public function hydrateWithJson($object, string $json, int $options = 0) : object
     {
         json_decode(''); // reset previous error...
-        $data = (array) json_decode($json, true);
+        $data = (array) json_decode($json, true, 512, $options);
         if (JSON_ERROR_NONE <> json_last_error()) {
             throw new InvalidArgumentException(sprintf(
                 'Unable to decode JSON: %s',
