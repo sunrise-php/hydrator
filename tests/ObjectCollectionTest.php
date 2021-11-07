@@ -29,9 +29,13 @@ class ObjectCollectionTest extends TestCase
 
         $collection = new Fixtures\BarCollection();
 
+        $this->assertTrue($collection->isEmpty());
+
         $collection->add(0, $store[0]);
         $collection->add(1, $store[1]);
         $collection->add(2, $store[2]);
+
+        $this->assertFalse($collection->isEmpty());
 
         $this->assertSame($store, $collection->all());
     }

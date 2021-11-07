@@ -57,4 +57,11 @@ interface ObjectCollectionInterface
      * @return array<array-key, object>
      */
     public function all() : array;
+
+    /**
+     * Checks if the collection is empty
+     *
+     * @return bool
+     */
+    public function isEmpty() : bool;
 }
