@@ -1,4 +1,4 @@
-# Strongly typed hydrator for PHP 7.4+ (incl. PHP 8)
+# Strongly typed hydrator for PHP 7.4+
 
 > Great tool for your DTOs...
 
@@ -14,7 +14,7 @@
 ## Installation
 
 ```bash
-composer require 'sunrise/hydrator:^2.0'
+composer require 'sunrise/hydrator:^2.1'
 ```
 
 ## How to use?
@@ -24,7 +24,7 @@ composer require 'sunrise/hydrator:^2.0'
 $object = (new \Sunrise\Hydrator\Hydrator)->hydrate(Foo::class, $data);
 
 // or you can hydrate the object with JSON:
-$object = (new \Sunrise\Hydrator\Hydrator)->hydrate(Foo::class, $json);
+$object = (new \Sunrise\Hydrator\Hydrator)->hydrateWithJson(Foo::class, $json, $options = 0);
 
 // output the result:
 var_dump($object);
