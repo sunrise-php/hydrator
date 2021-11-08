@@ -35,11 +35,12 @@ interface HydratorInterface
      *
      * @param object|class-string $object
      * @param string $json
+     * @param int $options
      *
      * @return object
      *
      * @throws Exception\HydrationException
      *         If the given object cannot be hydrated.
      */
-    public function hydrateWithJson($object, string $json) : object;
+    public function hydrateWithJson($object, string $json, int $options) : object;
 }

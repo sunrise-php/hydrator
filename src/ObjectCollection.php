@@ -93,4 +93,12 @@ abstract class ObjectCollection implements ObjectCollectionInterface
     {
         return $this->objects;
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    final public function isEmpty() : bool
+    {
+        return [] === $this->objects;
+    }
 }
