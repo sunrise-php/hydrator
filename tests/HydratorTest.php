@@ -170,7 +170,7 @@ class HydratorTest extends TestCase
             'value' => 'yes',
         ]);
 
-        $this->assertSame(true, $object->value);
+        $this->assertTrue($object->value);
     }
 
     public function testHydratePropertyWithStringIntegerNumber() : void
