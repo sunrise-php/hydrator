@@ -70,6 +70,7 @@ class Hydrator implements HydratorInterface
         'object' => 'hydratePropertyWithObject',
         'DateTime' => 'hydratePropertyWithTimestamp',
         'DateTimeImmutable' => 'hydratePropertyWithTimestamp',
+        'DateInterval' => 'hydratePropertyWithInterval',
     ];
 
     /**
@@ -583,6 +584,50 @@ class Hydrator implements HydratorInterface
             $class->getShortName(),
             $property->getName()
         ));
+    }
+
+    /**
+     * Hydrates the given property with the given interval
+     *
+     * @param object $object
+     * @param ReflectionClass $class
+     * @param ReflectionProperty $property
+     * @param ReflectionNamedType $type
+     * @param mixed $value
+     *
+     * @return void
+     *
+     * @throws Exception\InvalidValueException
+     *         If the given value isn't valid.
+     */
+    private function hydratePropertyWithInterval(
+        object $object,
+        ReflectionClass $class,
+        ReflectionProperty $property,
+        ReflectionNamedType $type,
+        $value
+    ) : void {
+        if (!is_string($value)) {
+            throw new Exception\InvalidValueException($property, sprintf(
+                'The %s.%s property accepts a string only.',
+                $class->getShortName(),
+                $property->getName()
+            ));
+        }
+
+        $prototype = $type->getName();
+
+        try {
+            $interval = new $prototype($value);
+        } catch (\Exception $e) {
+            throw new Exception\InvalidValueException($property, sprintf(
+                'The %s.%s property accepts a valid interval based on ISO 8601.',
+                $class->getShortName(),
+                $property->getName()
+            ));
+        }
+
+        $property->setValue($object, $interval);
     }
 
     /**
