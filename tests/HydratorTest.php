@@ -326,7 +326,6 @@ class HydratorTest extends TestCase
         ]);
 
         $this->assertInstanceOf(\DateInterval::class, $object->duration);
-        $this->assertSame($object->duration->d, 9);
     }
 
     public function testHydratePropertyWithInvalidIntervalType() : void
