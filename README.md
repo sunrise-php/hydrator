@@ -53,6 +53,8 @@ final class Foo
     private Bar $bar; // see bellow...
     private BarCollection $barCollection; // see bellow...
 
+    private DateInterval $duration; // see ISO 8601, e.g. "P3Y6M4DT12H30M5S"
+
     /**
      * @Alias("non-normalized")
      */
