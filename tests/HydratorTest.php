@@ -318,4 +318,33 @@ class HydratorTest extends TestCase
             'value' => [0],
         ]);
     }
+
+    public function testHydratePropertyWithInterval() : void
+    {
+        $object = (new Hydrator)->hydrate(Fixtures\Baz::class, [
+            'duration' => 'P1W2D',
+        ]);
+
+        $this->assertInstanceOf(\DateInterval::class, $object->duration);
+    }
+
+    public function testHydratePropertyWithInvalidIntervalType() : void
+    {
+        $this->expectException(Exception\InvalidValueException::class);
+        $this->expectExceptionMessage('The Baz.duration property accepts a string only.');
+
+        (new Hydrator)->hydrate(Fixtures\Baz::class, [
+            'duration' => 0,
+        ]);
+    }
+
+    public function testHydratePropertyWithInvalidInterval() : void
+    {
+        $this->expectException(Exception\InvalidValueException::class);
+        $this->expectExceptionMessage('The Baz.duration property accepts a valid interval based on ISO 8601.');
+
+        (new Hydrator)->hydrate(Fixtures\Baz::class, [
+            'duration' => 'fuuu',
+        ]);
+    }
 }
