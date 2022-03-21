@@ -15,6 +15,7 @@ namespace Sunrise\Hydrator;
  * Import classes
  */
 use InvalidArgumentException;
+use JsonSerializable;
 use RuntimeException;
 
 /**
@@ -25,7 +26,7 @@ use function sprintf;
 /**
  * ObjectCollection
  */
-abstract class ObjectCollection implements ObjectCollectionInterface
+abstract class ObjectCollection implements ObjectCollectionInterface, JsonSerializable
 {
 
     /**
@@ -100,5 +101,15 @@ abstract class ObjectCollection implements ObjectCollectionInterface
     final public function isEmpty() : bool
     {
         return [] === $this->objects;
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @since 2.3.0
+     */
+    public function jsonSerialize() : array
+    {
+        return $this->objects;
     }
 }

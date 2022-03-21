@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Sunrise\Hydrator\ObjectCollection;
 use Sunrise\Hydrator\ObjectCollectionInterface;
 use InvalidArgumentException;
+use JsonSerializable;
 use RuntimeException;
 
 class ObjectCollectionTest extends TestCase
@@ -17,6 +18,7 @@ class ObjectCollectionTest extends TestCase
         $collection = new Fixtures\BarCollection();
 
         $this->assertInstanceOf(ObjectCollectionInterface::class, $collection);
+        $this->assertInstanceOf(JsonSerializable::class, $collection);
     }
 
     public function testAdd() : void
@@ -60,5 +62,12 @@ class ObjectCollectionTest extends TestCase
                                       'can contain the ' . Fixtures\Bar::class . ' objects only.');
 
         $collection->add(0, new Fixtures\Foo());
+    }
+
+    public function testJsonSerialize() : void
+    {
+        $collection = new Fixtures\BarCollection();
+
+        $this->assertSame($collection->all(), $collection->jsonSerialize());
     }
 }
