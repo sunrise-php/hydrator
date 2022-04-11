@@ -347,4 +347,22 @@ class HydratorTest extends TestCase
             'duration' => 'fuuu',
         ]);
     }
+
+    public function testHydratePropertyWithEmptyStringIntegerNumber() : void
+    {
+        $object = (new Hydrator)->hydrate(Fixtures\ObjectWithNullableIntegerProperty::class, [
+            'value' => '',
+        ]);
+
+        $this->assertNull($object->value);
+    }
+
+    public function testHydratePropertyWithEmptyString() : void
+    {
+        $object = (new Hydrator)->hydrate(Fixtures\ObjectWithStringProperty::class, [
+            'value' => '',
+        ]);
+
+        $this->assertSame('', $object->value);
+    }
 }

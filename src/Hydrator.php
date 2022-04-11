@@ -273,6 +273,10 @@ class Hydrator implements HydratorInterface
         ReflectionNamedType $type,
         $value
     ) : void {
+        if ('' === $value && 'string' !== $type->getName()) {
+            $value = null;
+        }
+
         if (null === $value) {
             $this->hydratePropertyWithNull($object, $class, $property, $type);
             return;
