@@ -20,7 +20,7 @@ composer require 'sunrise/hydrator:^2.1'
 ## How to use?
 
 ```php
-// hydrate an object with array:
+// hydrate an object with array or object:
 $object = (new \Sunrise\Hydrator\Hydrator)->hydrate(Foo::class, $data);
 
 // or you can hydrate the object with JSON:
