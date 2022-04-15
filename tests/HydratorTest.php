@@ -292,7 +292,7 @@ class HydratorTest extends TestCase
     public function testHydratePropertyWithInvalidAssociation() : void
     {
         $this->expectException(Exception\InvalidValueException::class);
-        $this->expectExceptionMessage('The ObjectWithAssociation.value property accepts an array only.');
+        $this->expectExceptionMessage('The ObjectWithAssociation.value property accepts an array and objects only.');
 
         (new Hydrator)->hydrate(Fixtures\ObjectWithAssociation::class, [
             'value' => 0,

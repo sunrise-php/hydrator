@@ -112,7 +112,7 @@ class Hydrator implements HydratorInterface
      * @throws Exception\InvalidValueException
      *         If the given data contains an invalid value.
      */
-    public function hydrate($object, array $data) : object
+    public function hydrate($object, $data) : object
     {
         $object = $this->initializeObject($object);
 
@@ -143,14 +143,14 @@ class Hydrator implements HydratorInterface
             }
 
             $key = $property->getName();
-            if (!array_key_exists($key, $data)) {
+            if ( (is_object($data) && !property_exists($data, $key)) ||  (is_array($data) && !array_key_exists($key, $data))) {
                 $alias = $this->getPropertyAlias($property);
                 if (isset($alias)) {
                     $key = $alias->value;
                 }
             }
 
-            if (!array_key_exists($key, $data)) {
+            if ((is_object($data) && !property_exists($data, $key)) ||  (is_array($data) && !array_key_exists($key, $data))) {
                 if (!$property->isInitialized($object)) {
                     throw new Exception\MissingRequiredValueException($property, sprintf(
                         'The %s.%s property is required.',
@@ -162,7 +162,7 @@ class Hydrator implements HydratorInterface
                 continue;
             }
 
-            $this->hydrateProperty($object, $class, $property, $property->getType(), $data[$key]);
+            $this->hydrateProperty($object, $class, $property, $property->getType(), $data->$key ?? $data[$key]);
         }
 
         return $object;
@@ -701,9 +701,9 @@ class Hydrator implements HydratorInterface
         ReflectionNamedType $type,
         $value
     ) : void {
-        if (!is_array($value)) {
+        if (!is_array($value) && !is_object($value)) {
             throw new Exception\InvalidValueException($property, sprintf(
-                'The %s.%s property accepts an array only.',
+                'The %s.%s property accepts an array and objects only.',
                 $class->getShortName(),
                 $property->getName()
             ));

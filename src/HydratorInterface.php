@@ -21,14 +21,14 @@ interface HydratorInterface
      * Hydrates the given object with the given data
      *
      * @param object|class-string $object
-     * @param array<string, mixed> $data
+     * @param array<string, mixed>|object $data
      *
      * @return object
      *
      * @throws Exception\HydrationException
      *         If the given object cannot be hydrated.
      */
-    public function hydrate($object, array $data) : object;
+    public function hydrate($object, $data) : object;
 
     /**
      * Hydrates the given object with the given JSON
