@@ -459,9 +459,9 @@ class HydratorTest extends TestCase
     public function stringableEnumValueProvider() : array
     {
         return [
-            [Fixtures\StringableEnum::foo->value, Fixtures\StringableEnum::foo],
-            [Fixtures\StringableEnum::bar->value, Fixtures\StringableEnum::bar],
-            [Fixtures\StringableEnum::baz->value, Fixtures\StringableEnum::baz],
+            ['c1200a7e-136e-4a11-9bc3-cc937046e90f', Fixtures\StringableEnum::foo],
+            ['a2b29b37-1c5a-4b36-9981-097ddd25c740', Fixtures\StringableEnum::bar],
+            ['c1ea3762-9827-4c0c-808b-53be3febae6d', Fixtures\StringableEnum::baz],
         ];
     }
 
@@ -497,14 +497,14 @@ class HydratorTest extends TestCase
     public function numerableEnumValueProvider() : array
     {
         return [
-            [Fixtures\NumerableEnum::foo->value, Fixtures\NumerableEnum::foo],
-            [Fixtures\NumerableEnum::bar->value, Fixtures\NumerableEnum::bar],
-            [Fixtures\NumerableEnum::baz->value, Fixtures\NumerableEnum::baz],
+            [1, Fixtures\NumerableEnum::foo],
+            [2, Fixtures\NumerableEnum::bar],
+            [3, Fixtures\NumerableEnum::baz],
 
             // should convert strings to integers...
-            [(string) Fixtures\NumerableEnum::foo->value, Fixtures\NumerableEnum::foo],
-            [(string) Fixtures\NumerableEnum::bar->value, Fixtures\NumerableEnum::bar],
-            [(string) Fixtures\NumerableEnum::baz->value, Fixtures\NumerableEnum::baz],
+            ['1', Fixtures\NumerableEnum::foo],
+            ['2', Fixtures\NumerableEnum::bar],
+            ['3', Fixtures\NumerableEnum::baz],
         ];
     }
 
