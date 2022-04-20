@@ -23,22 +23,28 @@ interface ObjectCollectionInterface
 {
 
     /**
-     * Gets the type of objects in the collection
+     * Gets the collection type
      *
      * @return class-string
      */
     public function getItemClassName() : string;
 
     /**
-     * Adds the given object to the collection by the given key
+     * Checks by the given key if an object exists in the collection
+     *
+     * @param array-key $key
+     *
+     * @return bool
+     */
+    public function has($key) : bool;
+
+    /**
+     * Adds the given object to the collection with the given key
      *
      * @param array-key $key
      * @param object $object
      *
      * @return void
-     *
-     * @throws InvalidArgumentException
-     *         If the given object cannot be added to the collection.
      */
     public function add($key, object $object) : void;
 
@@ -52,7 +58,7 @@ interface ObjectCollectionInterface
     public function get($key) : ?object;
 
     /**
-     * Gets all objects of the collection
+     * Gets all objects from the collection
      *
      * @return array<array-key, object>
      */

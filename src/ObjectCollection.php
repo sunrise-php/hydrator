@@ -25,26 +25,30 @@ use function sprintf;
 
 /**
  * ObjectCollection
+ *
+ * @template T
  */
 abstract class ObjectCollection implements ObjectCollectionInterface, JsonSerializable
 {
 
     /**
-     * The type of objects in the collection
+     * The collection type
      *
-     * @var class-string
+     * @var class-string<T>
      */
     public const T = null;
 
     /**
      * The collection objects
      *
-     * @var array<array-key, object>
+     * @var array<array-key, T>
      */
     private $objects = [];
 
     /**
-     * {@inheritdoc}
+     * Gets the collection type
+     *
+     * @return class-string<T>
      *
      * @throws RuntimeException
      *         If the called class doesn't contain the T constant.
@@ -62,7 +66,27 @@ abstract class ObjectCollection implements ObjectCollectionInterface, JsonSerial
     }
 
     /**
-     * {@inheritdoc}
+     * Checks by the given key if an object exists in the collection
+     *
+     * @param array-key $key
+     *
+     * @return bool
+     */
+    public function has($key) : bool
+    {
+        return isset($this->objects[$key]);
+    }
+
+    /**
+     * Adds the given object to the collection with the given key
+     *
+     * @param array-key $key
+     * @param T $object
+     *
+     * @return void
+     *
+     * @throws InvalidArgumentException
+     *         If the object cannot be added to the collection.
      */
     final public function add($key, object $object) : void
     {
@@ -80,7 +104,11 @@ abstract class ObjectCollection implements ObjectCollectionInterface, JsonSerial
     }
 
     /**
-     * {@inheritdoc}
+     * Gets an object from the collection by the given key
+     *
+     * @param array-key $key
+     *
+     * @return T|null
      */
     final public function get($key) : ?object
     {
@@ -88,7 +116,9 @@ abstract class ObjectCollection implements ObjectCollectionInterface, JsonSerial
     }
 
     /**
-     * {@inheritdoc}
+     * Gets all objects from the collection
+     *
+     * @return array<array-key, T>
      */
     final public function all() : array
     {
@@ -96,7 +126,9 @@ abstract class ObjectCollection implements ObjectCollectionInterface, JsonSerial
     }
 
     /**
-     * {@inheritdoc}
+     * Checks if the collection is empty
+     *
+     * @return bool
      */
     final public function isEmpty() : bool
     {
