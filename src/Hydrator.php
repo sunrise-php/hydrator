@@ -16,8 +16,13 @@ namespace Sunrise\Hydrator;
  */
 use Doctrine\Common\Annotations\SimpleAnnotationReader;
 use Sunrise\Hydrator\Annotation\Alias;
+use BackedEnum;
+use DateInterval;
+use DateTime;
+use DateTimeImmutable;
 use InvalidArgumentException;
 use ReflectionClass;
+use ReflectionEnum;
 use ReflectionProperty;
 use ReflectionNamedType;
 use ReflectionUnionType;
@@ -29,6 +34,8 @@ use function array_key_exists;
 use function class_exists;
 use function ctype_digit;
 use function filter_var;
+use function get_object_vars;
+use function implode;
 use function is_array;
 use function is_bool;
 use function is_float;
@@ -50,6 +57,7 @@ use const FILTER_VALIDATE_BOOLEAN;
 use const FILTER_VALIDATE_FLOAT;
 use const FILTER_VALIDATE_INT;
 use const JSON_ERROR_NONE;
+use const JSON_OBJECT_AS_ARRAY;
 use const PHP_MAJOR_VERSION;
 
 /**
@@ -59,24 +67,28 @@ class Hydrator implements HydratorInterface
 {
 
     /**
-     * @var array<string, string>
+     * @var bool
      */
-    private const PROPERTY_HYDRATOR_MAP = [
-        'bool' => 'hydratePropertyWithBooleanValue',
-        'int' => 'hydratePropertyWithIntegerNumber',
-        'float' => 'hydratePropertyWithNumber',
-        'string' => 'hydratePropertyWithString',
-        'array' => 'hydratePropertyWithArray',
-        'object' => 'hydratePropertyWithObject',
-        'DateTime' => 'hydratePropertyWithTimestamp',
-        'DateTimeImmutable' => 'hydratePropertyWithTimestamp',
-        'DateInterval' => 'hydratePropertyWithInterval',
-    ];
+    private $aliasSupport = true;
 
     /**
      * @var SimpleAnnotationReader|null
      */
     private $annotationReader = null;
+
+    /**
+     * Enables or disables the alias support mechanism
+     *
+     * @param bool $enabled
+     *
+     * @return self
+     */
+    public function aliasSupport(bool $enabled) : self
+    {
+        $this->aliasSupport = $enabled;
+
+        return $this;
+    }
 
     /**
      * Enables support for annotations
@@ -85,9 +97,11 @@ class Hydrator implements HydratorInterface
      */
     public function useAnnotations() : self
     {
+        // @codeCoverageIgnoreStart
         if (isset($this->annotationReader)) {
             return $this;
         }
+        // @codeCoverageIgnoreEnd
 
         if (class_exists(SimpleAnnotationReader::class)) {
             $this->annotationReader = /** @scrutinizer ignore-deprecated */ new SimpleAnnotationReader();
@@ -98,7 +112,18 @@ class Hydrator implements HydratorInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Hydrates the given object with the given data
+     *
+     * @param class-string<T>|T $object
+     * @param array|object $data
+     *
+     * @return T
+     *
+     * @throws Exception\HydrationException
+     *         If the object cannot be hydrated.
+     *
+     * @throws InvalidArgumentException
+     *         If the data isn't valid.
      *
      * @throws Exception\UntypedPropertyException
      *         If one of the object properties isn't typed.
@@ -111,9 +136,22 @@ class Hydrator implements HydratorInterface
      *
      * @throws Exception\InvalidValueException
      *         If the given data contains an invalid value.
+     *
+     * @template T
      */
-    public function hydrate($object, array $data) : object
+    public function hydrate($object, $data) : object
     {
+        if (is_object($data)) {
+            $data = get_object_vars($data);
+        }
+
+        if (!is_array($data)) {
+            throw new InvalidArgumentException(sprintf(
+                'The %s(data) parameter expects an associative array or object.',
+                __METHOD__
+            ));
+        }
+
         $object = $this->initializeObject($object);
 
         $class = new ReflectionClass($object);
@@ -143,7 +181,7 @@ class Hydrator implements HydratorInterface
             }
 
             $key = $property->getName();
-            if (!array_key_exists($key, $data)) {
+            if ($this->aliasSupport && !array_key_exists($key, $data)) {
                 $alias = $this->getPropertyAlias($property);
                 if (isset($alias)) {
                     $key = $alias->value;
@@ -169,15 +207,30 @@ class Hydrator implements HydratorInterface
     }
 
     /**
-     * {@inheritdoc}
+     * Hydrates the given object with the given JSON
+     *
+     * @param class-string<T>|T $object
+     * @param string $json
+     * @param ?int $flags
+     *
+     * @return T
+     *
+     * @throws Exception\HydrationException
+     *         If the object cannot be hydrated.
      *
      * @throws InvalidArgumentException
-     *         If the given JSON cannot be decoded.
+     *         If the JSON cannot be decoded.
+     *
+     * @template T
      */
-    public function hydrateWithJson($object, string $json, int $options = 0) : object
+    public function hydrateWithJson($object, string $json, ?int $flags = null) : object
     {
-        json_decode(''); // reset previous error...
-        $data = (array) json_decode($json, true, 512, $options);
+        if (null === $flags) {
+            $flags = JSON_OBJECT_AS_ARRAY;
+        }
+
+        json_decode('');
+        $data = json_decode($json, null, 512, $flags);
         if (JSON_ERROR_NONE <> json_last_error()) {
             throw new InvalidArgumentException(sprintf(
                 'Unable to decode JSON: %s',
@@ -191,12 +244,14 @@ class Hydrator implements HydratorInterface
     /**
      * Initializes the given object
      *
-     * @param object|class-string $object
+     * @param class-string<T>|T $object
      *
-     * @return object
+     * @return T
      *
      * @throws InvalidArgumentException
-     *         If the given object cannot be initialized.
+     *         If the object cannot be initialized.
+     *
+     * @template T
      */
     private function initializeObject($object) : object
     {
@@ -206,7 +261,7 @@ class Hydrator implements HydratorInterface
 
         if (!is_string($object) || !class_exists($object)) {
             throw new InvalidArgumentException(sprintf(
-                'The method %s::hydrate() expects an object or name of an existing class.',
+                'The %s::hydrate() method expects an object or name of an existing class.',
                 __CLASS__
             ));
         }
@@ -215,11 +270,12 @@ class Hydrator implements HydratorInterface
         $constructor = $class->getConstructor();
         if (isset($constructor) && $constructor->getNumberOfRequiredParameters() > 0) {
             throw new InvalidArgumentException(sprintf(
-                'The object %s cannot be hydrated because its constructor has required parameters.',
+                'The %s object cannot be hydrated because its constructor has required parameters.',
                 $class->getName()
             ));
         }
 
+        /** @var T */
         return $class->newInstance();
     }
 
@@ -273,6 +329,7 @@ class Hydrator implements HydratorInterface
         ReflectionNamedType $type,
         $value
     ) : void {
+        // an empty string for a non-string type is always processes as null...
         if ('' === $value && 'string' !== $type->getName()) {
             $value = null;
         }
@@ -282,8 +339,53 @@ class Hydrator implements HydratorInterface
             return;
         }
 
-        if (isset(self::PROPERTY_HYDRATOR_MAP[$type->getName()])) {
-            $this->{self::PROPERTY_HYDRATOR_MAP[$type->getName()]}($object, $class, $property, $type, $value);
+        if ('bool' === $type->getName()) {
+            $this->hydratePropertyWithBool($object, $class, $property, $type, $value);
+            return;
+        }
+
+        if ('int' === $type->getName()) {
+            $this->hydratePropertyWithInt($object, $class, $property, $type, $value);
+            return;
+        }
+
+        if ('float' === $type->getName()) {
+            $this->hydratePropertyWithFloat($object, $class, $property, $type, $value);
+            return;
+        }
+
+        if ('string' === $type->getName()) {
+            $this->hydratePropertyWithString($object, $class, $property, $type, $value);
+            return;
+        }
+
+        if ('array' === $type->getName()) {
+            $this->hydratePropertyWithArray($object, $class, $property, $type, $value);
+            return;
+        }
+
+        if ('object' === $type->getName()) {
+            $this->hydratePropertyWithObject($object, $class, $property, $type, $value);
+            return;
+        }
+
+        if (DateTime::class === $type->getName()) {
+            $this->hydratePropertyWithDateTime($object, $class, $property, $type, $value);
+            return;
+        }
+
+        if (DateTimeImmutable::class === $type->getName()) {
+            $this->hydratePropertyWithDateTime($object, $class, $property, $type, $value);
+            return;
+        }
+
+        if (DateInterval::class === $type->getName()) {
+            $this->hydratePropertyWithDateInterval($object, $class, $property, $type, $value);
+            return;
+        }
+
+        if (is_subclass_of($type->getName(), BackedEnum::class)) {
+            $this->hydratePropertyWithBackedEnum($object, $class, $property, $type, $value);
             return;
         }
 
@@ -349,7 +451,7 @@ class Hydrator implements HydratorInterface
      * @throws Exception\InvalidValueException
      *         If the given value isn't valid.
      */
-    private function hydratePropertyWithBooleanValue(
+    private function hydratePropertyWithBool(
         object $object,
         ReflectionClass $class,
         ReflectionProperty $property,
@@ -364,7 +466,7 @@ class Hydrator implements HydratorInterface
 
             if (!isset($value)) {
                 throw new Exception\InvalidValueException($property, sprintf(
-                    'The %s.%s property accepts a boolean value only.',
+                    'The %s.%s property expects a boolean.',
                     $class->getShortName(),
                     $property->getName()
                 ));
@@ -388,7 +490,7 @@ class Hydrator implements HydratorInterface
      * @throws Exception\InvalidValueException
      *         If the given value isn't valid.
      */
-    private function hydratePropertyWithIntegerNumber(
+    private function hydratePropertyWithInt(
         object $object,
         ReflectionClass $class,
         ReflectionProperty $property,
@@ -405,7 +507,7 @@ class Hydrator implements HydratorInterface
 
             if (!isset($value)) {
                 throw new Exception\InvalidValueException($property, sprintf(
-                    'The %s.%s property accepts an integer number only.',
+                    'The %s.%s property expects an integer.',
                     $class->getShortName(),
                     $property->getName()
                 ));
@@ -429,7 +531,7 @@ class Hydrator implements HydratorInterface
      * @throws Exception\InvalidValueException
      *         If the given value isn't valid.
      */
-    private function hydratePropertyWithNumber(
+    private function hydratePropertyWithFloat(
         object $object,
         ReflectionClass $class,
         ReflectionProperty $property,
@@ -444,7 +546,7 @@ class Hydrator implements HydratorInterface
 
             if (!isset($value)) {
                 throw new Exception\InvalidValueException($property, sprintf(
-                    'The %s.%s property accepts a number only.',
+                    'The %s.%s property expects a number.',
                     $class->getShortName(),
                     $property->getName()
                 ));
@@ -477,7 +579,7 @@ class Hydrator implements HydratorInterface
     ) : void {
         if (!is_string($value)) {
             throw new Exception\InvalidValueException($property, sprintf(
-                'The %s.%s property accepts a string only.',
+                'The %s.%s property expects a string.',
                 $class->getShortName(),
                 $property->getName()
             ));
@@ -509,7 +611,7 @@ class Hydrator implements HydratorInterface
     ) : void {
         if (!is_array($value)) {
             throw new Exception\InvalidValueException($property, sprintf(
-                'The %s.%s property accepts an array only.',
+                'The %s.%s property expects an array.',
                 $class->getShortName(),
                 $property->getName()
             ));
@@ -541,7 +643,7 @@ class Hydrator implements HydratorInterface
     ) : void {
         if (!is_object($value)) {
             throw new Exception\InvalidValueException($property, sprintf(
-                'The %s.%s property accepts an object only.',
+                'The %s.%s property expects an object.',
                 $class->getShortName(),
                 $property->getName()
             ));
@@ -551,7 +653,7 @@ class Hydrator implements HydratorInterface
     }
 
     /**
-     * Hydrates the given property with the given timestamp
+     * Hydrates the given property with the given date-time
      *
      * @param object $object
      * @param ReflectionClass $class
@@ -564,34 +666,40 @@ class Hydrator implements HydratorInterface
      * @throws Exception\InvalidValueException
      *         If the given value isn't valid.
      */
-    private function hydratePropertyWithTimestamp(
+    private function hydratePropertyWithDateTime(
         object $object,
         ReflectionClass $class,
         ReflectionProperty $property,
         ReflectionNamedType $type,
         $value
     ) : void {
-        $prototype = $type->getName();
+        /** @var class-string<DateTime|DateTimeImmutable> */
+        $className = $type->getName();
 
-        if (is_int($value) || ctype_digit($value)) {
-            $property->setValue($object, (new $prototype)->setTimestamp((int) $value));
+        if (is_int($value)) {
+            $property->setValue($object, (new $className)->setTimestamp($value));
+            return;
+        }
+
+        if (is_string($value) && ctype_digit($value)) {
+            $property->setValue($object, (new $className)->setTimestamp((int) $value));
             return;
         }
 
         if (is_string($value) && false !== strtotime($value)) {
-            $property->setValue($object, new $prototype($value));
+            $property->setValue($object, new $className($value));
             return;
         }
 
         throw new Exception\InvalidValueException($property, sprintf(
-            'The %s.%s property accepts a valid date-time string or a timestamp only.',
+            'The %s.%s property expects a valid date-time string or timestamp.',
             $class->getShortName(),
             $property->getName()
         ));
     }
 
     /**
-     * Hydrates the given property with the given interval
+     * Hydrates the given property with the given date-interval
      *
      * @param object $object
      * @param ReflectionClass $class
@@ -604,7 +712,7 @@ class Hydrator implements HydratorInterface
      * @throws Exception\InvalidValueException
      *         If the given value isn't valid.
      */
-    private function hydratePropertyWithInterval(
+    private function hydratePropertyWithDateInterval(
         object $object,
         ReflectionClass $class,
         ReflectionProperty $property,
@@ -613,29 +721,30 @@ class Hydrator implements HydratorInterface
     ) : void {
         if (!is_string($value)) {
             throw new Exception\InvalidValueException($property, sprintf(
-                'The %s.%s property accepts a string only.',
+                'The %s.%s property expects a string.',
                 $class->getShortName(),
                 $property->getName()
             ));
         }
 
-        $prototype = $type->getName();
+        /** @var class-string<DateInterval> */
+        $className = $type->getName();
 
         try {
-            $interval = new $prototype($value);
+            $dateInterval = new $className($value);
         } catch (\Exception $e) {
             throw new Exception\InvalidValueException($property, sprintf(
-                'The %s.%s property accepts a valid interval based on ISO 8601.',
+                'The %s.%s property expects a valid date-interval string based on ISO 8601.',
                 $class->getShortName(),
                 $property->getName()
             ));
         }
 
-        $property->setValue($object, $interval);
+        $property->setValue($object, $dateInterval);
     }
 
     /**
-     * Hydrates the given property with the given many associations
+     * Hydrates the given property with the given backed-enum
      *
      * @param object $object
      * @param ReflectionClass $class
@@ -648,36 +757,52 @@ class Hydrator implements HydratorInterface
      * @throws Exception\InvalidValueException
      *         If the given value isn't valid.
      */
-    private function hydratePropertyWithManyAssociations(
+    private function hydratePropertyWithBackedEnum(
         object $object,
         ReflectionClass $class,
         ReflectionProperty $property,
         ReflectionNamedType $type,
         $value
     ) : void {
-        if (!is_array($value)) {
+        /** @var class-string<BackedEnum> */
+        $enumName = $type->getName();
+        $enumReflection = new ReflectionEnum($enumName);
+
+        /** @var ReflectionNamedType */
+        $enumType = $enumReflection->getBackingType();
+        $enumTypeName = $enumType->getName();
+
+        // support for HTML forms...
+        if ('int' === $enumTypeName && is_string($value)) {
+            $value = filter_var($value, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE);
+        }
+
+        if (('int' === $enumTypeName && !is_int($value)) ||
+            ('string' === $enumTypeName && !is_string($value))) {
             throw new Exception\InvalidValueException($property, sprintf(
-                'The %s.%s property accepts an array only.',
+                'The %s.%s property expects the following type: %s.',
                 $class->getShortName(),
-                $property->getName()
+                $property->getName(),
+                $enumTypeName
             ));
         }
 
-        $prototype = $type->getName();
-        $collection = new $prototype();
-        foreach ($value as $key => $item) {
-            if (!is_array($item)) {
-                throw new Exception\InvalidValueException($property, sprintf(
-                    'The %s.%s property accepts an array with arrays only.',
-                    $class->getShortName(),
-                    $property->getName()
-                ));
+        $enum = $enumName::tryFrom($value);
+        if (!isset($enum)) {
+            $allowedCases = [];
+            foreach ($enumName::cases() as $case) {
+                $allowedCases[] = $case->value;
             }
 
-            $collection->add($key, $this->hydrate($collection->getItemClassName(), $item));
+            throw new Exception\InvalidValueException($property, sprintf(
+                'The %s.%s property expects one of the following values: %s.',
+                $class->getShortName(),
+                $property->getName(),
+                implode(', ', $allowedCases)
+            ));
         }
 
-        $property->setValue($object, $collection);
+        $property->setValue($object, $enum);
     }
 
     /**
@@ -701,14 +826,61 @@ class Hydrator implements HydratorInterface
         ReflectionNamedType $type,
         $value
     ) : void {
-        if (!is_array($value)) {
+        if (!is_array($value) && !is_object($value)) {
             throw new Exception\InvalidValueException($property, sprintf(
-                'The %s.%s property accepts an array only.',
+                'The %s.%s property expects an associative array or object.',
                 $class->getShortName(),
                 $property->getName()
             ));
         }
 
         $property->setValue($object, $this->hydrate($type->getName(), $value));
+    }
+
+    /**
+     * Hydrates the given property with the given many associations
+     *
+     * @param object $object
+     * @param ReflectionClass $class
+     * @param ReflectionProperty $property
+     * @param ReflectionNamedType $type
+     * @param mixed $value
+     *
+     * @return void
+     *
+     * @throws Exception\InvalidValueException
+     *         If the given value isn't valid.
+     */
+    private function hydratePropertyWithManyAssociations(
+        object $object,
+        ReflectionClass $class,
+        ReflectionProperty $property,
+        ReflectionNamedType $type,
+        $value
+    ) : void {
+        if (!is_array($value) && !is_object($value)) {
+            throw new Exception\InvalidValueException($property, sprintf(
+                'The %s.%s property expects an associative array or object.',
+                $class->getShortName(),
+                $property->getName()
+            ));
+        }
+
+        $className = $type->getName();
+        $collection = new $className();
+        foreach ($value as $key => $child) {
+            if (!is_array($child) && !is_object($child)) {
+                throw new Exception\InvalidValueException($property, sprintf(
+                    'The %s.%s[%s] property expects an associative array or object.',
+                    $class->getShortName(),
+                    $property->getName(),
+                    $key
+                ));
+            }
+
+            $collection->add($key, $this->hydrate($collection->getItemClassName(), $child));
+        }
+
+        $property->setValue($object, $collection);
     }
 }
