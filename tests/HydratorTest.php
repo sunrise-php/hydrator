@@ -462,6 +462,10 @@ class HydratorTest extends TestCase
 
     public function stringableEnumValueProvider() : array
     {
+        if (\PHP_VERSION_ID < 80100) {
+            return [];
+        }
+
         return [
             ['c1200a7e-136e-4a11-9bc3-cc937046e90f', Fixtures\StringableEnum::foo],
             ['a2b29b37-1c5a-4b36-9981-097ddd25c740', Fixtures\StringableEnum::bar],
@@ -512,6 +516,10 @@ class HydratorTest extends TestCase
 
     public function numerableEnumValueProvider() : array
     {
+        if (\PHP_VERSION_ID < 80100) {
+            return [];
+        }
+
         return [
             [1, Fixtures\NumerableEnum::foo],
             [2, Fixtures\NumerableEnum::bar],
