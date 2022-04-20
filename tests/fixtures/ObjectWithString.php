@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Hydrator\Tests\Fixtures;
 
-final class ObjectWithAnnotatedProperty
+final class ObjectWithString
 {
-
-    /** @Alias("non-normalized-value") */
     public string $value;
 }

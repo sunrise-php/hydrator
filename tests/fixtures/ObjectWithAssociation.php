@@ -6,5 +6,5 @@ namespace Sunrise\Hydrator\Tests\Fixtures;
 
 final class ObjectWithAssociation
 {
-    public Bar $value;
+    public ObjectWithString $value;
 }

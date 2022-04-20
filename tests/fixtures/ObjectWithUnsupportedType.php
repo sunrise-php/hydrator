@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Hydrator\Tests\Fixtures;
 
-final class ObjectWithUnionPropertyType
+final class ObjectWithUnsupportedType
 {
-    public int|float $value;
+    public iterable $value;
 }

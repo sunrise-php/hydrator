@@ -6,7 +6,7 @@ namespace Sunrise\Hydrator\Tests\Fixtures;
 
 use DateTimeImmutable;
 
-final class ObjectWithTimestampProperty
+final class ObjectWithDateTimeImmutable
 {
     public DateTimeImmutable $value;
 }
