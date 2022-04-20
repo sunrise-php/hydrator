@@ -1,6 +1,6 @@
-# Strongly typed hydrator for PHP 7.4+
+# Strongly typed hydrator for PHP 7.4+ with support for PHP 8.1 enums
 
-> Great tool for your DTOs...
+**hydrator**, **mapper**, **dto**, **enum**
 
 [![Build Status](https://circleci.com/gh/sunrise-php/hydrator.svg?style=shield)](https://circleci.com/gh/sunrise-php/hydrator)
 [![Code Coverage](https://scrutinizer-ci.com/g/sunrise-php/hydrator/badges/coverage.png?b=main)](https://scrutinizer-ci.com/g/sunrise-php/hydrator/?branch=main)
@@ -14,100 +14,346 @@
 ## Installation
 
 ```bash
-composer require 'sunrise/hydrator:^2.1'
+composer require sunrise/hydrator
 ```
 
 ## How to use?
 
 ```php
-// hydrate an object with array:
-$object = (new \Sunrise\Hydrator\Hydrator)->hydrate(Foo::class, $data);
+use Sunrise\Hydrator\Hydrator;
 
-// or you can hydrate the object with JSON:
-$object = (new \Sunrise\Hydrator\Hydrator)->hydrateWithJson(Foo::class, $json, $options = 0);
+$hydrator = new Hydrator();
 
-// output the result:
-var_dump($object);
+// disable support for alias mechanism
+// available since version v2.5.0
+$hydrator->aliasSupport(false);
+
+// enable support for annotations
+// for php8 it is recommended to use attributes
+$hydrator->useAnnotations();
+
+// create and hydrate an object with an array
+$data = [/* the class props here */];
+$object = $hydrator->hydrate(SomeDto::class, $data);
+
+// hydrate an object with an array
+$data = [/* the class props here */];
+$hydrator->hydrate($object, $data);
+
+// creates and hydrate an object with JSON
+$json = '';
+$object = $hydrator->hydrateWithJson(SomeDto::class, $json);
+
+// hydrate an object with JSON
+$json = '';
+$hydrator->hydrateWithJson($object, $json);
+
+// pass JSON decoding flags
+$options = JSON_OBJECT_AS_ARRAY|JSON_BIGINT_AS_STRING;
+$hydrator->hydrateWithJson($object, $json, $options);
+```
+
+## Allowed property types
+
+### Required
+
+If a property has no a default value, then the property is required.
+
+```php
+public readonly string $value;
+```
+
+### Optional
+
+If a property has a default value, then the property is optional.
+
+```php
+public readonly string $value = 'foo';
+```
+
+### Null
+
+If a property is nullable, then the property can accept null.
+
+```php
+public readonly ?string $value;
+```
+
+If the property should be optional, then it must has a default value.
+
+```php
+public readonly ?string $value = null;
+```
+
+### Boolean
+
+Accepts the following values: true, false, 1, 0, "1", "0", "yes", "no", "on" and "no".
+
+```php
+public readonly bool $value;
 ```
 
 ```php
-final class Foo
-{
-    // statical properties will ignored
-    public static string $statical = '50f4e382-2858-4991-b045-a121004cec80';
+['value' => true];
+['value' => 'yes'];
+```
 
-    private ?string $nullable = 'ed0110a9-01ac-4f75-a205-223c98d2d2b5';
-    private string $valuable = '5bf11aa0-08b3-4429-a6d7-4ebf6d70919c';
-    private string $required;
+## Integer
 
-    private bool $boolean; // also accepts strings (1, on, yes, etc.)
-    private int $integer; // also accepts string numbers
-    private float $number; // also accepts string numbers
-    private string $string;
-    private array $array;
-    private object $object;
+Accepts only integers (also as a string).
 
-    private \DateTime $dateTime; // accepts timestamps and string date-time
-    private \DateTimeImmutable $dateTimeImmutable; // accepts timestamps and string date-time
+```php
+public readonly int $value;
+```
 
-    private Bar $bar; // see bellow...
-    private BarCollection $barCollection; // see bellow...
+```php
+['value' => 42];
+['value' => '42'];
+```
 
-    private DateInterval $duration; // see ISO 8601, e.g. "P3Y6M4DT12H30M5S"
+## Number<int|float>
 
-    /**
-     * @Alias("non-normalized")
-     */
-    #[Alias('non-normalized')]
-    private string $normalized;
+Accepts only numbers (also as a string).
 
-    // getters...
+```php
+public readonly float $value;
+```
+
+```php
+['value' => 42.0];
+['value' => '42.0'];
+```
+
+## String
+
+Accepts only strings.
+
+```php
+public readonly string $value;
+```
+
+```php
+['value' => 'foo'];
+```
+
+## Array<array-key, mixed>
+
+Accepts only arrays.
+
+```php
+public readonly array $value;
+```
+
+```php
+['value' => []];
+```
+
+## Object
+
+Accepts only objects.
+
+```php
+public readonly object $value;
+```
+
+```php
+['value' => new stdClass];
+```
+
+## DateTime/DateTimeImmutable
+
+Integers (also as a string) will be handled as a timestamp, otherwise accepts only valid date-time strings.
+
+```php
+public readonly DateTimeImmutable $value;
+```
+
+```php
+// 2010-01-01
+['value' => 1262304000];
+// 2010-01-01
+['value' => '1262304000'];
+// normal date
+['value' => '2010-01-01'];
+```
+
+## DateInterval
+
+Accepts only valid date-interval strings based on ISO 8601.
+
+```php
+public readonly DateInterval $value;
+```
+
+```php
+['value' => 'P1Y']
+```
+
+## Enum<BackedEnum>
+
+Accepts only values that exist in an enum.
+
+```php
+enum SomeEnum: int {
+    case foo = 0;
+    case bar = 1;
 }
 ```
 
 ```php
-final class Bar
-{
-    public string $value;
+public readonly SomeEnum $value;
+```
+
+```php
+['value' => 0]
+['value' => '1']
+```
+
+## Association
+
+Accepts a valid structure for an association
+
+```php
+final class SomeDto {
+    public readonly string $value;
 }
 ```
+
+```php
+public readonly SomeDto $value;
+```
+
+```php
+[
+    'value' => [
+        'value' => 'foo',
+    ],
+]
+```
+
+## AssociationCollection<ObjectCollectionInterface<T>>
+
+Accepts a list of an association's valid structures.
 
 ```php
 use Sunrise\Hydrator\ObjectCollection;
 
-final class BarCollection extends ObjectCollection
-{
-    // the collection will contain only the specified objects
-    public const T = Bar::class;
+final class SomeCollection extends ObjectCollection {
+    public const T = SomeDto::class;
+}
+
+final class SomeDto {
+    public readonly string $value;
 }
 ```
 
 ```php
-$data = [
-    'statical' => '813ea72c-6763-4596-a4d6-b478efed61bb',
-    'nullable' => null,
-    'required' => '9f5c273e-1dca-4c2d-ac81-7d6b03b169f4',
-    'boolean' => true,
-    'integer' => 42,
-    'number' => 123.45,
-    'string' => 'db7614d4-0a81-437b-b2cf-c536ad229c97',
-    'array' => ['foo' => 'bar'],
-    'object' => (object) ['foo' => 'bar'],
-    'dateTime' => '2038-01-19 03:14:08',
-    'dateTimeImmutable' => '2038-01-19 03:14:08',
-    'bar' => [
-        'value' => '9898fb3b-ffb0-406c-bda6-b516423abde7',
-    ],
-    'barCollection' => [
+public readonly SomeCollection $value;
+```
+
+```php
+[
+    'value' => [
         [
-            'value' => 'd85c17b6-6e2c-4e2d-9eba-e1dd59b75fe3',
+            'value' => 'foo',
         ],
         [
-            'value' => '5a8019aa-1c15-4c7c-8beb-1783c3d8996b',
+            'value' => 'bar',
         ],
     ],
-    'non-normalized' => 'f76c4656-431a-4337-9ba9-5440611b37f1',
-];
+],
+```
+
+## Property alias
+
+If you need to get a non-normalized key, use aliases.
+
+For example, the Google Recaptcha API returns the following response:
+
+```json
+{
+    "success": false,
+    "error-codes": []
+}
+```
+
+To correctly map the response, use the following model:
+
+```php
+use Sunrise\Hydrator\Annotation\Alias;
+
+final class RecaptchaVerificationResult {
+    public bool $success;
+
+    #[Alias('error-codes')]
+    public array $errorCodes = [];
+}
+```
+
+Please note, if you are using PHP 7 then you need to enable annotation support and use the following model:
+
+```php
+$hydrator->useAnnotations();
+```
+
+```php
+use Sunrise\Hydrator\Annotation\Alias;
+
+final class RecaptchaVerificationResult {
+    public bool $success;
+
+    /**
+     * @Alias("error-codes")
+     */
+    public array $errorCodes = [];
+}
+```
+
+## Examples
+
+```php
+final class Product {
+    public readonly string $name;
+    public readonly Category $category;
+    public readonly TagCollection $tags;
+    public readonly Status $status;
+}
+
+final class Category {
+    public readonly string $name;
+}
+
+final class TagCollection extends \Sunrise\Hydrator\ObjectCollection {
+    // the collection will only accept this type
+    public const T = Tag::class;
+}
+
+final class Tag {
+    public readonly string $name;
+}
+
+enum Status: int {
+    case ENABLED = 1;
+    case DISABLED = 0;
+}
+```
+
+```php
+$product = $hydrator->hydrate(Product::class, [
+    'name' => 'Stool',
+    'category' => [
+        'name' => 'Furniture',
+    ],
+    'tags' => [
+        [
+            'name' => 'Wood',
+        ],
+        [
+            'name' => 'Lacquered',
+        ],
+    ],
+    'status' => 0,
+]);
 ```
 
 ---
