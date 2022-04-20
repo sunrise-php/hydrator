@@ -451,6 +451,10 @@ class HydratorTest extends TestCase
      */
     public function testHydrateStringableEnumProperty($value, $expected) : void
     {
+        if (\PHP_VERSION_ID < 80100) {
+            $this->markTestSkipped('php >= 8.1 is required.');
+        }
+
         $object = (new Hydrator)->hydrate(Fixtures\ObjectWithStringableEnum::class, ['value' => $value]);
 
         $this->assertSame($expected, $object->value);
@@ -467,6 +471,10 @@ class HydratorTest extends TestCase
 
     public function testHydrateStringableEnumPropertyWithInvalidValue() : void
     {
+        if (\PHP_VERSION_ID < 80100) {
+            $this->markTestSkipped('php >= 8.1 is required.');
+        }
+
         $this->expectException(Exception\InvalidValueException::class);
         $this->expectExceptionMessage('The ObjectWithStringableEnum.value property ' .
                                       'expects the following type: string.');
@@ -476,6 +484,10 @@ class HydratorTest extends TestCase
 
     public function testHydrateStringableEnumPropertyWithInvalidUnknownCase() : void
     {
+        if (\PHP_VERSION_ID < 80100) {
+            $this->markTestSkipped('php >= 8.1 is required.');
+        }
+
         $this->expectException(Exception\InvalidValueException::class);
         $this->expectExceptionMessage('The ObjectWithStringableEnum.value property ' .
                                       'expects one of the following values: ' .
@@ -489,6 +501,10 @@ class HydratorTest extends TestCase
      */
     public function testHydrateNumerableEnumProperty($value, $expected) : void
     {
+        if (\PHP_VERSION_ID < 80100) {
+            $this->markTestSkipped('php >= 8.1 is required.');
+        }
+
         $object = (new Hydrator)->hydrate(Fixtures\ObjectWithNumerableEnum::class, ['value' => $value]);
 
         $this->assertSame($expected, $object->value);
@@ -510,6 +526,10 @@ class HydratorTest extends TestCase
 
     public function testHydrateNumerableEnumPropertyWithInvalidValue() : void
     {
+        if (\PHP_VERSION_ID < 80100) {
+            $this->markTestSkipped('php >= 8.1 is required.');
+        }
+
         $this->expectException(Exception\InvalidValueException::class);
         $this->expectExceptionMessage('The ObjectWithNumerableEnum.value property ' .
                                       'expects the following type: int.');
@@ -519,6 +539,10 @@ class HydratorTest extends TestCase
 
     public function testHydrateNumerableEnumPropertyWithInvalidUnknownCase() : void
     {
+        if (\PHP_VERSION_ID < 80100) {
+            $this->markTestSkipped('php >= 8.1 is required.');
+        }
+
         $this->expectException(Exception\InvalidValueException::class);
         $this->expectExceptionMessage('The ObjectWithNumerableEnum.value property ' .
                                       'expects one of the following values: ' .
