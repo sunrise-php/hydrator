@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Hydrator\Tests\Fixtures;
 
-final class ObjectWithObjectProperty
+final class ObjectWithInt
 {
-    public object $value;
+    public int $value;
 }

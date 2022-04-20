@@ -6,7 +6,7 @@ namespace Sunrise\Hydrator\Tests\Fixtures;
 
 use Sunrise\Hydrator\ObjectCollection;
 
-final class BarCollection extends ObjectCollection
+final class ObjectWithStringCollection extends ObjectCollection
 {
-    public const T = Bar::class;
+    public const T = ObjectWithString::class;
 }

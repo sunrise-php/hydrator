@@ -6,7 +6,7 @@ namespace Sunrise\Hydrator\Tests\Fixtures;
 
 use DateInterval;
 
-final class Baz
+final class ObjectWithDateInterval
 {
-    public DateInterval $duration;
+    public DateInterval $value;
 }

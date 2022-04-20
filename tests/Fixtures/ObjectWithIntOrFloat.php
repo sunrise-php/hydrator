@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Hydrator\Tests\Fixtures;
 
-final class ObjectWithBooleanProperty
+final class ObjectWithIntOrFloat
 {
-    public bool $value;
+    public int|float $value;
 }

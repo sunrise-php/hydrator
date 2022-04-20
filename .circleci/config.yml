@@ -6,19 +6,27 @@ version: 2
 jobs:
   php74:
     docker:
-      - image: circleci/php:7.4-cli-node-browsers
+      - image: cimg/php:7.4
     steps:
       - checkout
       - run: php -v
-      - run: composer install --no-interaction --no-suggest --prefer-source
+      - run: composer install --no-interaction
       - run: XDEBUG_MODE=coverage php vendor/bin/phpunit --coverage-text
   php80:
     docker:
-      - image: circleci/php:8.0-cli-node-browsers
+      - image: cimg/php:8.0
     steps:
       - checkout
       - run: php -v
-      - run: composer install --no-interaction --no-suggest --prefer-source
+      - run: composer install --no-interaction
+      - run: XDEBUG_MODE=coverage php vendor/bin/phpunit --coverage-text
+  php81:
+    docker:
+      - image: cimg/php:8.1
+    steps:
+      - checkout
+      - run: php -v
+      - run: composer install --no-interaction
       - run: XDEBUG_MODE=coverage php vendor/bin/phpunit --coverage-text
 workflows:
   version: 2
@@ -26,3 +34,4 @@ workflows:
     jobs:
       - php74
       - php80
+      - php81

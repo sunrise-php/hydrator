@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Hydrator\Tests\Fixtures;
 
-final class ObjectWithAssociations
+final class ObjectWithUnsupportedType
 {
-    public BarCollection $value;
+    public iterable $value;
 }

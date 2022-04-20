@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Sunrise\Hydrator\Tests\Fixtures;
 
-final class ObjectWithIntegerProperty
+use DateTime;
+
+final class ObjectWithDateTime
 {
-    public int $value;
+    public DateTime $value;
 }

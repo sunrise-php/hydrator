@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Hydrator\Tests\Fixtures;
 
-final class ObjectWithRequiredProperty
+final class ObjectWithStringableEnum
 {
-    public string $value;
+    public readonly StringableEnum $value;
 }
