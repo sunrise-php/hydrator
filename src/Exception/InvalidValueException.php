@@ -18,6 +18,11 @@ use ReflectionProperty;
 use Throwable;
 
 /**
+ * Import functions
+ */
+use function sprintf;
+
+/**
  * InvalidValueException
  */
 class InvalidValueException extends HydrationException
@@ -44,11 +49,10 @@ class InvalidValueException extends HydrationException
         int $code = 0,
         ?Throwable $previous = null
     ) {
-        $property->setAccessible(false);
-
-        $this->property = $property;
-
         parent::__construct($message, $code, $previous);
+
+        $property->setAccessible(false);
+        $this->property = $property;
     }
 
     /**
@@ -59,5 +63,15 @@ class InvalidValueException extends HydrationException
     final public function getProperty() : ReflectionProperty
     {
         return $this->property;
+    }
+
+    /**
+     * Gets the problem property path
+     *
+     * @return string
+     */
+    final public function getPropertyPath() : string
+    {
+        return sprintf('%s.%s', $this->property->getDeclaringClass()->getShortName(), $this->property->getName());
     }
 }
