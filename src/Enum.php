@@ -129,7 +129,7 @@ abstract class Enum implements JsonSerializable
      *
      * @return static|null
      */
-    final public static function tryFrom($value): ?static
+    final public static function tryFrom($value)
     {
         foreach (self::cases() as $case) {
             if ($case->value == $value) {
@@ -149,7 +149,7 @@ abstract class Enum implements JsonSerializable
      *
      * @throws RuntimeException
      */
-    final public static function __callStatic(string $name, array $arguments = []): static
+    final public static function __callStatic(string $name, array $arguments = [])
     {
         foreach (self::cases() as $case) {
             if ($case->name === $name) {
@@ -163,6 +163,7 @@ abstract class Enum implements JsonSerializable
     /**
      * {@inheritdoc}
      */
+    #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {
         return $this->value;
