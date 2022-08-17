@@ -447,6 +447,38 @@ class HydratorTest extends TestCase
     }
 
     /**
+     * @dataProvider customEnumValueProvider
+     */
+    public function testHydrateCustomEnumContainedPropery($value, $expected) : void
+    {
+        $object = (new Hydrator)->hydrate(Fixtures\ObjectWithCustomEnum::class, ['value' => $value]);
+
+        $this->assertSame($expected, $object->value);
+    }
+
+    public function customEnumValueProvider() : array
+    {
+        return [
+            [1, Fixtures\CustomEnum::Int1()],
+            ['1', Fixtures\CustomEnum::Int1()],
+            [2, Fixtures\CustomEnum::Int2()],
+            ['2', Fixtures\CustomEnum::Int2()],
+            ['foo', Fixtures\CustomEnum::String1()],
+            ['bar', Fixtures\CustomEnum::String2()],
+        ];
+    }
+
+    public function testHydrateCustomEnumContainedProperyWithUnknownValue() : void
+    {
+        $this->expectException(Exception\InvalidValueException::class);
+        $this->expectExceptionMessage('The ObjectWithCustomEnum.value property ' .
+                                      'expects one of the following values: ' .
+                                      \implode(', ', Fixtures\CustomEnum::values()) . '.');
+
+        (new Hydrator)->hydrate(Fixtures\ObjectWithCustomEnum::class, ['value' => 'unknown']);
+    }
+
+    /**
      * @dataProvider stringableEnumValueProvider
      */
     public function testHydrateStringableEnumProperty($value, $expected) : void

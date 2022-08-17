@@ -209,6 +209,47 @@ public readonly SomeEnum $value;
 ['value' => '1']
 ```
 
+## Enum for PHP < 8.1
+
+Accepts only values that exist in an enum.
+
+```php
+use Sunrise\Hydrator\Enum;
+
+final class SomeEnum extends Enum {
+    public const foo = 0;
+    public const bar = 1;
+}
+```
+
+```php
+public SomeEnum $value;
+```
+
+```php
+['value' => 0]
+['value' => '1']
+```
+
+#### Useful to know
+
+```php
+// returns all cases of the enum
+SomeEnum::cases();
+
+// initializes the enum by the case's name
+$case = SomeEnum::foo();
+
+// initializes the enum by the case's value
+$case = SomeEnum::tryFrom(0);
+
+// gets the name of the enum's case
+$case->name()
+
+// gets the value of the enum's case
+$case->value()
+```
+
 ## Association
 
 Accepts a valid structure for an association

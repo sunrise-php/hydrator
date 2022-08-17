@@ -94,14 +94,14 @@ class Hydrator implements HydratorInterface
      * Enables support for annotations
      *
      * @return self
+     *
+     * @codeCoverageIgnoreStart
      */
     public function useAnnotations() : self
     {
-        // @codeCoverageIgnoreStart
         if (isset($this->annotationReader)) {
             return $this;
         }
-        // @codeCoverageIgnoreEnd
 
         if (class_exists(SimpleAnnotationReader::class)) {
             $this->annotationReader = /** @scrutinizer ignore-deprecated */ new SimpleAnnotationReader();
@@ -119,11 +119,11 @@ class Hydrator implements HydratorInterface
      *
      * @return T
      *
-     * @throws Exception\HydrationException
-     *         If the object cannot be hydrated.
-     *
      * @throws InvalidArgumentException
      *         If the data isn't valid.
+     *
+     * @throws Exception\HydrationException
+     *         If the object cannot be hydrated.
      *
      * @throws Exception\UntypedPropertyException
      *         If one of the object properties isn't typed.
@@ -215,20 +215,16 @@ class Hydrator implements HydratorInterface
      *
      * @return T
      *
-     * @throws Exception\HydrationException
-     *         If the object cannot be hydrated.
-     *
      * @throws InvalidArgumentException
      *         If the JSON cannot be decoded.
      *
+     * @throws Exception\HydrationException
+     *         If the object cannot be hydrated.
+     *
      * @template T
      */
-    public function hydrateWithJson($object, string $json, ?int $flags = null) : object
+    public function hydrateWithJson($object, string $json, ?int $flags = JSON_OBJECT_AS_ARRAY) : object
     {
-        if (null === $flags) {
-            $flags = JSON_OBJECT_AS_ARRAY;
-        }
-
         json_decode('');
         $data = json_decode($json, null, 512, $flags);
         if (JSON_ERROR_NONE <> json_last_error()) {
@@ -386,6 +382,11 @@ class Hydrator implements HydratorInterface
 
         if (is_subclass_of($type->getName(), BackedEnum::class)) {
             $this->hydratePropertyWithBackedEnum($object, $class, $property, $type, $value);
+            return;
+        }
+
+        if (is_subclass_of($type->getName(), Enum::class)) {
+            $this->hydratePropertyWithEnum($object, $class, $property, $type, $value);
             return;
         }
 
@@ -792,6 +793,48 @@ class Hydrator implements HydratorInterface
             $allowedCases = [];
             foreach ($enumName::cases() as $case) {
                 $allowedCases[] = $case->value;
+            }
+
+            throw new Exception\InvalidValueException($property, sprintf(
+                'The %s.%s property expects one of the following values: %s.',
+                $class->getShortName(),
+                $property->getName(),
+                implode(', ', $allowedCases)
+            ));
+        }
+
+        $property->setValue($object, $enum);
+    }
+
+    /**
+     * Hydrates the given property with the given enum
+     *
+     * @param object $object
+     * @param ReflectionClass $class
+     * @param ReflectionProperty $property
+     * @param ReflectionNamedType $type
+     * @param mixed $value
+     *
+     * @return void
+     *
+     * @throws Exception\InvalidValueException
+     *         If the given value isn't valid.
+     */
+    private function hydratePropertyWithEnum(
+        object $object,
+        ReflectionClass $class,
+        ReflectionProperty $property,
+        ReflectionNamedType $type,
+        $value
+    ) : void {
+        /** @var class-string<Enum> */
+        $enumName = $type->getName();
+
+        $enum = $enumName::tryFrom($value);
+        if (!isset($enum)) {
+            $allowedCases = [];
+            foreach ($enumName::cases() as $case) {
+                $allowedCases[] = $case->value();
             }
 
             throw new Exception\InvalidValueException($property, sprintf(

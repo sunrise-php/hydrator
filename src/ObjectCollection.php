@@ -72,7 +72,7 @@ abstract class ObjectCollection implements ObjectCollectionInterface, JsonSerial
      *
      * @return bool
      */
-    public function has($key) : bool
+    final public function has($key) : bool
     {
         return isset($this->objects[$key]);
     }
