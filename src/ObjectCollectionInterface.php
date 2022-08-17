@@ -12,11 +12,6 @@
 namespace Sunrise\Hydrator;
 
 /**
- * Import classes
- */
-use InvalidArgumentException;
-
-/**
  * ObjectCollectionInterface
  */
 interface ObjectCollectionInterface
