@@ -225,7 +225,7 @@ class Hydrator implements HydratorInterface
      */
     public function hydrateWithJson($object, string $json, ?int $flags = JSON_OBJECT_AS_ARRAY) : object
     {
-        json_decode('');
+        json_decode('null');
         $data = json_decode($json, null, 512, $flags);
         if (JSON_ERROR_NONE <> json_last_error()) {
             throw new InvalidArgumentException(sprintf(
