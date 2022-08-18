@@ -21,7 +21,7 @@ class HydratorTest extends TestCase
 
     public function testInvalidObject() : void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(Exception\InvalidObjectException::class);
         $this->expectExceptionMessage('The ' . Hydrator::class . '::hydrate() method ' .
                                       'expects an object or name of an existing class.');
 
@@ -30,7 +30,7 @@ class HydratorTest extends TestCase
 
     public function testUninitializableObject() : void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(Exception\InvalidObjectException::class);
         $this->expectExceptionMessage('The ' . Fixtures\UninitializableObject::class . ' object ' .
                                       'cannot be hydrated because its constructor has required parameters.');
 

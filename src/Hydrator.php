@@ -244,8 +244,9 @@ class Hydrator implements HydratorInterface
      *
      * @return T
      *
-     * @throws InvalidArgumentException
-     *         If the object cannot be initialized.
+     * @throws Exception\InvalidObjectException
+     *         If the object does not exist or
+     *         if the object cannot be initialized.
      *
      * @template T
      */
@@ -256,7 +257,7 @@ class Hydrator implements HydratorInterface
         }
 
         if (!is_string($object) || !class_exists($object)) {
-            throw new InvalidArgumentException(sprintf(
+            throw new Exception\InvalidObjectException(sprintf(
                 'The %s::hydrate() method expects an object or name of an existing class.',
                 __CLASS__
             ));
@@ -265,7 +266,7 @@ class Hydrator implements HydratorInterface
         $class = new ReflectionClass($object);
         $constructor = $class->getConstructor();
         if (isset($constructor) && $constructor->getNumberOfRequiredParameters() > 0) {
-            throw new InvalidArgumentException(sprintf(
+            throw new Exception\InvalidObjectException(sprintf(
                 'The %s object cannot be hydrated because its constructor has required parameters.',
                 $class->getName()
             ));
