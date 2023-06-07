@@ -13,11 +13,11 @@ declare(strict_types=1);
 
 namespace Sunrise\Hydrator\Exception;
 
-use LogicException;
-
 /**
- * InvalidObjectException
+ * UninitializableObjectException
+ *
+ * @since 3.0.0
  */
-class InvalidObjectException extends LogicException implements ExceptionInterface
+class UninitializableObjectException extends InvalidObjectException
 {
 }

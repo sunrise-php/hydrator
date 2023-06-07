@@ -6,5 +6,8 @@ namespace Sunrise\Hydrator\Tests\Fixtures\Store;
 
 final class Tag
 {
-    public readonly string $name;
+    public function __construct(
+        public readonly string $name,
+    ) {
+    }
 }

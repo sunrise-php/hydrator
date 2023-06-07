@@ -6,5 +6,5 @@ namespace Sunrise\Hydrator\Tests\Fixtures;
 
 final class ObjectWithStaticalProperty
 {
-    public static string $value = 'ef0df1e5-c165-4fa3-9f8c-34d6d05de2a4';
+    public static string $value = 'cf40fec3-8da7-4242-96b3-ec462ed62f25';
 }

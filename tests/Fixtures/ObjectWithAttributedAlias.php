@@ -8,7 +8,6 @@ use Sunrise\Hydrator\Annotation\Alias;
 
 final class ObjectWithAttributedAlias
 {
-
     #[Alias('non-normalized-value')]
     public string $value;
 }
