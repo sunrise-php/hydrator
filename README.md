@@ -17,7 +17,24 @@
 composer require sunrise/hydrator
 ```
 
-## How to use?
+# Documentation navigation
+
+* [Allowed property types](#allowed-property-types)
+* * [Required](#required)
+* * [Optional](#optional)
+* * [Null](#null)
+* * [Boolean](#boolean)
+* * [Integer](#integer)
+* * [Number](#number)
+* * [String](#string)
+* * [Array](#array)
+* * [DateTimeImmutable](#datetimeimmutable)
+* * [Enumeration](#enumeration)
+* * [Relationship](#relationship)
+* [Property alias](#property-alias)
+* [Error handling](#error-handling)
+
+## How to use
 
 Let's consider a typical DTO set:
 
