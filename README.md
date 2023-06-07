@@ -33,6 +33,7 @@ composer require sunrise/hydrator
 * * [Relationship](#relationship)
 * [Property alias](#property-alias)
 * [Error handling](#error-handling)
+* [Doctrine annotations](#Doctrine-annotations)
 
 ## How to use
 
@@ -293,7 +294,13 @@ try {
 }
 ```
 
-## PHP 7 annotations
+## Doctrine annotations
+
+To use annotations, you need to install the `doctrine/annotations` package:
+
+```bash
+composer require doctrine/annotations
+```
 
 To use annotations in PHP 7 or explicitly in PHP 8, you can use the following method of the hydrator:
 
