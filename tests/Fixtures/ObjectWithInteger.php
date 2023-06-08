@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Hydrator\Tests\Fixtures;
 
-final class ObjectWithOptionalString
+final class ObjectWithInteger
 {
-    public string $value = 'default';
+    public int $value;
 }

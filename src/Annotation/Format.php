@@ -23,9 +23,11 @@ use Attribute;
  * @Attributes({
  *     @Attribute("value", type="string", required=true),
  * })
+ *
+ * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
-final class Alias
+final class Format
 {
 
     /**

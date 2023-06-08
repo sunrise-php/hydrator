@@ -18,30 +18,10 @@ use Attribute;
 /**
  * @Annotation
  * @Target({"PROPERTY"})
- * @NamedArgumentConstructor
  *
- * @Attributes({
- *     @Attribute("value", type="string", required=true),
- * })
+ * @since 3.0.0
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
-final class Alias
+final class Ignore
 {
-
-    /**
-     * The attribute value
-     *
-     * @var non-empty-string
-     */
-    public string $value;
-
-    /**
-     * Constructor of the class
-     *
-     * @param non-empty-string $value
-     */
-    public function __construct(string $value)
-    {
-        $this->value = $value;
-    }
 }

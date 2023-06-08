@@ -8,7 +8,6 @@ use Sunrise\Hydrator\Annotation\Alias;
 
 final class ObjectWithAnnotatedAlias
 {
-
     /**
      * @Alias("non-normalized-value")
      */

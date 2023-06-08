@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Sunrise\Hydrator\Tests\Fixtures;
 
-final class ObjectWithOptionalString
+enum IntegerEnum: int
 {
-    public string $value = 'default';
+    case FOO = 1;
+    case BAR = 2;
+    case BAZ = 3;
 }

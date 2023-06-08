@@ -1,13 +1,13 @@
 # Strongly typed hydrator for PHP 7.4+ with support for PHP 8.1 enums
 
-**hydrator**, **mapper**, **dto**, **enum**
-
 [![Build Status](https://scrutinizer-ci.com/g/sunrise-php/hydrator/badges/build.png?b=main)](https://scrutinizer-ci.com/g/sunrise-php/hydrator/build-status/main)
 [![Code Coverage](https://scrutinizer-ci.com/g/sunrise-php/hydrator/badges/coverage.png?b=main)](https://scrutinizer-ci.com/g/sunrise-php/hydrator/?branch=main)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/sunrise-php/hydrator/badges/quality-score.png?b=main)](https://scrutinizer-ci.com/g/sunrise-php/hydrator/?branch=main)
 [![Total Downloads](https://poser.pugx.org/sunrise/hydrator/downloads?format=flat)](https://packagist.org/packages/sunrise/hydrator)
 [![Latest Stable Version](https://poser.pugx.org/sunrise/hydrator/v/stable?format=flat)](https://packagist.org/packages/sunrise/hydrator)
 [![License](https://poser.pugx.org/sunrise/hydrator/license?format=flat)](https://packagist.org/packages/sunrise/hydrator)
+
+**php**, **dto**, **hydrator**, **mapper**, **data-mapper**, **model-mapper**
 
 ---
 
@@ -17,384 +17,321 @@
 composer require sunrise/hydrator
 ```
 
-## How to use?
+## Navigation
+
+* [Allowed property types](#allowed-property-types)
+* * [Required](#required)
+* * [Optional](#optional)
+* * [Null](#null)
+* * [Boolean](#boolean)
+* * [Integer](#integer)
+* * [Number](#number)
+* * [String](#string)
+* * [Array](#array)
+* * [Timestamp](#timestamp)
+* * [Enumeration](#enumeration)
+* * [Relationship](#relationship)
+* [Ignored property](#ignored-property)
+* [Property alias](#property-alias)
+* [Error handling](#error-handling)
+* [Doctrine annotations](#doctrine-annotations)
+
+## How to use
+
+Let's consider a typical DTO set:
 
 ```php
-use Sunrise\Hydrator\Hydrator;
+enum Status: int
+{
+    case ENABLED = 1;
+    case DISABLED = 0;
+}
 
-$hydrator = new Hydrator();
+final class Category
+{
+    public function __construct(
+        public readonly string $name,
+    ) {
+    }
+}
 
-// disable support for alias mechanism
-// available since version v2.5.0
-$hydrator->aliasSupport(false);
+final class Tag
+{
+    public function __construct(
+        public readonly string $name,
+    ) {
+    }
+}
 
-// enable support for annotations
-// for php8 it is recommended to use attributes
-$hydrator->useAnnotations();
+final class Product
+{
+    public function __construct(
+        public readonly string $name,
+        public readonly Category $category,
+        #[\Sunrise\Hydrator\Annotation\Relationship(Tag::class, limit: 100)]
+        public readonly array $tags,
+        public readonly Status $status = Status::DISABLED,
+        #[\Sunrise\Hydrator\Annotation\Format(\DATE_RFC3339)]
+        public readonly DateTimeImmutable $createdAt = new DateTimeImmutable(),
+    ) {
+    }
+}
+```
 
-// create and hydrate an object with an array
-$data = [/* the class props here */];
-$object = $hydrator->hydrate(SomeDto::class, $data);
+Now, let's populate them all from an array:
 
-// hydrate an object with an array
-$data = [/* the class props here */];
-$hydrator->hydrate($object, $data);
+```php
+$data = [
+    'name' => 'Some product',
+    'category' => [
+        'name' => 'Some category',
+    ],
+    'tags' => [
+        [
+            'name' => 'foo',
+        ],
+        [
+            'name' => 'bar',
+        ],
+    ],
+    'status' => 0,
+];
 
-// creates and hydrate an object with JSON
-$json = '';
-$object = $hydrator->hydrateWithJson(SomeDto::class, $json);
+$product = (new \Sunrise\Hydrator\Hydrator)->hydrate(Product::class, $data);
+```
 
-// hydrate an object with JSON
-$json = '';
-$hydrator->hydrateWithJson($object, $json);
+Or, you can populate them using JSON:
 
-// pass JSON decoding flags
-$options = JSON_OBJECT_AS_ARRAY|JSON_BIGINT_AS_STRING;
-$hydrator->hydrateWithJson($object, $json, $options);
+```php
+$json = <<<JSON
+{
+    "name": "Some product",
+    "category": {
+        "name": "Some category"
+    },
+    "tags": [
+        {
+            "name": "foo"
+        },
+        {
+            "name": "bar"
+        }
+    ],
+    "status": 0
+}
+JSON;
+
+$product = (new \Sunrise\Hydrator\Hydrator)->hydrateWithJson(Product::class, $json);
 ```
 
 ## Allowed property types
 
 ### Required
 
-If a property has no a default value, then the property is required.
-
 ```php
 public readonly string $value;
 ```
 
-### Optional
+If a property has no a default value, then the property is required.
 
-If a property has a default value, then the property is optional.
+### Optional
 
 ```php
 public readonly string $value = 'foo';
 ```
 
-### Null
+If a property has a default value, then the property is optional.
 
-If a property is nullable, then the property can accept null.
+### Null
 
 ```php
 public readonly ?string $value;
 ```
 
-If the property should be optional, then it must has a default value.
+If a property is nullable, then the property can accept null.
 
-```php
-public readonly ?string $value = null;
-```
+Also, please note that empty strings or strings consisting only of whitespace will be handled as null for certain properties.
 
 ### Boolean
-
-Accepts the following values: true, false, 1, 0, "1", "0", "yes", "no", "on" and "no".
 
 ```php
 public readonly bool $value;
 ```
 
-```php
-['value' => true];
-['value' => 'yes'];
-```
+A boolean value in a dataset can be represented as:
 
-## Integer
+| true   | false   | type   |
+|--------|---------|--------|
+| true   | false   | bool   |
+| "1"    | "0"     | string |
+| "true" | "false" | string |
+| "yes"  | "no"    | string |
+| "on"   | "off"   | string |
 
-Accepts only integers (also as a string).
+Also, please note that if a value in a dataset for this property is represented as an empty string or a string consisting only of whitespace, then the value will be handled as [null](#null).
+
+### Integer
 
 ```php
 public readonly int $value;
 ```
 
-```php
-['value' => 42];
-['value' => '42'];
-```
+An integer value in a dataset can also be represented as a string, e.g., "42".
 
-## Number<int|float>
+Also, please note that if a value in a dataset for this property is represented as an empty string or a string consisting only of whitespace, then the value will be handled as [null](#null).
 
-Accepts only numbers (also as a string).
+### Number
 
 ```php
 public readonly float $value;
 ```
 
-```php
-['value' => 42.0];
-['value' => '42.0'];
-```
+A numerical value in a dataset can be represented not only as an integer or a floating-point number but also as a string containing a number. However, regardless of how such a value is represented in the dataset, it will always be stored in this property as a floating-point number.
 
-## String
+Also, please note that if a value in a dataset for this property is represented as an empty string or a string consisting only of whitespace, then the value will be handled as [null](#null).
 
-Accepts only strings.
+### String
 
 ```php
 public readonly string $value;
 ```
 
-```php
-['value' => 'foo'];
-```
+This property has no any additional behavior and only accepts strings.
 
-## Array<array-key, mixed>
-
-Accepts only arrays.
+### Array
 
 ```php
 public readonly array $value;
 ```
 
+By default, this property accepts an array with any data. However, it can also be used to store relationships by using a special annotation, as shown in the example below:
+
 ```php
-['value' => []];
+#[\Sunrise\Hydrator\Annotation\Relationship(SomeDto::class)]
+public readonly array $value;
 ```
 
-## Object
-
-Accepts only objects.
+Having an unlimited number of relationships in an array is a potentially bad idea as it can lead to memory leaks. To avoid this, it is recommended to limit such an array, as shown in the example below:
 
 ```php
-public readonly object $value;
+#[\Sunrise\Hydrator\Annotation\Relationship(SomeDto::class, limit: 100)]
+public readonly array $value;
 ```
 
-```php
-['value' => new stdClass];
-```
+This property has no any additional behavior and only accepts arrays.
 
-## DateTime/DateTimeImmutable
+### Timestamp
 
-Integers (also as a string) will be handled as a timestamp, otherwise accepts only valid date-time strings.
+Only the DateTimeImmutable type is supported.
 
 ```php
+#[\Sunrise\Hydrator\Annotation\Format('Y-m-d H:i:s')]
 public readonly DateTimeImmutable $value;
 ```
 
-```php
-// 2010-01-01
-['value' => 1262304000];
-// 2010-01-01
-['value' => '1262304000'];
-// normal date
-['value' => '2010-01-01'];
-```
-
-## DateInterval
-
-Accepts only valid date-interval strings based on ISO 8601.
+This property accepts a date as a string in the specified format, but it can also accept a Unix timestamp as an integer or a string. To specify the Unix timestamp format, it should be indicated as follows:
 
 ```php
-public readonly DateInterval $value;
+#[\Sunrise\Hydrator\Annotation\Format('U')]
+public readonly DateTimeImmutable $value;
 ```
 
-```php
-['value' => 'P1Y']
-```
+Also, please note that if a value in a dataset for this property is represented as an empty string or a string consisting only of whitespace, then the value will be handled as [null](#null).
 
-## Enum<BackedEnum>
-
-Accepts only values that exist in an enum.
-
-```php
-enum SomeEnum: int {
-    case foo = 0;
-    case bar = 1;
-}
-```
+### Enumeration
 
 ```php
 public readonly SomeEnum $value;
 ```
 
-```php
-['value' => 0]
-['value' => '1']
-```
+This property should be typed only with typed enumerations. Therefore, for integer enumerations, a value in a dataset can be either an integer or an integer represented as a string. For string enumerations, a value in a dataset can only be a string.
 
-## Enum for PHP < 8.1
+Also, please note that if a value in a dataset for this property is represented as an empty string or a string consisting only of whitespace, then the value will be handled as [null](#null).
 
-Accepts only values that exist in an enum.
 
-```php
-use Sunrise\Hydrator\Enum;
-
-final class SomeEnum extends Enum {
-    public const foo = 0;
-    public const bar = 1;
-}
-```
-
-```php
-public SomeEnum $value;
-```
-
-```php
-['value' => 0]
-['value' => '1']
-```
-
-#### Useful to know
-
-```php
-// returns all cases of the enum
-SomeEnum::cases();
-
-// initializes the enum by the case's name
-$case = SomeEnum::foo();
-
-// initializes the enum by the case's value
-$case = SomeEnum::tryFrom(0);
-
-// gets the name of the enum's case
-$case->name()
-
-// gets the value of the enum's case
-$case->value()
-```
-
-## Association
-
-Accepts a valid structure for an association
-
-```php
-final class SomeDto {
-    public readonly string $value;
-}
-```
+### Relationship
 
 ```php
 public readonly SomeDto $value;
 ```
 
-```php
-[
-    'value' => [
-        'value' => 'foo',
-    ],
-]
-```
+A value in a dataset can only be an array. However, please note that if you need a one-to-many relationship, you should refer to the [array](#array) section for further information.
 
-## AssociationCollection<ObjectCollectionInterface<T>>
+## Ignored property
 
-Accepts a list of an association's valid structures.
+If you need a property to be ignored and not populated during the object hydration process, use a special annotation like the example below:
 
 ```php
-use Sunrise\Hydrator\ObjectCollection;
-
-final class SomeCollection extends ObjectCollection {
-    public const T = SomeDto::class;
-}
-
-final class SomeDto {
-    public readonly string $value;
-}
-```
-
-```php
-public readonly SomeCollection $value;
-```
-
-```php
-[
-    'value' => [
-        [
-            'value' => 'foo',
-        ],
-        [
-            'value' => 'bar',
-        ],
-    ],
-],
+#[\Sunrise\Hydrator\Annotation\Ignore]
+public string $value;
 ```
 
 ## Property alias
 
-If you need to get a non-normalized key, use aliases.
+If you need to handle an unnormalized key in a dataset or have other reasons to associate such a key with a property that has a different name, you can use a special annotation for this purpose:
 
-For example, the Google Recaptcha API returns the following response:
+```php
+#[\Sunrise\Hydrator\Annotation\Alias('error-codes')]
+public array $errorCodes = [];
+```
 
-```json
-{
-    "success": false,
-    "error-codes": []
+## Error handling
+
+```php
+try {
+    $hydrator->hydrate(...);
+} catch (\Sunrise\Hydrator\Exception\InvalidDataException $e) {
+    // It's runtime error
+} catch (\Sunrise\Hydrator\Exception\InvalidObjectException $e) {
+    // It's logic error
 }
 ```
 
-To correctly map the response, use the following model:
+The `InvalidDataException` exception contains errors related to an input dataset and is designed to display errors directly on the client side.
+
+If you are using the `symfony/validator` package, you may find it useful to present the errors as a `\Symfony\Component\Validator\ConstraintViolationListInterface`. To achieve this, you can call the following method on this exception:
 
 ```php
-use Sunrise\Hydrator\Annotation\Alias;
-
-final class RecaptchaVerificationResult {
-    public bool $success;
-
-    #[Alias('error-codes')]
-    public array $errorCodes = [];
+try {
+    $hydrator->hydrate(...);
+} catch (\Sunrise\Hydrator\Exception\InvalidDataException $e) {
+    $violations = $e->getViolations();
 }
 ```
 
-Please note, if you are using PHP 7 then you need to enable annotation support and use the following model:
+Or you can retrieve the list of errors in the standard way, as shown in the example below:
 
 ```php
-$hydrator->useAnnotations();
-```
-
-```php
-use Sunrise\Hydrator\Annotation\Alias;
-
-final class RecaptchaVerificationResult {
-    public bool $success;
-
-    /**
-     * @Alias("error-codes")
-     */
-    public array $errorCodes = [];
+try {
+    $hydrator->hydrate(...);
+} catch (\Sunrise\Hydrator\Exception\InvalidDataException $e) {
+    $errors = $e->getExceptions();
+    foreach ($errors as $error) {
+        echo $error->getMessage(), PHP_EOL;
+        echo $error->getPropertyPath(), PHP_EOL;
+        echo $error->getErrorCode(), PHP_EOL;
+    }
 }
 ```
 
-## Examples
+## Doctrine annotations
 
-```php
-final class Product {
-    public readonly string $name;
-    public readonly Category $category;
-    public readonly TagCollection $tags;
-    public readonly Status $status;
-}
+To use annotations, you need to install the `doctrine/annotations` package:
 
-final class Category {
-    public readonly string $name;
-}
-
-final class TagCollection extends \Sunrise\Hydrator\ObjectCollection {
-    // the collection will only accept this type
-    public const T = Tag::class;
-}
-
-final class Tag {
-    public readonly string $name;
-}
-
-enum Status: int {
-    case ENABLED = 1;
-    case DISABLED = 0;
-}
+```bash
+composer require doctrine/annotations
 ```
 
+To use annotations in PHP 7 or explicitly in PHP 8, you can use the following method of the hydrator:
+
 ```php
-$product = $hydrator->hydrate(Product::class, [
-    'name' => 'Stool',
-    'category' => [
-        'name' => 'Furniture',
-    ],
-    'tags' => [
-        [
-            'name' => 'Wood',
-        ],
-        [
-            'name' => 'Lacquered',
-        ],
-    ],
-    'status' => 0,
-]);
+$hydrator->useDefaultAnnotationReader();
+```
+
+If you need to provide your instance of an annotation reader, you can use the following method:
+
+```php
+$hydrator->setAnnotationReader(...);
 ```
 
 ---

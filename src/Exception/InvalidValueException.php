@@ -1,77 +1,219 @@
-<?php declare(strict_types=1);
+<?php
 
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Fenric <anatoly@fenric.ru>
- * @copyright Copyright (c) 2021, Anatoly Fenric
+ * @author Anatoly Nekhay <afenric@gmail.com>
+ * @copyright Copyright (c) 2021, Anatoly Nekhay
  * @license https://github.com/sunrise-php/hydrator/blob/master/LICENSE
  * @link https://github.com/sunrise-php/hydrator
  */
 
+declare(strict_types=1);
+
 namespace Sunrise\Hydrator\Exception;
 
-/**
- * Import classes
- */
-use ReflectionProperty;
-use Throwable;
+use BackedEnum;
+use Sunrise\Hydrator\Dictionary\ErrorCode;
+use RuntimeException;
 
-/**
- * Import functions
- */
+use function join;
 use function sprintf;
 
 /**
  * InvalidValueException
  */
-class InvalidValueException extends HydrationException
+class InvalidValueException extends RuntimeException implements ExceptionInterface
 {
 
     /**
-     * The problem property
-     *
-     * @var ReflectionProperty
+     * @var list<array-key>
      */
-    private $property;
+    private array $propertyPath;
+
+    /**
+     * @var string
+     */
+    private string $errorCode;
 
     /**
      * Constructor of the class
      *
-     * @param ReflectionProperty $property
-     * @param string             $message
-     * @param int                $code
-     * @param Throwable|null     $previous
+     * @param string $message
+     * @param string $errorCode
+     * @param list<array-key> $propertyPath
      */
-    public function __construct(
-        ReflectionProperty $property,
-        string $message,
-        int $code = 0,
-        ?Throwable $previous = null
-    ) {
-        parent::__construct($message, $code, $previous);
-
-        $property->setAccessible(false);
-        $this->property = $property;
-    }
-
-    /**
-     * Gets the problem property
-     *
-     * @return ReflectionProperty
-     */
-    final public function getProperty() : ReflectionProperty
+    public function __construct(string $message, string $errorCode, array $propertyPath)
     {
-        return $this->property;
+        parent::__construct($message);
+
+        $this->errorCode = $errorCode;
+        $this->propertyPath = $propertyPath;
     }
 
     /**
-     * Gets the problem property path
-     *
      * @return string
      */
-    final public function getPropertyPath() : string
+    final public function getPropertyPath(): string
     {
-        return sprintf('%s.%s', $this->property->getDeclaringClass()->getShortName(), $this->property->getName());
+        return join('.', $this->propertyPath);
+    }
+
+    /**
+     * @return string
+     */
+    final public function getErrorCode(): string
+    {
+        return $this->errorCode;
+    }
+
+    /**
+     * @param list<array-key> $propertyPath
+     *
+     * @return self
+     */
+    final public static function shouldBeProvided(array $propertyPath): self
+    {
+        return new self(
+            'This value should be provided.',
+            ErrorCode::VALUE_SHOULD_BE_PROVIDED,
+            $propertyPath,
+        );
+    }
+
+    /**
+     * @param list<array-key> $propertyPath
+     *
+     * @return self
+     */
+    final public static function shouldNotBeEmpty(array $propertyPath): self
+    {
+        return new self(
+            'This value should not be empty.',
+            ErrorCode::VALUE_SHOULD_NOT_BE_EMPTY,
+            $propertyPath,
+        );
+    }
+
+    /**
+     * @param list<array-key> $propertyPath
+     *
+     * @return self
+     */
+    final public static function shouldBeBoolean(array $propertyPath): self
+    {
+        return new self(
+            'This value should be of type boolean.',
+            ErrorCode::VALUE_SHOULD_BE_BOOLEAN,
+            $propertyPath,
+        );
+    }
+
+    /**
+     * @param list<array-key> $propertyPath
+     *
+     * @return self
+     */
+    final public static function shouldBeInteger(array $propertyPath): self
+    {
+        return new self(
+            'This value should be of type integer.',
+            ErrorCode::VALUE_SHOULD_BE_INTEGER,
+            $propertyPath,
+        );
+    }
+
+    /**
+     * @param list<array-key> $propertyPath
+     *
+     * @return self
+     */
+    final public static function shouldBeNumber(array $propertyPath): self
+    {
+        return new self(
+            'This value should be of type number.',
+            ErrorCode::VALUE_SHOULD_BE_NUMBER,
+            $propertyPath,
+        );
+    }
+
+    /**
+     * @param list<array-key> $propertyPath
+     *
+     * @return self
+     */
+    final public static function shouldBeString(array $propertyPath): self
+    {
+        return new self(
+            'This value should be of type string.',
+            ErrorCode::VALUE_SHOULD_BE_STRING,
+            $propertyPath,
+        );
+    }
+
+    /**
+     * @param list<array-key> $propertyPath
+     *
+     * @return self
+     */
+    final public static function shouldBeArray(array $propertyPath): self
+    {
+        return new self(
+            'This value should be of type array.',
+            ErrorCode::VALUE_SHOULD_BE_ARRAY,
+            $propertyPath,
+        );
+    }
+
+    /**
+     * @param list<array-key> $propertyPath
+     * @param non-empty-string $expectedFormat
+     *
+     * @return self
+     */
+    final public static function invalidTimestamp(array $propertyPath, string $expectedFormat): self
+    {
+        return new self(
+            sprintf('This value is not a valid timestamp, expected format: %s.', $expectedFormat),
+            ErrorCode::INVALID_TIMESTAMP,
+            $propertyPath,
+        );
+    }
+
+    /**
+     * @param list<array-key> $propertyPath
+     * @param class-string<BackedEnum> $enumName
+     *
+     * @return self
+     */
+    final public static function invalidChoice(array $propertyPath, string $enumName): self
+    {
+        /** @var list<BackedEnum> $validCases */
+        $validCases = $enumName::cases();
+        $expectedChoices = [];
+        foreach ($validCases as $validCase) {
+            $expectedChoices[] = $validCase->value;
+        }
+
+        return new self(
+            sprintf('This value is not a valid choice, expected choices: %s.', join(', ', $expectedChoices)),
+            ErrorCode::INVALID_CHOICE,
+            $propertyPath,
+        );
+    }
+
+    /**
+     * @param list<array-key> $propertyPath
+     * @param int<1, max> $limit
+     *
+     * @return self
+     */
+    final public static function redundantElement(array $propertyPath, int $limit): self
+    {
+        return new self(
+            sprintf('This element is redundant, limit: %d.', $limit),
+            ErrorCode::REDUNDANT_ELEMENT,
+            $propertyPath,
+        );
     }
 }
