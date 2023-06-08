@@ -19,6 +19,7 @@ use Doctrine\Common\Annotations\Reader as AnnotationReaderInterface;
 use JsonException;
 use Sunrise\Hydrator\Annotation\Alias;
 use Sunrise\Hydrator\Annotation\Format;
+use Sunrise\Hydrator\Annotation\Ignore;
 use Sunrise\Hydrator\Annotation\Relationship;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
@@ -140,6 +141,11 @@ class Hydrator implements HydratorInterface
         $violations = [];
         foreach ($properties as $property) {
             if ($property->isStatic()) {
+                continue;
+            }
+
+            $ignore = $this->getPropertyAnnotation($property, Ignore::class);
+            if (isset($ignore)) {
                 continue;
             }
 

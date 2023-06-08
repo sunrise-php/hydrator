@@ -7,7 +7,7 @@
 [![Latest Stable Version](https://poser.pugx.org/sunrise/hydrator/v/stable?format=flat)](https://packagist.org/packages/sunrise/hydrator)
 [![License](https://poser.pugx.org/sunrise/hydrator/license?format=flat)](https://packagist.org/packages/sunrise/hydrator)
 
-**hydrator**, **mapper**, **dto**, **data-mapper**, **model-mapper**
+**php**, **dto**, **hydrator**, **mapper**, **data-mapper**, **model-mapper**
 
 ---
 
@@ -17,7 +17,7 @@
 composer require sunrise/hydrator
 ```
 
-# Documentation navigation
+## Navigation
 
 * [Allowed property types](#allowed-property-types)
 * * [Required](#required)
@@ -28,12 +28,13 @@ composer require sunrise/hydrator
 * * [Number](#number)
 * * [String](#string)
 * * [Array](#array)
-* * [DateTimeImmutable](#datetimeimmutable)
+* * [Timestamp](#timestamp)
 * * [Enumeration](#enumeration)
 * * [Relationship](#relationship)
+* [Ignored property](#ignored-property)
 * [Property alias](#property-alias)
 * [Error handling](#error-handling)
-* [Doctrine annotations](#Doctrine-annotations)
+* [Doctrine annotations](#doctrine-annotations)
 
 ## How to use
 
@@ -211,7 +212,9 @@ public readonly array $value;
 
 This property has no any additional behavior and only accepts arrays.
 
-### DateTimeImmutable
+### Timestamp
+
+Only the DateTimeImmutable type is supported.
 
 ```php
 #[\Sunrise\Hydrator\Annotation\Format('Y-m-d H:i:s')]
@@ -245,6 +248,15 @@ public readonly SomeDto $value;
 ```
 
 A value in a dataset can only be an array. However, please note that if you need a one-to-many relationship, you should refer to the [array](#array) section for further information.
+
+## Ignored property
+
+If you need a property to be ignored and not populated during the object hydration process, use a special annotation like the example below:
+
+```php
+#[\Sunrise\Hydrator\Annotation\Ignore]
+public string $value;
+```
 
 ## Property alias
 

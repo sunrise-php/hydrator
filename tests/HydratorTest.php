@@ -19,6 +19,7 @@ use Sunrise\Hydrator\Tests\Fixtures\ObjectWithAnnotatedAlias;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithArray;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithAttributedAlias;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithBoolean;
+use Sunrise\Hydrator\Tests\Fixtures\ObjectWithIgnoredProperty;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithInteger;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithIntegerEnum;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithNullableArray;
@@ -1248,6 +1249,13 @@ class HydratorTest extends TestCase
         $this->assertNotSame('foo', ObjectWithStaticalProperty::$value);
     }
 
+    public function testIgnoredProperty(): void
+    {
+        $this->assertInvalidValueExceptionCount(0);
+        $object = $this->createHydrator()->hydrate(ObjectWithIgnoredProperty::class, ['value' => 'foo']);
+        $this->assertNotSame('foo', $object->value);
+    }
+
     public function testUnsupportedPropertyType(): void
     {
         $this->expectException(UnsupportedPropertyTypeException::class);
@@ -1637,7 +1645,7 @@ class HydratorTest extends TestCase
 
     public function strictIntegerEnumerationDataProvider(): array
     {
-        if (PHP_VERSION_ID < 80000) {
+        if (PHP_VERSION_ID < 80100) {
             return [[[], null]];
         }
 
@@ -1654,7 +1662,7 @@ class HydratorTest extends TestCase
 
     public function nonStrictIntegerEnumerationDataProvider(): array
     {
-        if (PHP_VERSION_ID < 80000) {
+        if (PHP_VERSION_ID < 80100) {
             return [[[], null]];
         }
 
@@ -1671,7 +1679,7 @@ class HydratorTest extends TestCase
 
     public function stringEnumerationDataProvider(): array
     {
-        if (PHP_VERSION_ID < 80000) {
+        if (PHP_VERSION_ID < 80100) {
             return [[[], null]];
         }
 
