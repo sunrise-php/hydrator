@@ -41,33 +41,37 @@ composer require sunrise/hydrator
 Let's consider a typical DTO set:
 
 ```php
-enum Status: int {
+enum Status: int
+{
     case ENABLED = 1;
     case DISABLED = 0;
 }
 
-final class Category {
+final class Category
+{
     public function __construct(
         public readonly string $name,
     ) {
     }
 }
 
-final class Tag {
+final class Tag
+{
     public function __construct(
         public readonly string $name,
     ) {
     }
 }
 
-final class Product {
+final class Product
+{
     public function __construct(
         public readonly string $name,
         public readonly Category $category,
         #[\Sunrise\Hydrator\Annotation\Relationship(Tag::class, limit: 100)]
         public readonly array $tags,
         public readonly Status $status = Status::DISABLED,
-        #[\Sunrise\Hydrator\Annotation\Format('Y-m-d H:i:s')]
+        #[\Sunrise\Hydrator\Annotation\Format(\DATE_RFC3339)]
         public readonly DateTimeImmutable $createdAt = new DateTimeImmutable(),
     ) {
     }
@@ -77,7 +81,7 @@ final class Product {
 Now, let's populate them all from an array:
 
 ```php
-$product = (new \Sunrise\Hydrator\Hydrator)->hydrate(Product::class, [
+$data = [
     'name' => 'Some product',
     'category' => [
         'name' => 'Some category',
@@ -91,13 +95,15 @@ $product = (new \Sunrise\Hydrator\Hydrator)->hydrate(Product::class, [
         ],
     ],
     'status' => 0,
-]);
+];
+
+$product = (new \Sunrise\Hydrator\Hydrator)->hydrate(Product::class, $data);
 ```
 
 Or, you can populate them using JSON:
 
 ```php
-$product = (new \Sunrise\Hydrator\Hydrator)->hydrateWithJson(Product::class, <<<JSON
+$json = <<<JSON
 {
     "name": "Some product",
     "category": {
@@ -113,7 +119,9 @@ $product = (new \Sunrise\Hydrator\Hydrator)->hydrateWithJson(Product::class, <<<
     ],
     "status": 0
 }
-JSON);
+JSON;
+
+$product = (new \Sunrise\Hydrator\Hydrator)->hydrateWithJson(Product::class, $json);
 ```
 
 ## Allowed property types
