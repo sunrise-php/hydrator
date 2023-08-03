@@ -53,6 +53,7 @@ use const FILTER_VALIDATE_FLOAT;
 use const FILTER_VALIDATE_INT;
 use const JSON_THROW_ON_ERROR;
 use const PHP_MAJOR_VERSION;
+use const PHP_VERSION_ID;
 
 /**
  * Hydrator
@@ -140,6 +141,10 @@ class Hydrator implements HydratorInterface
         $defaultValues = $this->getClassConstructorDefaultValues($class);
         $violations = [];
         foreach ($properties as $property) {
+            if (PHP_VERSION_ID < 80100) {
+                $property->setAccessible(true);
+            }
+
             if ($property->isStatic()) {
                 continue;
             }
@@ -288,8 +293,6 @@ class Hydrator implements HydratorInterface
         $value,
         array $path
     ): void {
-        $property->setAccessible(true);
-
         $type = $this->getPropertyType($property);
         $typeName = $type->getName();
 
