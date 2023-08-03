@@ -15,6 +15,7 @@ use Sunrise\Hydrator\Exception\UntypedPropertyException;
 use Sunrise\Hydrator\Hydrator;
 use Sunrise\Hydrator\HydratorInterface;
 use Sunrise\Hydrator\Tests\Fixtures\IntegerEnum;
+use Sunrise\Hydrator\Tests\Fixtures\Issue25;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithAnnotatedAlias;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithArray;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithAttributedAlias;
@@ -1692,6 +1693,15 @@ class HydratorTest extends TestCase
             [['value' => $bar->value], $bar],
             [['value' => $baz->value], $baz],
         ];
+    }
+
+    public function testIssue25(): void
+    {
+        $this->assertInvalidValueExceptionCount(1);
+        $this->assertInvalidValueExceptionMessage(0, 'This value should be provided.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_PROVIDED);
+        $this->assertInvalidValueExceptionPropertyPath(0, 'foo');
+        $this->createHydrator()->hydrate(Issue25::class, []);
     }
 
     private function createHydrator(): HydratorInterface
