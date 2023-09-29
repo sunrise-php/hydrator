@@ -27,7 +27,9 @@ final class ErrorCode
     public const VALUE_SHOULD_BE_NUMBER = 'b30f9ed7-8d8d-451e-9a04-86794c2a0720';
     public const VALUE_SHOULD_BE_STRING = 'c84a6c6c-19d1-49a2-a74e-daea88eeea52';
     public const VALUE_SHOULD_BE_ARRAY = 'b171342e-de67-409b-9edc-8ccbdf36f2af';
-    public const INVALID_TIMESTAMP = 'b0a14918-9e20-470d-8ba3-3d85953ddbce';
     public const INVALID_CHOICE = 'e5bd8e3f-60a0-4066-b89b-ef5a186f2836';
+    public const INVALID_TIMESTAMP = 'b0a14918-9e20-470d-8ba3-3d85953ddbce';
+    public const INVALID_TIMEZONE = '14249d2e-ddbb-4cb0-9e86-8dc2b46b9313';
+    public const INVALID_UID = '55b9ba29-57d0-4fd9-988d-678a3b8e819c';
     public const REDUNDANT_ELEMENT = '917e1646-b996-4f34-a4f2-1c075bb6e715';
 }

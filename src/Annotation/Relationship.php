@@ -21,35 +21,17 @@ use Attribute;
  * @NamedArgumentConstructor
  *
  * @Attributes({
- *     @Attribute("target", type="string", required=true),
+ *     @Attribute("name", type="string", required=true),
  *     @Attribute("limit", type="integer", required=false),
  * })
  *
  * @since 3.0.0
+ *
+ * @deprecated 3.1.0 Use the {@see Subtype} annotation.
+ *
+ * @psalm-suppress InvalidExtendClass
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
-final class Relationship
+final class Relationship extends Subtype
 {
-
-    /**
-     * @var class-string
-     */
-    public string $target;
-
-    /**
-     * @var int<1, max>|null
-     */
-    public ?int $limit;
-
-    /**
-     * Constructor of the class
-     *
-     * @param class-string $target
-     * @param int<1, max>|null $limit
-     */
-    public function __construct(string $target, ?int $limit = null)
-    {
-        $this->target = $target;
-        $this->limit = $limit;
-    }
 }

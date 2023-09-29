@@ -29,6 +29,8 @@ composer require sunrise/hydrator
 * * [String](#string)
 * * [Array](#array)
 * * [Timestamp](#timestamp)
+* * [Timezone](#timezone)
+* * [UID](#uid)
 * * [Enumeration](#enumeration)
 * * [Relationship](#relationship)
 * [Ignored property](#ignored-property)
@@ -68,7 +70,7 @@ final class Product
     public function __construct(
         public readonly string $name,
         public readonly Category $category,
-        #[\Sunrise\Hydrator\Annotation\Relationship(Tag::class, limit: 100)]
+        #[\Sunrise\Hydrator\Annotation\Subtype(Tag::class, limit: 100)]
         public readonly array $tags,
         public readonly Status $status = Status::DISABLED,
         #[\Sunrise\Hydrator\Annotation\Format(\DATE_RFC3339)]
@@ -207,15 +209,39 @@ public readonly array $value;
 By default, this property accepts an array with any data. However, it can also be used to store relationships by using a special annotation, as shown in the example below:
 
 ```php
-#[\Sunrise\Hydrator\Annotation\Relationship(SomeDto::class)]
+#[\Sunrise\Hydrator\Annotation\Subtype(SomeDto::class)]
 public readonly array $value;
 ```
 
 Having an unlimited number of relationships in an array is a potentially bad idea as it can lead to memory leaks. To avoid this, it is recommended to limit such an array, as shown in the example below:
 
 ```php
-#[\Sunrise\Hydrator\Annotation\Relationship(SomeDto::class, limit: 100)]
+#[\Sunrise\Hydrator\Annotation\Subtype(SomeDto::class, limit: 100)]
 public readonly array $value;
+```
+
+In addition to arrays, you can use collections, i.e. objects implementing the [ArrayAccess](http://php.net/ArrayAccess) interface, for example:
+
+```php
+final class TagCollection implements ArrayAccess
+{
+    // some code...
+}
+```
+
+```php
+final class CreateProductDto
+{
+    public readonly TagCollection $tags;
+}
+```
+
+Additionally, you can type the elements of such an array or collection, like this:
+
+```php
+#[\Sunrise\Hydrator\Annotation\Subtype(DateTimeImmutable::class, limit: 100)]
+#[\Sunrise\Hydrator\Annotation\Format('Y-m-d H:i:s')]
+public readonly array $tags;
 ```
 
 This property has no any additional behavior and only accepts arrays.
@@ -234,6 +260,28 @@ This property accepts a date as a string in the specified format, but it can als
 ```php
 #[\Sunrise\Hydrator\Annotation\Format('U')]
 public readonly DateTimeImmutable $value;
+```
+
+Also, please note that if a value in a dataset for this property is represented as an empty string or a string consisting only of whitespace, then the value will be handled as [null](#null).
+
+### Timezone
+
+Only the DateTimeZone type is supported.
+
+```php
+public readonly DateTimeZone $value;
+```
+
+Also, please note that if a value in a dataset for this property is represented as an empty string or a string consisting only of whitespace, then the value will be handled as [null](#null).
+
+### UID
+
+```bash
+composer require symfony/uid
+```
+
+```php
+public readonly \Symfony\Component\Uid\UuidV4 $value;
 ```
 
 Also, please note that if a value in a dataset for this property is represented as an empty string or a string consisting only of whitespace, then the value will be handled as [null](#null).
