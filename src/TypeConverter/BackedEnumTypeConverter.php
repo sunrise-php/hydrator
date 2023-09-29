@@ -1,0 +1,105 @@
+<?php
+
+/**
+ * It's free open-source software released under the MIT License.
+ *
+ * @author Anatoly Nekhay <afenric@gmail.com>
+ * @copyright Copyright (c) 2021, Anatoly Nekhay
+ * @license https://github.com/sunrise-php/hydrator/blob/master/LICENSE
+ * @link https://github.com/sunrise-php/hydrator
+ */
+
+declare(strict_types=1);
+
+namespace Sunrise\Hydrator\TypeConverter;
+
+use BackedEnum;
+use Generator;
+use ReflectionEnum;
+use ReflectionNamedType;
+use Sunrise\Hydrator\Dictionary\BuiltinType;
+use Sunrise\Hydrator\Exception\InvalidValueException;
+use Sunrise\Hydrator\Type;
+use Sunrise\Hydrator\TypeConverterInterface;
+use ValueError;
+
+use function filter_var;
+use function is_int;
+use function is_string;
+use function is_subclass_of;
+use function trim;
+
+use const FILTER_NULL_ON_FAILURE;
+use const FILTER_VALIDATE_INT;
+use const PHP_VERSION_ID;
+
+/**
+ * @since 3.1.0
+ */
+final class BackedEnumTypeConverter implements TypeConverterInterface
+{
+
+    /**
+     * @inheritDoc
+     */
+    public function castValue($value, Type $type, array $path): Generator
+    {
+        if (PHP_VERSION_ID < 80100) {
+            return;
+        }
+
+        $enumName = $type->getName();
+        if (!is_subclass_of($enumName, BackedEnum::class)) {
+            return;
+        }
+
+        /** @var ReflectionNamedType $enumType */
+        $enumType = (new ReflectionEnum($enumName))->getBackingType();
+
+        $enumTypeName = $enumType->getName();
+
+        if (is_string($value)) {
+            $value = trim($value);
+
+            // As part of the support for HTML forms and other untyped data sources,
+            // empty strings should not be used to instantiate enumerations;
+            // instead, they should be considered as NULL.
+            if ($value === '') {
+                if ($type->allowsNull()) {
+                    return yield null;
+                }
+
+                throw InvalidValueException::shouldNotBeEmpty($path);
+            }
+
+            if ($enumTypeName === BuiltinType::INT) {
+                // https://github.com/php/php-src/blob/b7d90f09d4a1688f2692f2fa9067d0a07f78cc7d/ext/filter/logical_filters.c#L94
+                // https://github.com/php/php-src/blob/b7d90f09d4a1688f2692f2fa9067d0a07f78cc7d/ext/filter/logical_filters.c#L197
+                $value = filter_var($value, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE);
+            }
+        }
+
+        if ($enumTypeName === BuiltinType::INT && !is_int($value)) {
+            throw InvalidValueException::shouldBeInteger($path);
+        }
+        if ($enumTypeName === BuiltinType::STRING && !is_string($value)) {
+            throw InvalidValueException::shouldBeString($path);
+        }
+
+        /** @var int|string $value */
+
+        try {
+            yield $enumName::from($value);
+        } catch (ValueError $e) {
+            throw InvalidValueException::invalidChoice($path, $enumName);
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getWeight(): int
+    {
+        return 60;
+    }
+}

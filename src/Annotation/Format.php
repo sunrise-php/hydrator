@@ -34,6 +34,8 @@ final class Format
      * The attribute value
      *
      * @var non-empty-string
+     *
+     * @readonly
      */
     public string $value;
 

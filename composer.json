@@ -26,10 +26,11 @@
     "require-dev": {
         "sunrise/coding-standard": "~1.0.0",
         "phpunit/phpunit": "^9.6",
-        "vimeo/psalm": "^5.12",
+        "vimeo/psalm": "^5.15",
         "phpstan/phpstan": "^1.10",
         "doctrine/annotations": "^2.0",
-        "symfony/validator": "^5.4"
+        "symfony/validator": "^5.4",
+        "symfony/uid": "^5.4"
     },
     "autoload": {
         "psr-4": {

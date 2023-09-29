@@ -21,29 +21,41 @@ use Attribute;
  * @NamedArgumentConstructor
  *
  * @Attributes({
- *     @Attribute("value", type="string", required=true),
+ *     @Attribute("name", type="string", required=true),
+ *     @Attribute("limit", type="integer", required=false),
  * })
+ *
+ * @final See the {@see Relationship} class.
+ *
+ * @since 3.1.0
  */
 #[Attribute(Attribute::TARGET_PROPERTY)]
-final class Alias
+class Subtype
 {
 
     /**
-     * The attribute value
-     *
      * @var non-empty-string
      *
      * @readonly
      */
-    public string $value;
+    public string $name;
+
+    /**
+     * @var int<0, max>|null
+     *
+     * @readonly
+     */
+    public ?int $limit;
 
     /**
      * Constructor of the class
      *
-     * @param non-empty-string $value
+     * @param non-empty-string $name
+     * @param int<0, max>|null $limit
      */
-    public function __construct(string $value)
+    public function __construct(string $name, ?int $limit = null)
     {
-        $this->value = $value;
+        $this->name = $name;
+        $this->limit = $limit;
     }
 }

@@ -27,14 +27,14 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
 {
 
     /**
-     * @var list<array-key>
-     */
-    private array $propertyPath;
-
-    /**
      * @var string
      */
     private string $errorCode;
+
+    /**
+     * @var list<array-key>
+     */
+    private array $propertyPath;
 
     /**
      * Constructor of the class
@@ -54,17 +54,17 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
     /**
      * @return string
      */
-    final public function getPropertyPath(): string
+    final public function getErrorCode(): string
     {
-        return join('.', $this->propertyPath);
+        return $this->errorCode;
     }
 
     /**
      * @return string
      */
-    final public function getErrorCode(): string
+    final public function getPropertyPath(): string
     {
-        return $this->errorCode;
+        return join('.', $this->propertyPath);
     }
 
     /**
@@ -167,36 +167,19 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
 
     /**
      * @param list<array-key> $propertyPath
-     * @param non-empty-string $expectedFormat
-     *
-     * @return self
-     */
-    final public static function invalidTimestamp(array $propertyPath, string $expectedFormat): self
-    {
-        return new self(
-            sprintf('This value is not a valid timestamp, expected format: %s.', $expectedFormat),
-            ErrorCode::INVALID_TIMESTAMP,
-            $propertyPath,
-        );
-    }
-
-    /**
-     * @param list<array-key> $propertyPath
      * @param class-string<BackedEnum> $enumName
      *
      * @return self
      */
     final public static function invalidChoice(array $propertyPath, string $enumName): self
     {
-        /** @var list<BackedEnum> $validCases */
-        $validCases = $enumName::cases();
-        $expectedChoices = [];
-        foreach ($validCases as $validCase) {
-            $expectedChoices[] = $validCase->value;
+        $choices = [];
+        foreach ($enumName::cases() as $case) {
+            $choices[] = $case->value;
         }
 
         return new self(
-            sprintf('This value is not a valid choice, expected choices: %s.', join(', ', $expectedChoices)),
+            sprintf('This value should be one of: %s.', join(', ', $choices)),
             ErrorCode::INVALID_CHOICE,
             $propertyPath,
         );
@@ -204,14 +187,57 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
 
     /**
      * @param list<array-key> $propertyPath
-     * @param int<1, max> $limit
+     * @param string $format
+     *
+     * @return self
+     */
+    final public static function invalidTimestamp(array $propertyPath, string $format): self
+    {
+        return new self(
+            sprintf('This value should be in the format "%s".', $format),
+            ErrorCode::INVALID_TIMESTAMP,
+            $propertyPath,
+        );
+    }
+
+    /**
+     * @param list<array-key> $propertyPath
+     *
+     * @return self
+     */
+    final public static function invalidTimezone(array $propertyPath): self
+    {
+        return new self(
+            'This value is not a valid timezone.',
+            ErrorCode::INVALID_TIMEZONE,
+            $propertyPath,
+        );
+    }
+
+    /**
+     * @param list<array-key> $propertyPath
+     *
+     * @return self
+     */
+    final public static function invalidUid(array $propertyPath): self
+    {
+        return new self(
+            'This value is not a valid UID.',
+            ErrorCode::INVALID_UID,
+            $propertyPath,
+        );
+    }
+
+    /**
+     * @param list<array-key> $propertyPath
+     * @param int<0, max> $limit
      *
      * @return self
      */
     final public static function redundantElement(array $propertyPath, int $limit): self
     {
         return new self(
-            sprintf('This element is redundant, limit: %d.', $limit),
+            sprintf('The maximum allowed number of elements is %d.', $limit),
             ErrorCode::REDUNDANT_ELEMENT,
             $propertyPath,
         );
