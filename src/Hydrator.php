@@ -43,7 +43,6 @@ use function simdjson_decode;
 use function sprintf;
 use function usort;
 
-use function var_dump;
 use const JSON_THROW_ON_ERROR;
 use const PHP_MAJOR_VERSION;
 use const PHP_VERSION_ID;

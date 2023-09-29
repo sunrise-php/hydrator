@@ -29,6 +29,8 @@ composer require sunrise/hydrator
 * * [String](#string)
 * * [Array](#array)
 * * [Timestamp](#timestamp)
+* * [Timezone](#timezone)
+* * [UID](#uid)
 * * [Enumeration](#enumeration)
 * * [Relationship](#relationship)
 * [Ignored property](#ignored-property)
@@ -258,6 +260,28 @@ This property accepts a date as a string in the specified format, but it can als
 ```php
 #[\Sunrise\Hydrator\Annotation\Format('U')]
 public readonly DateTimeImmutable $value;
+```
+
+Also, please note that if a value in a dataset for this property is represented as an empty string or a string consisting only of whitespace, then the value will be handled as [null](#null).
+
+### Timezone
+
+Only the DateTimeZone type is supported.
+
+```php
+public readonly DateTimeZone $value;
+```
+
+Also, please note that if a value in a dataset for this property is represented as an empty string or a string consisting only of whitespace, then the value will be handled as [null](#null).
+
+### UID
+
+```bash
+composer require symfony/uid
+```
+
+```php
+public readonly \Symfony\Component\Uid\UuidV4 $value;
 ```
 
 Also, please note that if a value in a dataset for this property is represented as an empty string or a string consisting only of whitespace, then the value will be handled as [null](#null).
