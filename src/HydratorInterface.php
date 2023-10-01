@@ -44,7 +44,7 @@ interface HydratorInterface
      *
      * @return mixed
      *
-     * @throws InvalidDataException If one of the value elements isn't valid.
+     * @throws InvalidDataException If one of the value's elements isn't valid.
      *
      * @throws InvalidValueException If the value isn't valid.
      *

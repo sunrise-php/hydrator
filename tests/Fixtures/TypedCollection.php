@@ -7,9 +7,16 @@ namespace Sunrise\Hydrator\Tests\Fixtures;
 use ArrayAccess;
 use ReturnTypeWillChange;
 
-final class Collection implements ArrayAccess
+final class TypedCollection implements ArrayAccess
 {
     public array $elements = [];
+
+    public function __construct(string ...$elements)
+    {
+        foreach ($elements as $key => $element) {
+            $this->elements[$key] = $element;
+        }
+    }
 
     public function offsetExists($offset): bool
     {

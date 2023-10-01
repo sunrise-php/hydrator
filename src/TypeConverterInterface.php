@@ -32,14 +32,14 @@ interface TypeConverterInterface
      *
      * @return Generator<mixed, mixed>
      *
-     * @throws InvalidDataException If one of the value items isn't valid.
+     * @throws InvalidDataException If one of the value's elements isn't valid.
      *
      * @throws InvalidValueException If the value isn't valid.
      */
     public function castValue($value, Type $type, array $path): Generator;
 
     /**
-     * Gets the converter weight
+     * Gets the converter's weight
      *
      * @return int<min, max>
      */

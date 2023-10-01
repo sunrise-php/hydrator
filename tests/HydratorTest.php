@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace Sunrise\Hydrator\Tests;
 
+use Doctrine\Common\Annotations\AnnotationReader;
+use LogicException;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Sunrise\Hydrator\Annotation\Format;
 use Sunrise\Hydrator\Dictionary\ErrorCode;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\UninitializableObjectException;
 use Sunrise\Hydrator\Exception\UnsupportedPropertyTypeException;
-use Sunrise\Hydrator\Exception\UntypedPropertyException;
 use Sunrise\Hydrator\Hydrator;
 use Sunrise\Hydrator\HydratorInterface;
 use Sunrise\Hydrator\Tests\Fixtures\IntegerEnum;
@@ -23,6 +25,9 @@ use Sunrise\Hydrator\Tests\Fixtures\ObjectWithCollection;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithIgnoredProperty;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithInteger;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithIntegerEnum;
+use Sunrise\Hydrator\Tests\Fixtures\ObjectWithTypedCollection;
+use Sunrise\Hydrator\Tests\Fixtures\ObjectWithUnsupportedInternalClass;
+use Sunrise\Hydrator\Tests\Fixtures\ObjectWithUnstantiableCollection;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithNullableArray;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithNullableBoolean;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithNullableCollection;
@@ -52,6 +57,7 @@ use Sunrise\Hydrator\Tests\Fixtures\ObjectWithOptionalTimestamp;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithOptionalTimezone;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithOptionalUid;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithOptionalUnixTimeStamp;
+use Sunrise\Hydrator\Tests\Fixtures\ObjectWithOverflowedCollection;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithRelationship;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithRelationshipWithNullableString;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithRelationshipWithOptionalString;
@@ -64,11 +70,12 @@ use Sunrise\Hydrator\Tests\Fixtures\ObjectWithString;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithStringEnum;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithTimestamp;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithTimezone;
+use Sunrise\Hydrator\Tests\Fixtures\ObjectWithTypedOverflowedCollection;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithUid;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithUnformattedTimestampProperty;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithUnixTimeStamp;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithUnstantiableRelationship;
-use Sunrise\Hydrator\Tests\Fixtures\ObjectWithUnsupportedProperty;
+use Sunrise\Hydrator\Tests\Fixtures\ObjectWithUnsupportedPropertyType;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithUnsupportedPropertyNotation;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithUntypedProperty;
 use Sunrise\Hydrator\Tests\Fixtures\Store\Product;
@@ -545,16 +552,56 @@ class HydratorTest extends TestCase
     /**
      * @group collection
      */
-    public function testOverflowCollection(): void
+    public function testTypedCollection(): void
+    {
+        $object = $this->createHydrator()->hydrate(ObjectWithTypedCollection::class, ['value' => ['foo']]);
+        $this->assertSame(['foo'], $object->value->elements);
+    }
+
+    /**
+     * @group collection
+     */
+    public function testTypedCollectionWithInvalidValue(): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'The maximum allowed number of elements is 1.');
+        $this->assertInvalidValueExceptionMessage(0, 'This value should be of type string.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_STRING);
+        $this->assertInvalidValueExceptionPropertyPath(0, 'value.0');
+        $this->createHydrator()->hydrate(ObjectWithTypedCollection::class, ['value' => [[]]]);
+    }
+
+    /**
+     * @group collection
+     */
+    public function testOverflowedCollection(): void
+    {
+        $this->assertInvalidValueExceptionCount(1);
+        $this->assertInvalidValueExceptionMessage(0, 'The maximum allowed number of elements is 0.');
         $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::REDUNDANT_ELEMENT);
-        $this->assertInvalidValueExceptionPropertyPath(0, 'value.1');
-        $this->createHydrator()->hydrate(ObjectWithCollection::class, ['value' => [
-            ['value' => 'foo'],
-            ['value' => 'bar'],
-        ]]);
+        $this->assertInvalidValueExceptionPropertyPath(0, 'value.0');
+        $this->createHydrator()->hydrate(ObjectWithOverflowedCollection::class, ['value' => ['foo']]);
+    }
+
+    /**
+     * @group collection
+     */
+    public function testTypedOverflowedCollection(): void
+    {
+        $this->assertInvalidValueExceptionCount(1);
+        $this->assertInvalidValueExceptionMessage(0, 'The maximum allowed number of elements is 0.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::REDUNDANT_ELEMENT);
+        $this->assertInvalidValueExceptionPropertyPath(0, 'value.0');
+        $this->createHydrator()->hydrate(ObjectWithTypedOverflowedCollection::class, ['value' => ['foo']]);
+    }
+
+    /**
+     * @group collection
+     */
+    public function testUnstantiableCollection(): void
+    {
+        $this->expectException(UnsupportedPropertyTypeException::class);
+
+        $this->createHydrator()->hydrate(ObjectWithUnstantiableCollection::class, ['value' => []]);
     }
 
     /**
@@ -1534,12 +1581,12 @@ class HydratorTest extends TestCase
         $this->expectException(UnsupportedPropertyTypeException::class);
         $this->expectExceptionMessage(sprintf(
             'The property %s.%s contains an unsupported type %s.',
-            ObjectWithUnsupportedProperty::class,
+            ObjectWithUnsupportedPropertyType::class,
             'value',
             'iterable',
         ));
 
-        $this->createHydrator()->hydrate(ObjectWithUnsupportedProperty::class, ['value' => []]);
+        $this->createHydrator()->hydrate(ObjectWithUnsupportedPropertyType::class, ['value' => []]);
     }
 
     public function testUnsupportedPropertyTypeNotation(): void
@@ -1557,16 +1604,45 @@ class HydratorTest extends TestCase
         $this->createHydrator()->hydrate(ObjectWithUnsupportedPropertyNotation::class, ['value' => []]);
     }
 
-    public function testUntypedProperty(): void
+    public function testUnsupportedInternalClass(): void
     {
-        $this->expectException(UntypedPropertyException::class);
+        $this->expectException(UnsupportedPropertyTypeException::class);
         $this->expectExceptionMessage(sprintf(
-            'The property %s.%s is not typed.',
-            ObjectWithUntypedProperty::class,
+            'The property %s.%s contains an unsupported type %s.',
+            ObjectWithUnsupportedInternalClass::class,
             'value',
+            'SplFileInfo',
         ));
 
-        $this->createHydrator()->hydrate(ObjectWithUntypedProperty::class, ['value' => []]);
+        $this->createHydrator()->hydrate(ObjectWithUnsupportedInternalClass::class, ['value' => []]);
+    }
+
+    public function testUntypedProperty(): void
+    {
+        $object = $this->createHydrator()->hydrate(ObjectWithUntypedProperty::class, ['value' => []]);
+
+        $this->assertSame([], $object->value);
+    }
+
+    public function testUnsupportedAnnotationReader(): void
+    {
+        /** @var Hydrator $hydrator */
+        $hydrator = $this->createHydrator();
+
+        $this->expectException(LogicException::class);
+
+        $hydrator->setAnnotationReader(new stdClass);
+    }
+
+    public function testDoctrineAnnotationReader(): void
+    {
+        /** @var Hydrator $hydrator */
+        $hydrator = $this->createHydrator();
+        $hydrator->setAnnotationReader(new AnnotationReader());
+
+        $this->assertInvalidValueExceptionCount(0);
+        $object = $hydrator->hydrate(ObjectWithAnnotatedAlias::class, ['non-normalized-value' => 'foo']);
+        $this->assertSame('foo', $object->value);
     }
 
     public function testAnnotatedAlias(): void

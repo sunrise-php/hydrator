@@ -149,11 +149,11 @@ class Hydrator implements HydratorInterface
      *
      * @throws LogicException If the doctrine/annotations package isn't installed on the server.
      *
-     * @deprecated 3.1.0
+     * @deprecated 3.1.0 Use the {@see setAnnotationReader()} method with {@see DoctrineAnnotationReader::default()}.
      */
     public function useDefaultAnnotationReader(): self
     {
-        $this->annotationReader = DoctrineAnnotationReader::default();
+        $this->setAnnotationReader(DoctrineAnnotationReader::default());
 
         return $this;
     }
@@ -173,9 +173,6 @@ class Hydrator implements HydratorInterface
      * @throws Exception\UninitializableObjectException
      *         If the object cannot be initialized.
      *
-     * @throws Exception\UntypedPropertyException
-     *         If one of the object properties isn't typed.
-     *
      * @throws Exception\UnsupportedPropertyTypeException
      *         If one of the object properties contains an unsupported type.
      *
@@ -188,10 +185,11 @@ class Hydrator implements HydratorInterface
         $defaultValues = $this->getClassConstructorDefaultValues($class);
         $violations = [];
         foreach ($properties as $property) {
+            // @codeCoverageIgnoreStart
             if (PHP_VERSION_ID < 80100) {
                 /** @psalm-suppress UnusedMethodCall */
                 $property->setAccessible(true);
-            }
+            } // @codeCoverageIgnoreEnd
 
             if ($property->isStatic()) {
                 continue;
@@ -253,9 +251,6 @@ class Hydrator implements HydratorInterface
      *
      * @throws Exception\UninitializableObjectException
      *         If the object cannot be initialized.
-     *
-     * @throws Exception\UntypedPropertyException
-     *         If one of the object properties isn't typed.
      *
      * @throws Exception\UnsupportedPropertyTypeException
      *         If one of the object properties contains an unsupported type.
@@ -328,21 +323,23 @@ class Hydrator implements HydratorInterface
      *
      * @throws InvalidValueException If the given value is invalid.
      *
-     * @throws Exception\UntypedPropertyException If the given property isn't typed.
-     *
      * @throws Exception\UnsupportedPropertyTypeException If the given property contains an unsupported type.
      */
     private function hydrateProperty(object $object, ReflectionProperty $property, $value, array $path): void
     {
         $type = $this->getPropertyType($property);
+        if ($type === null) {
+            $property->setValue($object, $value);
+            return;
+        }
 
         if ($value === null) {
-            if (!$type->allowsNull()) {
-                throw InvalidValueException::shouldNotBeEmpty($path);
+            if ($type->allowsNull()) {
+                $property->setValue($object, null);
+                return;
             }
 
-            $property->setValue($object, null);
-            return;
+            throw InvalidValueException::shouldNotBeEmpty($path);
         }
 
         $property->setValue($object, $this->castValue($value, $type, $path));
@@ -353,29 +350,22 @@ class Hydrator implements HydratorInterface
      *
      * @param ReflectionProperty $property
      *
-     * @return Type
-     *
-     * @throws Exception\UntypedPropertyException If the given property isn't typed.
+     * @return Type|null
      *
      * @throws Exception\UnsupportedPropertyTypeException If the given property contains an unsupported type.
      */
-    private function getPropertyType(ReflectionProperty $property): Type
+    private function getPropertyType(ReflectionProperty $property): ?Type
     {
         $type = $property->getType();
-
-        if (!isset($type)) {
-            throw new Exception\UntypedPropertyException(sprintf(
-                'The property %s.%s is not typed.',
-                $property->getDeclaringClass()->getName(),
-                $property->getName(),
-            ));
+        if ($type === null) {
+            return null;
         }
 
-        if (!($type instanceof ReflectionNamedType)) {
-            throw Exception\UnsupportedPropertyTypeException::unsupportedType($property, (string) $type);
+        if ($type instanceof ReflectionNamedType) {
+            return new Type($property, $type->getName(), $type->allowsNull());
         }
 
-        return new Type($property, $type->getName(), $type->allowsNull());
+        throw Exception\UnsupportedPropertyTypeException::unsupportedType($property, (string) $type);
     }
 
     /**

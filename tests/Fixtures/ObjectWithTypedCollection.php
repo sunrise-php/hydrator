@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Hydrator\Tests\Fixtures;
 
-final class ObjectWithUnsupportedProperty
+final class ObjectWithTypedCollection
 {
-    public iterable $value;
+    public TypedCollection $value;
 }

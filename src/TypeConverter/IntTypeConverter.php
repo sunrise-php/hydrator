@@ -44,7 +44,7 @@ final class IntTypeConverter implements TypeConverterInterface
 
         if (is_string($value)) {
             // As part of the support for HTML forms and other untyped data sources,
-            // empty strings should not be cast to integer types;
+            // empty strings should not be cast to the integer type;
             // instead, they should be considered as NULL.
             if (trim($value) === '') {
                 if ($type->allowsNull()) {

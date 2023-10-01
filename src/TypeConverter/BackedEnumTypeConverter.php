@@ -44,9 +44,10 @@ final class BackedEnumTypeConverter implements TypeConverterInterface
      */
     public function castValue($value, Type $type, array $path): Generator
     {
+        // @codeCoverageIgnoreStart
         if (PHP_VERSION_ID < 80100) {
             return;
-        }
+        } // @codeCoverageIgnoreEnd
 
         $enumName = $type->getName();
         if (!is_subclass_of($enumName, BackedEnum::class)) {

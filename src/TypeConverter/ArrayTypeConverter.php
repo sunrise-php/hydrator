@@ -17,6 +17,7 @@ use ArrayAccess;
 use Generator;
 use OverflowException;
 use ReflectionClass;
+use ReflectionNamedType;
 use Sunrise\Hydrator\Annotation\Subtype;
 use Sunrise\Hydrator\AnnotationReaderAwareInterface;
 use Sunrise\Hydrator\AnnotationReaderInterface;
@@ -82,6 +83,9 @@ final class ArrayTypeConverter implements TypeConverterInterface, AnnotationRead
             throw InvalidValueException::shouldBeArray($path);
         }
 
+        /** @var Subtype|null $subtype */
+        $subtype = null;
+
         $container = [];
         if ($containerName <> BuiltinType::ARRAY) {
             $containerReflection = new ReflectionClass($containerName);
@@ -89,11 +93,21 @@ final class ArrayTypeConverter implements TypeConverterInterface, AnnotationRead
                 throw UnsupportedPropertyTypeException::nonInstantiableClass($type->getHolder(), $containerName);
             }
 
+            $containerConstructor = $containerReflection->getConstructor();
+            if (isset($containerConstructor) &&
+                $containerConstructor->getNumberOfParameters() === 1 &&
+                $containerConstructor->getParameters()[0]->isVariadic() &&
+                $containerConstructor->getParameters()[0]->hasType() &&
+                $containerConstructor->getParameters()[0]->getType() instanceof ReflectionNamedType) {
+                $subtype = new Subtype($containerConstructor->getParameters()[0]->getType()->getName());
+            }
+
             $container = $containerReflection->newInstanceWithoutConstructor();
         }
 
-        $valueSubtype = $this->annotationReader->getAnnotations($type->getHolder(), Subtype::class)->current();
-        if ($valueSubtype === null) {
+        $subtype ??= $this->annotationReader->getAnnotations($type->getHolder(), Subtype::class)->current();
+
+        if ($subtype === null) {
             $elementCounter = 0;
             foreach ($value as $key => $element) {
                 try {
@@ -108,17 +122,17 @@ final class ArrayTypeConverter implements TypeConverterInterface, AnnotationRead
         }
 
         $elementCounter = 0;
-        $elementType = new Type($type->getHolder(), $valueSubtype->name, false);
+        $elementType = new Type($type->getHolder(), $subtype->name, false);
         $violations = [];
         foreach ($value as $key => $element) {
-            if (isset($valueSubtype->limit) && $elementCounter >= $valueSubtype->limit) {
-                $violations[] = InvalidValueException::redundantElement([...$path, $key], $valueSubtype->limit);
+            if (isset($subtype->limit) && $elementCounter >= $subtype->limit) {
+                $violations[] = InvalidValueException::redundantElement([...$path, $key], $subtype->limit);
                 break;
             }
 
             try {
                 $container[$key] = $this->hydrator->castValue($element, $elementType, [...$path, $key]);
-                ++$elementCounter;
+                $elementCounter++;
             } catch (InvalidDataException $e) {
                 $violations = [...$violations, ...$e->getExceptions()];
             } catch (InvalidValueException $e) {

@@ -5,30 +5,32 @@ declare(strict_types=1);
 namespace Sunrise\Hydrator\Tests\Fixtures;
 
 use ArrayAccess;
+use OverflowException;
 use ReturnTypeWillChange;
 
-final class Collection implements ArrayAccess
+final class UnstantiableCollection implements ArrayAccess
 {
-    public array $elements = [];
+    private function __construct()
+    {
+    }
 
     public function offsetExists($offset): bool
     {
-        return isset($this->elements[$offset]);
+        return false;
     }
 
     #[ReturnTypeWillChange]
     public function offsetGet($offset)
     {
-        return $this->elements[$offset] ?? null;
+        return null;
     }
 
     public function offsetSet($offset, $value): void
     {
-        $this->elements[$offset] = $value;
+        throw new OverflowException();
     }
 
     public function offsetUnset($offset): void
     {
-        unset($this->elements[$offset]);
     }
 }

@@ -31,16 +31,17 @@ final class AnnotationReader implements AnnotationReaderInterface
     /**
      * Constructor of the class
      *
-     * @throws LogicException If PHP version less than 8.0.
+     * @throws LogicException If the PHP version less than 8.0.
      */
     public function __construct()
     {
+        // @codeCoverageIgnoreStart
         if (PHP_MAJOR_VERSION < 8) {
             throw new LogicException(sprintf(
                 'The annotation reader {%s} requires PHP version greater than or equal to 8.0.',
                 __CLASS__,
             ));
-        }
+        } // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -48,9 +49,10 @@ final class AnnotationReader implements AnnotationReaderInterface
      */
     public function getAnnotations(ReflectionProperty $target, string $name): Generator
     {
+        // @codeCoverageIgnoreStart
         if (PHP_MAJOR_VERSION < 8) {
             return;
-        }
+        } // @codeCoverageIgnoreEnd
 
         $attributes = $target->getAttributes($name, ReflectionAttribute::IS_INSTANCEOF);
         foreach ($attributes as $attribute) {
