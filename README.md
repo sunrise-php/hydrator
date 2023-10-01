@@ -227,10 +227,14 @@ In addition to arrays, you can also use **collections**, in other words, classes
 
 ```php
 final class TagDto
+{
+}
 ```
 
 ```php
 final class TagCollection implements \ArrayAccess
+{
+}
 ```
 
 ```php
@@ -245,6 +249,8 @@ final class CreateProductDto
 ```
 
 Note that for collections, instead of the **Subtype** annotation, you can use typing through its constructor. It is important that there is only one variadic parameter in it. Please refer to the example below:
+
+> Please note that in this case, you take on the responsibility of limiting the collection. To ensure that the hydrator understands when the collection is full, the [offsetSet](https://www.php.net/arrayaccess.offsetset) method should throw an [OverflowException](https://www.php.net/overflowexception).
 
 ```php
 final class TagCollection implements \ArrayAccess
