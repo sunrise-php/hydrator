@@ -360,7 +360,7 @@ final class UuidTypeConverter implements TypeConverterInterface
         }
 
         if (!\is_string($value)) {
-            throw InvalidValueException::shouldBeString($path);
+            throw InvalidValueException::mustBeString($path);
         }
 
         if (!Uuid::isValid($value)) {

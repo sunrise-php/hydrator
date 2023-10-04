@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Sunrise\Hydrator\Exception;
 
-use BackedEnum;
 use Sunrise\Hydrator\Dictionary\ErrorCode;
 use RuntimeException;
 
@@ -72,11 +71,11 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
      *
      * @return self
      */
-    final public static function shouldBeProvided(array $propertyPath): self
+    final public static function mustBeProvided(array $propertyPath): self
     {
         return new self(
-            'This value should be provided.',
-            ErrorCode::VALUE_SHOULD_BE_PROVIDED,
+            'This value must be provided.',
+            ErrorCode::MUST_BE_PROVIDED,
             $propertyPath,
         );
     }
@@ -86,11 +85,11 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
      *
      * @return self
      */
-    final public static function shouldNotBeEmpty(array $propertyPath): self
+    final public static function mustNotBeEmpty(array $propertyPath): self
     {
         return new self(
-            'This value should not be empty.',
-            ErrorCode::VALUE_SHOULD_NOT_BE_EMPTY,
+            'This value must not be empty.',
+            ErrorCode::MUST_NOT_BE_EMPTY,
             $propertyPath,
         );
     }
@@ -100,11 +99,11 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
      *
      * @return self
      */
-    final public static function shouldBeBoolean(array $propertyPath): self
+    final public static function mustBeBoolean(array $propertyPath): self
     {
         return new self(
-            'This value should be of type boolean.',
-            ErrorCode::VALUE_SHOULD_BE_BOOLEAN,
+            'This value must be of type boolean.',
+            ErrorCode::MUST_BE_BOOLEAN,
             $propertyPath,
         );
     }
@@ -114,11 +113,11 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
      *
      * @return self
      */
-    final public static function shouldBeInteger(array $propertyPath): self
+    final public static function mustBeInteger(array $propertyPath): self
     {
         return new self(
-            'This value should be of type integer.',
-            ErrorCode::VALUE_SHOULD_BE_INTEGER,
+            'This value must be of type integer.',
+            ErrorCode::MUST_BE_INTEGER,
             $propertyPath,
         );
     }
@@ -128,11 +127,11 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
      *
      * @return self
      */
-    final public static function shouldBeNumber(array $propertyPath): self
+    final public static function mustBeNumber(array $propertyPath): self
     {
         return new self(
-            'This value should be of type number.',
-            ErrorCode::VALUE_SHOULD_BE_NUMBER,
+            'This value must be of type number.',
+            ErrorCode::MUST_BE_NUMBER,
             $propertyPath,
         );
     }
@@ -142,11 +141,11 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
      *
      * @return self
      */
-    final public static function shouldBeString(array $propertyPath): self
+    final public static function mustBeString(array $propertyPath): self
     {
         return new self(
-            'This value should be of type string.',
-            ErrorCode::VALUE_SHOULD_BE_STRING,
+            'This value must be of type string.',
+            ErrorCode::MUST_BE_STRING,
             $propertyPath,
         );
     }
@@ -156,30 +155,39 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
      *
      * @return self
      */
-    final public static function shouldBeArray(array $propertyPath): self
+    final public static function mustBeArray(array $propertyPath): self
     {
         return new self(
-            'This value should be of type array.',
-            ErrorCode::VALUE_SHOULD_BE_ARRAY,
+            'This value must be of type array.',
+            ErrorCode::MUST_BE_ARRAY,
             $propertyPath,
         );
     }
 
     /**
      * @param list<array-key> $propertyPath
-     * @param class-string<BackedEnum> $enumName
+     * @param int<0, max> $limit
      *
      * @return self
      */
-    final public static function invalidChoice(array $propertyPath, string $enumName): self
+    final public static function arrayOverflow(array $propertyPath, int $limit): self
     {
-        $choices = [];
-        foreach ($enumName::cases() as $case) {
-            $choices[] = $case->value;
-        }
-
         return new self(
-            sprintf('This value should be one of: %s.', join(', ', $choices)),
+            sprintf('This value is limited to %d elements.', $limit),
+            ErrorCode::ARRAY_OVERFLOW,
+            $propertyPath,
+        );
+    }
+
+    /**
+     * @param list<array-key> $propertyPath
+     *
+     * @return self
+     */
+    final public static function invalidChoice(array $propertyPath): self
+    {
+        return new self(
+            'This value is not a valid choice.',
             ErrorCode::INVALID_CHOICE,
             $propertyPath,
         );
@@ -187,14 +195,13 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
 
     /**
      * @param list<array-key> $propertyPath
-     * @param string $format
      *
      * @return self
      */
-    final public static function invalidTimestamp(array $propertyPath, string $format): self
+    final public static function invalidTimestamp(array $propertyPath): self
     {
         return new self(
-            sprintf('This value should be in the format "%s".', $format),
+            'This value is not a valid timestamp.',
             ErrorCode::INVALID_TIMESTAMP,
             $propertyPath,
         );
@@ -224,21 +231,6 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
         return new self(
             'This value is not a valid UID.',
             ErrorCode::INVALID_UID,
-            $propertyPath,
-        );
-    }
-
-    /**
-     * @param list<array-key> $propertyPath
-     * @param int<0, max> $limit
-     *
-     * @return self
-     */
-    final public static function redundantElement(array $propertyPath, int $limit): self
-    {
-        return new self(
-            sprintf('The maximum allowed number of elements is %d.', $limit),
-            ErrorCode::REDUNDANT_ELEMENT,
             $propertyPath,
         );
     }

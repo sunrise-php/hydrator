@@ -11,20 +11,24 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Hydrator;
+namespace Sunrise\Hydrator\AnnotationReader;
+
+use Generator;
+use Sunrise\Hydrator\AnnotationReaderInterface;
 
 /**
- * @since 3.1.0
+ * @since 3.2.0
  */
-interface AnnotationReaderAwareInterface
+final class NullAnnotationReader implements AnnotationReaderInterface
 {
 
     /**
-     * Sets the given annotation reader to the object
+     * @inheritDoc
      *
-     * @param AnnotationReaderInterface $annotationReader
-     *
-     * @return void
+     * @psalm-suppress InvalidReturnType
      */
-    public function setAnnotationReader(AnnotationReaderInterface $annotationReader): void;
+    public function getAnnotations(string $name, $holder): Generator
+    {
+        yield from [];
+    }
 }

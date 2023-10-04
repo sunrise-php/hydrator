@@ -11,21 +11,23 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Hydrator;
+namespace Sunrise\Hydrator\AnnotationReader;
 
 use Generator;
 use LogicException;
 use ReflectionAttribute;
-use ReflectionProperty;
+use Sunrise\Hydrator\AnnotationReaderInterface;
 
 use function sprintf;
 
 use const PHP_MAJOR_VERSION;
 
 /**
+ * @link https://www.php.net/attributes
+ *
  * @since 3.1.0
  */
-final class AnnotationReader implements AnnotationReaderInterface
+final class BuiltinAnnotationReader implements AnnotationReaderInterface
 {
 
     /**
@@ -47,14 +49,14 @@ final class AnnotationReader implements AnnotationReaderInterface
     /**
      * @inheritDoc
      */
-    public function getAnnotations(ReflectionProperty $target, string $name): Generator
+    public function getAnnotations(string $name, $holder): Generator
     {
         // @codeCoverageIgnoreStart
         if (PHP_MAJOR_VERSION < 8) {
             return;
         } // @codeCoverageIgnoreEnd
 
-        $attributes = $target->getAttributes($name, ReflectionAttribute::IS_INSTANCEOF);
+        $attributes = $holder->getAttributes($name, ReflectionAttribute::IS_INSTANCEOF);
         foreach ($attributes as $attribute) {
             yield $attribute->newInstance();
         }

@@ -13,12 +13,16 @@ declare(strict_types=1);
 
 namespace Sunrise\Hydrator\TypeConverter;
 
+use ArrayAccess;
 use Generator;
+use OverflowException;
+use ReflectionClass;
+use ReflectionNamedType;
 use Sunrise\Hydrator\Annotation\Subtype;
 use Sunrise\Hydrator\AnnotationReaderAwareInterface;
 use Sunrise\Hydrator\AnnotationReaderInterface;
-use Sunrise\Hydrator\Dictionary\BuiltinType;
 use Sunrise\Hydrator\Exception\InvalidDataException;
+use Sunrise\Hydrator\Exception\InvalidObjectException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorAwareInterface;
 use Sunrise\Hydrator\HydratorInterface;
@@ -27,13 +31,14 @@ use Sunrise\Hydrator\TypeConverterInterface;
 
 use function count;
 use function is_array;
+use function is_subclass_of;
 
 /**
  * @since 3.1.0
  *
  * @psalm-suppress MissingConstructor
  */
-final class ArrayTypeConverter implements
+final class ArrayAccessTypeConverter implements
     TypeConverterInterface,
     AnnotationReaderAwareInterface,
     HydratorAwareInterface
@@ -72,12 +77,20 @@ final class ArrayTypeConverter implements
      */
     public function castValue($value, Type $type, array $path, array $context): Generator
     {
-        if ($type->getName() <> BuiltinType::ARRAY) {
+        $containerName = $type->getName();
+        if (!is_subclass_of($containerName, ArrayAccess::class)) {
             return;
         }
 
+        $containerReflection = new ReflectionClass($containerName);
+        if (!$containerReflection->isInstantiable()) {
+            throw InvalidObjectException::unsupportedType($type);
+        }
+
+        $container = $containerReflection->newInstanceWithoutConstructor();
+
         if ($value === []) {
-            return yield [];
+            return yield $container;
         }
 
         if (!is_array($value)) {
@@ -85,32 +98,51 @@ final class ArrayTypeConverter implements
         }
 
         $subtype = $this->annotationReader->getAnnotations(Subtype::class, $type->getHolder())->current();
+
+        $subtype ??= $this->getContainerSubtype($containerReflection);
+
         if ($subtype === null) {
-            return yield $value;
+            $counter = 0;
+            foreach ($value as $key => $element) {
+                try {
+                    $container[$key] = $element;
+                    ++$counter;
+                } catch (OverflowException $e) {
+                    throw InvalidValueException::arrayOverflow($path, $counter);
+                }
+            }
+
+            return yield $container;
         }
 
         if (isset($subtype->limit) && count($value) > $subtype->limit) {
             throw InvalidValueException::arrayOverflow($path, $subtype->limit);
         }
 
+        $counter = 0;
         $violations = [];
         foreach ($value as $key => $element) {
             try {
-                $value[$key] = $this->hydrator->castValue(
+                $container[$key] = $this->hydrator->castValue(
                     $element,
                     new Type($type->getHolder(), $subtype->name, false),
                     [...$path, $key],
                     $context,
                 );
+
+                $counter++;
             } catch (InvalidDataException $e) {
                 $violations = [...$violations, ...$e->getExceptions()];
             } catch (InvalidValueException $e) {
                 $violations[] = $e;
+            } catch (OverflowException $e) {
+                $violations[] = InvalidValueException::arrayOverflow($path, $counter);
+                break;
             }
         }
 
         if ($violations === []) {
-            return yield $value;
+            return yield $container;
         }
 
         throw new InvalidDataException('Invalid data', $violations);
@@ -121,6 +153,38 @@ final class ArrayTypeConverter implements
      */
     public function getWeight(): int
     {
-        return 20;
+        return 10;
+    }
+
+    /**
+     * Gets a subtype from the given container's constructor
+     *
+     * @param ReflectionClass $container
+     *
+     * @return Subtype|null
+     */
+    private function getContainerSubtype(ReflectionClass $container): ?Subtype
+    {
+        $constructor = $container->getConstructor();
+        if ($constructor === null) {
+            return null;
+        }
+
+        $parameters = $constructor->getParameters();
+        if (count($parameters) <> 1) {
+            return null;
+        }
+
+        $parameter = $parameters[0];
+        if (!$parameter->isVariadic()) {
+            return null;
+        }
+
+        $type = $parameter->getType();
+        if (! $type instanceof ReflectionNamedType) {
+            return null;
+        }
+
+        return new Subtype($type->getName());
     }
 }

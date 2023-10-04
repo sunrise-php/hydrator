@@ -16,7 +16,6 @@ namespace Sunrise\Hydrator\TypeConverter;
 use Generator;
 use ReflectionClass;
 use Sunrise\Hydrator\Exception\InvalidValueException;
-use Sunrise\Hydrator\Exception\UnsupportedPropertyTypeException;
 use Sunrise\Hydrator\HydratorAwareInterface;
 use Sunrise\Hydrator\HydratorInterface;
 use Sunrise\Hydrator\Type;
@@ -30,7 +29,7 @@ use function is_array;
  *
  * @psalm-suppress MissingConstructor
  */
-final class RelationshipTypeConverter implements TypeConverterInterface, HydratorAwareInterface
+final class ObjectTypeConverter implements TypeConverterInterface, HydratorAwareInterface
 {
 
     /**
@@ -49,29 +48,25 @@ final class RelationshipTypeConverter implements TypeConverterInterface, Hydrato
     /**
      * @inheritDoc
      */
-    public function castValue($value, Type $type, array $path): Generator
+    public function castValue($value, Type $type, array $path, array $context): Generator
     {
         $className = $type->getName();
         if (!class_exists($className)) {
             return;
         }
 
-        $classReflection = new ReflectionClass($className);
-        if ($classReflection->isInternal()) {
+        $class = new ReflectionClass($className);
+        if ($class->isInternal() || !$class->isInstantiable()) {
             return;
         }
 
-        if (!$classReflection->isInstantiable()) {
-            throw UnsupportedPropertyTypeException::nonInstantiableClass($type->getHolder(), $className);
-        }
-
         if (!is_array($value)) {
-            throw InvalidValueException::shouldBeArray($path);
+            throw InvalidValueException::mustBeArray($path);
         }
 
-        $classInstance = $classReflection->newInstanceWithoutConstructor();
+        $object = $class->newInstanceWithoutConstructor();
 
-        yield $this->hydrator->hydrate($classInstance, $value, $path);
+        yield $this->hydrator->hydrate($object, $value, $path, $context);
     }
 
     /**

@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Hydrator;
 
 use Generator;
+use ReflectionParameter;
 use ReflectionProperty;
 
 /**
@@ -23,14 +24,14 @@ interface AnnotationReaderInterface
 {
 
     /**
-     * Gets annotations from the given target by the given annotation name
+     * Gets annotations by the given name from the given holder
      *
-     * @param ReflectionProperty $target
      * @param class-string<T> $name
+     * @param ReflectionParameter|ReflectionProperty $holder
      *
      * @return Generator<mixed, T>
      *
      * @template T of object
      */
-    public function getAnnotations(ReflectionProperty $target, string $name): Generator;
+    public function getAnnotations(string $name, $holder): Generator;
 }

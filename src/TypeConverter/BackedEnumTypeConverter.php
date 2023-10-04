@@ -42,7 +42,7 @@ final class BackedEnumTypeConverter implements TypeConverterInterface
     /**
      * @inheritDoc
      */
-    public function castValue($value, Type $type, array $path): Generator
+    public function castValue($value, Type $type, array $path, array $context): Generator
     {
         // @codeCoverageIgnoreStart
         if (PHP_VERSION_ID < 80100) {
@@ -57,6 +57,7 @@ final class BackedEnumTypeConverter implements TypeConverterInterface
         /** @var ReflectionNamedType $enumType */
         $enumType = (new ReflectionEnum($enumName))->getBackingType();
 
+        /** @var BuiltinType::INT|BuiltinType::STRING $enumTypeName */
         $enumTypeName = $enumType->getName();
 
         if (is_string($value)) {
@@ -70,7 +71,7 @@ final class BackedEnumTypeConverter implements TypeConverterInterface
                     return yield null;
                 }
 
-                throw InvalidValueException::shouldNotBeEmpty($path);
+                throw InvalidValueException::mustNotBeEmpty($path);
             }
 
             if ($enumTypeName === BuiltinType::INT) {
@@ -81,10 +82,10 @@ final class BackedEnumTypeConverter implements TypeConverterInterface
         }
 
         if ($enumTypeName === BuiltinType::INT && !is_int($value)) {
-            throw InvalidValueException::shouldBeInteger($path);
+            throw InvalidValueException::mustBeInteger($path);
         }
         if ($enumTypeName === BuiltinType::STRING && !is_string($value)) {
-            throw InvalidValueException::shouldBeString($path);
+            throw InvalidValueException::mustBeString($path);
         }
 
         /** @var int|string $value */
@@ -92,7 +93,7 @@ final class BackedEnumTypeConverter implements TypeConverterInterface
         try {
             yield $enumName::from($value);
         } catch (ValueError $e) {
-            throw InvalidValueException::invalidChoice($path, $enumName);
+            throw InvalidValueException::invalidChoice($path);
         }
     }
 

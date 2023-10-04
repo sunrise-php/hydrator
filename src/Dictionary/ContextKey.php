@@ -11,13 +11,15 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Hydrator\Exception;
+namespace Sunrise\Hydrator\Dictionary;
 
 /**
- * UninitializableObjectException
+ * Hydration context keys
  *
- * @since 3.0.0
+ * @since 3.2.0
  */
-class UninitializableObjectException extends InvalidObjectException
+final class ContextKey
 {
+    public const TIMESTAMP_FORMAT = 'timestamp_format';
+    public const TIMEZONE = 'timezone';
 }

@@ -14,55 +14,54 @@ declare(strict_types=1);
 namespace Sunrise\Hydrator\TypeConverter;
 
 use Generator;
-use Sunrise\Hydrator\Dictionary\BuiltinType;
+use MyCLabs\Enum\Enum;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\Type;
 use Sunrise\Hydrator\TypeConverterInterface;
+use UnexpectedValueException;
 
-use function filter_var;
-use function is_bool;
 use function is_string;
+use function is_subclass_of;
 use function trim;
 
-use const FILTER_NULL_ON_FAILURE;
-use const FILTER_VALIDATE_BOOL;
-
 /**
- * @since 3.1.0
+ * @link https://github.com/myclabs/php-enum
+ *
+ * @since 3.2.0
  */
-final class BoolTypeConverter implements TypeConverterInterface
+final class MyclabsEnumTypeConverter implements TypeConverterInterface
 {
 
     /**
      * @inheritDoc
      */
-    public function castValue($value, Type $type, array $path): Generator
+    public function castValue($value, Type $type, array $path, array $context): Generator
     {
-        if ($type->getName() <> BuiltinType::BOOL) {
+        $enumName = $type->getName();
+        if (!is_subclass_of($enumName, Enum::class)) {
             return;
         }
 
         if (is_string($value)) {
+            $value = trim($value);
+
             // As part of the support for HTML forms and other untyped data sources,
-            // empty strings should not be cast to the boolean type;
+            // empty strings should not be used to instantiate enumerations;
             // instead, they should be considered as NULL.
-            if (trim($value) === '') {
+            if ($value === '') {
                 if ($type->allowsNull()) {
                     return yield null;
                 }
 
-                throw InvalidValueException::shouldNotBeEmpty($path);
+                throw InvalidValueException::mustNotBeEmpty($path);
             }
-
-            // https://github.com/php/php-src/blob/b7d90f09d4a1688f2692f2fa9067d0a07f78cc7d/ext/filter/logical_filters.c#L273
-            $value = filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
         }
 
-        if (!is_bool($value)) {
-            throw InvalidValueException::shouldBeBoolean($path);
+        try {
+            yield $enumName::from($value);
+        } catch (UnexpectedValueException $e) {
+            throw InvalidValueException::invalidChoice($path);
         }
-
-        yield $value;
     }
 
     /**
@@ -70,6 +69,6 @@ final class BoolTypeConverter implements TypeConverterInterface
      */
     public function getWeight(): int
     {
-        return 100;
+        return 60;
     }
 }

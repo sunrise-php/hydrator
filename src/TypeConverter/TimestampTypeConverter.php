@@ -14,20 +14,20 @@ declare(strict_types=1);
 namespace Sunrise\Hydrator\TypeConverter;
 
 use DateTimeImmutable;
+use DateTimeInterface;
+use DateTimeZone;
 use Generator;
 use Sunrise\Hydrator\Annotation\Format;
 use Sunrise\Hydrator\AnnotationReaderAwareInterface;
 use Sunrise\Hydrator\AnnotationReaderInterface;
+use Sunrise\Hydrator\Dictionary\ContextKey;
 use Sunrise\Hydrator\Exception\InvalidValueException;
-use Sunrise\Hydrator\Exception\UnsupportedPropertyTypeException;
 use Sunrise\Hydrator\Type;
 use Sunrise\Hydrator\TypeConverterInterface;
 
 use function filter_var;
-use function is_a;
 use function is_int;
 use function is_string;
-use function sprintf;
 use function trim;
 
 use const FILTER_NULL_ON_FAILURE;
@@ -40,6 +40,13 @@ use const FILTER_VALIDATE_INT;
  */
 final class TimestampTypeConverter implements TypeConverterInterface, AnnotationReaderAwareInterface
 {
+
+    /**
+     * The default timestamp format
+     *
+     * @var non-empty-string
+     */
+    public const DEFAULT_FORMAT = DateTimeInterface::RFC3339_EXTENDED;
 
     /**
      * @var AnnotationReaderInterface
@@ -57,23 +64,16 @@ final class TimestampTypeConverter implements TypeConverterInterface, Annotation
     /**
      * @inheritDoc
      */
-    public function castValue($value, Type $type, array $path): Generator
+    public function castValue($value, Type $type, array $path, array $context): Generator
     {
-        $className = $type->getName();
-        if (!is_a($className, DateTimeImmutable::class, true)) {
+        /** @var array{timestamp_format?: string, timezone?: string} $context */
+
+        if ($type->getName() <> DateTimeImmutable::class) {
             return;
         }
 
-        $format = $this->annotationReader->getAnnotations($type->getHolder(), Format::class)->current();
-        if ($format === null) {
-            throw new UnsupportedPropertyTypeException(sprintf(
-                'The property %1$s.%2$s must contain the attribute %3$s, ' .
-                'for example: #[\%3$s(\DateTimeInterface::DATE_RFC3339)].',
-                $type->getHolder()->getDeclaringClass()->getName(),
-                $type->getHolder()->getName(),
-                Format::class,
-            ));
-        }
+        // phpcs:ignore Generic.Files.LineLength
+        $format = $this->annotationReader->getAnnotations(Format::class, $type->getHolder())->current()->value ?? $context[ContextKey::TIMESTAMP_FORMAT] ?? self::DEFAULT_FORMAT;
 
         if (is_string($value)) {
             $value = trim($value);
@@ -86,28 +86,33 @@ final class TimestampTypeConverter implements TypeConverterInterface, Annotation
                     return yield null;
                 }
 
-                throw InvalidValueException::shouldNotBeEmpty($path);
+                throw InvalidValueException::mustNotBeEmpty($path);
             }
 
-            if ($format->value === 'U') {
+            if ($format === 'U') {
                 // https://github.com/php/php-src/blob/b7d90f09d4a1688f2692f2fa9067d0a07f78cc7d/ext/filter/logical_filters.c#L94
                 // https://github.com/php/php-src/blob/b7d90f09d4a1688f2692f2fa9067d0a07f78cc7d/ext/filter/logical_filters.c#L197
                 $value = filter_var($value, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE);
             }
         }
 
-        if ($format->value === 'U' && !is_int($value)) {
-            throw InvalidValueException::shouldBeInteger($path);
+        if ($format === 'U' && !is_int($value)) {
+            throw InvalidValueException::mustBeInteger($path);
         }
-        if ($format->value !== 'U' && !is_string($value)) {
-            throw InvalidValueException::shouldBeString($path);
+        if ($format !== 'U' && !is_string($value)) {
+            throw InvalidValueException::mustBeString($path);
         }
 
         /** @var int|string $value */
 
-        $timestamp = $className::createFromFormat($format->value, (string) $value);
+        $timezone = null;
+        if (isset($context[ContextKey::TIMEZONE])) {
+            $timezone = new DateTimeZone($context[ContextKey::TIMEZONE]);
+        }
+
+        $timestamp = DateTimeImmutable::createFromFormat($format, (string) $value, $timezone);
         if ($timestamp === false) {
-            throw InvalidValueException::invalidTimestamp($path, $format->value);
+            throw InvalidValueException::invalidTimestamp($path);
         }
 
         yield $timestamp;

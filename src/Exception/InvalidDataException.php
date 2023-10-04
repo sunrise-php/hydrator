@@ -57,20 +57,23 @@ class InvalidDataException extends RuntimeException implements ExceptionInterfac
      */
     final public function getViolations(): ConstraintViolationListInterface
     {
-        $violations = [];
+        $violations = new ConstraintViolationList();
+
         foreach ($this->exceptions as $exception) {
-            $violations[] = new ConstraintViolation(
-                $exception->getMessage(),
-                null,
-                [],
-                null,
-                $exception->getPropertyPath(),
-                null,
-                null,
-                $exception->getErrorCode()
+            $violations->add(
+                new ConstraintViolation(
+                    $exception->getMessage(),
+                    null,
+                    [],
+                    null,
+                    $exception->getPropertyPath(),
+                    null,
+                    null,
+                    $exception->getErrorCode()
+                )
             );
         }
 
-        return new ConstraintViolationList($violations);
+        return $violations;
     }
 }

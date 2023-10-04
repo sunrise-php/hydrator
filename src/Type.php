@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Hydrator;
 
+use ReflectionParameter;
 use ReflectionProperty;
 
 /**
@@ -24,9 +25,9 @@ final class Type
     /**
      * The type holder
      *
-     * @var ReflectionProperty
+     * @var ReflectionParameter|ReflectionProperty
      */
-    private ReflectionProperty $holder;
+    private $holder;
 
     /**
      * The type name
@@ -45,11 +46,11 @@ final class Type
     /**
      * Constructor of the class
      *
-     * @param ReflectionProperty $holder
+     * @param ReflectionParameter|ReflectionProperty $holder
      * @param string $name
      * @param bool $allowsNull
      */
-    public function __construct(ReflectionProperty $holder, string $name, bool $allowsNull)
+    public function __construct($holder, string $name, bool $allowsNull)
     {
         $this->holder = $holder;
         $this->name = $name;
@@ -59,9 +60,9 @@ final class Type
     /**
      * Gets the type holder
      *
-     * @return ReflectionProperty
+     * @return ReflectionParameter|ReflectionProperty
      */
-    public function getHolder(): ReflectionProperty
+    public function getHolder()
     {
         return $this->holder;
     }
