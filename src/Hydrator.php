@@ -109,23 +109,19 @@ class Hydrator implements HydratorInterface
      */
     public function setAnnotationReader($annotationReader): self
     {
-        if ($annotationReader instanceof AnnotationReaderInterface) {
-            $this->annotationReader = $annotationReader;
-            return $this;
-        }
-
         // BC with previous versions...
         if ($annotationReader instanceof \Doctrine\Common\Annotations\Reader) {
-            $this->annotationReader = new DoctrineAnnotationReader($annotationReader);
-            return $this;
+            $annotationReader = new DoctrineAnnotationReader($annotationReader);
         }
 
-        throw new TypeError(sprintf(
-            'Argument #1 ($annotationReader) must be of type %s or %s, %s given',
-            AnnotationReaderInterface::class,
-            \Doctrine\Common\Annotations\Reader::class,
-            gettype($annotationReader),
-        ));
+        $this->annotationReader = $annotationReader;
+        foreach ($this->typeConverters as $typeConverter) {
+            if ($typeConverter instanceof AnnotationReaderAwareInterface) {
+                $typeConverter->setAnnotationReader($annotationReader);
+            }
+        }
+
+        return $this;
     }
 
     /**

@@ -30,7 +30,6 @@ use Attribute;
  * @deprecated 3.1.0 Use the {@see Subtype} annotation.
  *
  * @psalm-suppress InvalidExtendClass
- * @phpstan-ignore class.extendsFinalByPhpDoc
  */
 #[Attribute(Attribute::TARGET_PROPERTY | Attribute::TARGET_PARAMETER)]
 final class Relationship extends Subtype
