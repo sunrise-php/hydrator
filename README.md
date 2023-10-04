@@ -7,7 +7,7 @@
 [![Latest Stable Version](https://poser.pugx.org/sunrise/hydrator/v/stable?format=flat)](https://packagist.org/packages/sunrise/hydrator)
 [![License](https://poser.pugx.org/sunrise/hydrator/license?format=flat)](https://packagist.org/packages/sunrise/hydrator)
 
-**php**, **dto**, **hydrator**, **mapper**, **data-mapper**, **model-mapper**
+**php**, **dto**, **hydrator**, **mapper**, **populator**, **data-mapper**
 
 ---
 
@@ -33,7 +33,7 @@ composer require sunrise/hydrator
 * * [UID](#uid)
 * * [Enumeration](#enumeration)
 * * [Relationship](#relationship)
-* * [Custom type](#custom-type)
+* * [Custom type](#support-for-custom-types)
 * [Ignored property](#ignored-property)
 * [Property alias](#property-alias)
 * [Error handling](#error-handling)
@@ -299,6 +299,17 @@ public readonly DateTimeImmutable $value;
 
 Also, please note that if a value in a dataset for this property is represented as an empty string or a string consisting only of whitespace, then the value will be handled as [null](#null).
 
+#### Default timestamp format
+
+```php
+use Sunrise\Hydrator\Dictionary\ContextKey;
+use Sunrise\Hydrator\Hydrator;
+
+$hydrator = new Hydrator([
+    ContextKey::TIMESTAMP_FORMAT => 'Y-m-d H:i:s',
+]);
+```
+
 ### Timezone
 
 Only the DateTimeZone type is supported.
@@ -308,6 +319,17 @@ public readonly DateTimeZone $value;
 ```
 
 Also, please note that if a value in a dataset for this property is represented as an empty string or a string consisting only of whitespace, then the value will be handled as [null](#null).
+
+#### Default timezone
+
+```php
+use Sunrise\Hydrator\Dictionary\ContextKey;
+use Sunrise\Hydrator\Hydrator;
+
+$hydrator = new Hydrator([
+    ContextKey::TIMEZONE => 'Europe/Kyiv',
+]);
+```
 
 ### UID
 
