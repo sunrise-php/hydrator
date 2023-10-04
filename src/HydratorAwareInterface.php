@@ -20,7 +20,7 @@ interface HydratorAwareInterface
 {
 
     /**
-     * Sets the given hydrator
+     * Sets the given hydrator to the object
      *
      * @param HydratorInterface $hydrator
      *

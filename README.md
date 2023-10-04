@@ -7,7 +7,7 @@
 [![Latest Stable Version](https://poser.pugx.org/sunrise/hydrator/v/stable?format=flat)](https://packagist.org/packages/sunrise/hydrator)
 [![License](https://poser.pugx.org/sunrise/hydrator/license?format=flat)](https://packagist.org/packages/sunrise/hydrator)
 
-**php**, **dto**, **hydrator**, **mapper**, **data-mapper**, **model-mapper**
+**php**, **dto**, **hydrator**, **mapper**, **populator**, **data-mapper**
 
 ---
 
@@ -33,6 +33,7 @@ composer require sunrise/hydrator
 * * [UID](#uid)
 * * [Enumeration](#enumeration)
 * * [Relationship](#relationship)
+* * [Custom type](#support-for-custom-types)
 * [Ignored property](#ignored-property)
 * [Property alias](#property-alias)
 * [Error handling](#error-handling)
@@ -213,6 +214,8 @@ By default, this property accepts an array with any data. However, it can also b
 public readonly array $value;
 ```
 
+> In other words, the **Subtype** annotation can contain the same types as the types of class properties...
+
 Having an unlimited number of relationships in an array is a potentially bad idea as it can lead to memory leaks. To avoid this, it is recommended to limit such an array, as shown in the example below:
 
 ```php
@@ -220,28 +223,60 @@ Having an unlimited number of relationships in an array is a potentially bad ide
 public readonly array $value;
 ```
 
-In addition to arrays, you can use collections, i.e. objects implementing the [ArrayAccess](http://php.net/ArrayAccess) interface, for example:
+In addition to arrays, you can also use **collections**, in other words, classes implementing the [ArrayAccess](http://php.net/ArrayAccess) interface, for example:
 
 ```php
-final class TagCollection implements ArrayAccess
+final class TagDto
 {
-    // some code...
+}
+```
+
+```php
+final class TagCollection implements \ArrayAccess
+{
 }
 ```
 
 ```php
 final class CreateProductDto
 {
-    public readonly TagCollection $tags;
+    public function __construct(
+        #[\Sunrise\Hydrator\Annotation\Subtype(TagDto::class, limit: 10)]
+        public readonly TagCollection $tags,
+    ) {
+    }
 }
 ```
 
-Additionally, you can type the elements of such an array or collection, like this:
+Note that for collections, instead of the **Subtype** annotation, you can use typing through its constructor. It is important that there is only one variadic parameter in it. Please refer to the example below:
+
+> Please note that in this case, you take on the responsibility of limiting the collection. To ensure that the hydrator understands when the collection is full, the [offsetSet](https://www.php.net/arrayaccess.offsetset) method should throw an [OverflowException](https://www.php.net/overflowexception).
 
 ```php
-#[\Sunrise\Hydrator\Annotation\Subtype(DateTimeImmutable::class, limit: 100)]
+final class TagCollection implements \ArrayAccess
+{
+    public function __construct(public TagDto ...$tags)
+    {
+    }
+}
+```
+
+```php
+final class CreateProductDto
+{
+    public function __construct(
+        public readonly TagCollection $tags,
+    ) {
+    }
+}
+```
+
+In general, remember that regardless of whether arrays or collections are used, their elements can be typed. For example, if you need an array that should consist only of dates, your code should look something like this:
+
+```php
+#[\Sunrise\Hydrator\Annotation\Subtype(\DateTimeImmutable::class, limit: 100)]
 #[\Sunrise\Hydrator\Annotation\Format('Y-m-d H:i:s')]
-public readonly array $tags;
+public readonly array $value;
 ```
 
 This property has no any additional behavior and only accepts arrays.
@@ -264,6 +299,17 @@ public readonly DateTimeImmutable $value;
 
 Also, please note that if a value in a dataset for this property is represented as an empty string or a string consisting only of whitespace, then the value will be handled as [null](#null).
 
+#### Default timestamp format
+
+```php
+use Sunrise\Hydrator\Dictionary\ContextKey;
+use Sunrise\Hydrator\Hydrator;
+
+$hydrator = new Hydrator([
+    ContextKey::TIMESTAMP_FORMAT => 'Y-m-d H:i:s',
+]);
+```
+
 ### Timezone
 
 Only the DateTimeZone type is supported.
@@ -273,6 +319,17 @@ public readonly DateTimeZone $value;
 ```
 
 Also, please note that if a value in a dataset for this property is represented as an empty string or a string consisting only of whitespace, then the value will be handled as [null](#null).
+
+#### Default timezone
+
+```php
+use Sunrise\Hydrator\Dictionary\ContextKey;
+use Sunrise\Hydrator\Hydrator;
+
+$hydrator = new Hydrator([
+    ContextKey::TIMEZONE => 'Europe/Kyiv',
+]);
+```
 
 ### UID
 
@@ -304,6 +361,53 @@ public readonly SomeDto $value;
 ```
 
 A value in a dataset can only be an array. However, please note that if you need a one-to-many relationship, you should refer to the [array](#array) section for further information.
+
+## Support for custom types
+
+If you need support for a custom type, it is a relatively simple task. Let's write such support for UUID from the [ramsey/uuid](https://github.com/ramsey/uuid) package:
+
+```php
+use Sunrise\Hydrator\Exception\InvalidValueException;
+use Sunrise\Hydrator\Type;
+use Sunrise\Hydrator\TypeConverterInterface;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
+
+final class UuidTypeConverter implements TypeConverterInterface
+{
+    public function castValue($value, Type $type, array $path): Generator
+    {
+        if ($type->getName() <> UuidInterface::class) {
+            return;
+        }
+
+        if (!\is_string($value)) {
+            throw InvalidValueException::mustBeString($path);
+        }
+
+        if (!Uuid::isValid($value)) {
+            throw new InvalidValueException(
+                'This value is not a valid UUID.',
+                'c66741c6-e3c0-4522-a8e3-97528d7712a3',
+                $path,
+            );
+        }
+
+        yield Uuid::fromString($value);
+    }
+
+    public function getWeight(): int
+    {
+        return 31;
+    }
+}
+```
+
+Now, let's inform the hydrator about the new type:
+
+```php
+$hydrator->addTypeConverter(new UuidTypeConverter());
+```
 
 ## Ignored property
 

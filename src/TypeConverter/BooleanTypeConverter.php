@@ -30,13 +30,13 @@ use const FILTER_VALIDATE_BOOL;
 /**
  * @since 3.1.0
  */
-final class BoolTypeConverter implements TypeConverterInterface
+final class BooleanTypeConverter implements TypeConverterInterface
 {
 
     /**
      * @inheritDoc
      */
-    public function castValue($value, Type $type, array $path): Generator
+    public function castValue($value, Type $type, array $path, array $context): Generator
     {
         if ($type->getName() <> BuiltinType::BOOL) {
             return;
@@ -44,14 +44,14 @@ final class BoolTypeConverter implements TypeConverterInterface
 
         if (is_string($value)) {
             // As part of the support for HTML forms and other untyped data sources,
-            // empty strings should not be cast to boolean types;
+            // empty strings should not be cast to the boolean type;
             // instead, they should be considered as NULL.
             if (trim($value) === '') {
                 if ($type->allowsNull()) {
                     return yield null;
                 }
 
-                throw InvalidValueException::shouldNotBeEmpty($path);
+                throw InvalidValueException::mustNotBeEmpty($path);
             }
 
             // https://github.com/php/php-src/blob/b7d90f09d4a1688f2692f2fa9067d0a07f78cc7d/ext/filter/logical_filters.c#L273
@@ -59,7 +59,7 @@ final class BoolTypeConverter implements TypeConverterInterface
         }
 
         if (!is_bool($value)) {
-            throw InvalidValueException::shouldBeBoolean($path);
+            throw InvalidValueException::mustBeBoolean($path);
         }
 
         yield $value;

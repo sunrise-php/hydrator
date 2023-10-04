@@ -6,10 +6,9 @@ namespace Sunrise\Hydrator\Tests\Fixtures;
 
 use Sunrise\Hydrator\Annotation\Alias;
 
-final class ObjectWithAnnotatedAlias
+final class ObjectWithAliasedProperty
 {
-    /**
-     * @Alias("non-normalized-value")
-     */
+    /** @Alias("non-normalized-value") */
+    #[Alias('non-normalized-value')]
     public string $value;
 }

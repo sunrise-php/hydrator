@@ -29,13 +29,13 @@ use function trim;
  *
  * @since 3.1.0
  */
-final class UidTypeConverter implements TypeConverterInterface
+final class SymfonyUidTypeConverter implements TypeConverterInterface
 {
 
     /**
      * @inheritDoc
      */
-    public function castValue($value, Type $type, array $path): Generator
+    public function castValue($value, Type $type, array $path, array $context): Generator
     {
         $className = $type->getName();
         if (!is_subclass_of($className, AbstractUid::class)) {
@@ -43,7 +43,7 @@ final class UidTypeConverter implements TypeConverterInterface
         }
 
         if (!is_string($value)) {
-            throw InvalidValueException::shouldBeString($path);
+            throw InvalidValueException::mustBeString($path);
         }
 
         $value = trim($value);
@@ -56,7 +56,7 @@ final class UidTypeConverter implements TypeConverterInterface
                 return yield null;
             }
 
-            throw InvalidValueException::shouldNotBeEmpty($path);
+            throw InvalidValueException::mustNotBeEmpty($path);
         }
 
         try {

@@ -4,58 +4,42 @@ declare(strict_types=1);
 
 namespace Sunrise\Hydrator\Tests;
 
+use DateTimeImmutable;
+use LogicException;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 use Sunrise\Hydrator\Annotation\Format;
+use Sunrise\Hydrator\Annotation\Subtype;
+use Sunrise\Hydrator\Dictionary\ContextKey;
 use Sunrise\Hydrator\Dictionary\ErrorCode;
 use Sunrise\Hydrator\Exception\InvalidDataException;
-use Sunrise\Hydrator\Exception\UninitializableObjectException;
-use Sunrise\Hydrator\Exception\UnsupportedPropertyTypeException;
-use Sunrise\Hydrator\Exception\UntypedPropertyException;
+use Sunrise\Hydrator\Exception\InvalidObjectException;
 use Sunrise\Hydrator\Hydrator;
 use Sunrise\Hydrator\HydratorInterface;
 use Sunrise\Hydrator\Tests\Fixtures\IntegerEnum;
 use Sunrise\Hydrator\Tests\Fixtures\Issue25;
-use Sunrise\Hydrator\Tests\Fixtures\ObjectWithAnnotatedAlias;
-use Sunrise\Hydrator\Tests\Fixtures\ObjectWithArray;
-use Sunrise\Hydrator\Tests\Fixtures\ObjectWithAttributedAlias;
-use Sunrise\Hydrator\Tests\Fixtures\ObjectWithBoolean;
-use Sunrise\Hydrator\Tests\Fixtures\ObjectWithCollection;
+use Sunrise\Hydrator\Tests\Fixtures\ObjectWithAliasedProperty;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithIgnoredProperty;
-use Sunrise\Hydrator\Tests\Fixtures\ObjectWithInteger;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithIntegerEnum;
-use Sunrise\Hydrator\Tests\Fixtures\ObjectWithNullableArray;
-use Sunrise\Hydrator\Tests\Fixtures\ObjectWithNullableBoolean;
-use Sunrise\Hydrator\Tests\Fixtures\ObjectWithNullableCollection;
-use Sunrise\Hydrator\Tests\Fixtures\ObjectWithNullableInteger;
+use Sunrise\Hydrator\Tests\Fixtures\ObjectWithRelationshipWithString;
+use Sunrise\Hydrator\Tests\Fixtures\ObjectWithUnsupportedInternalClass;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithNullableIntegerEnum;
-use Sunrise\Hydrator\Tests\Fixtures\ObjectWithNullableNumber;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithNullableRelationship;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithNullableRelationships;
-use Sunrise\Hydrator\Tests\Fixtures\ObjectWithNullableString;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithNullableStringEnum;
-use Sunrise\Hydrator\Tests\Fixtures\ObjectWithNullableTimestamp;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithNullableTimezone;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithNullableUid;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithNullableUnixTimeStamp;
-use Sunrise\Hydrator\Tests\Fixtures\ObjectWithNumber;
-use Sunrise\Hydrator\Tests\Fixtures\ObjectWithOptionalArray;
-use Sunrise\Hydrator\Tests\Fixtures\ObjectWithOptionalBoolean;
-use Sunrise\Hydrator\Tests\Fixtures\ObjectWithOptionalCollection;
-use Sunrise\Hydrator\Tests\Fixtures\ObjectWithOptionalInteger;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithOptionalIntegerEnum;
-use Sunrise\Hydrator\Tests\Fixtures\ObjectWithOptionalNumber;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithOptionalRelationship;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithOptionalRelationships;
-use Sunrise\Hydrator\Tests\Fixtures\ObjectWithOptionalString;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithOptionalStringEnum;
-use Sunrise\Hydrator\Tests\Fixtures\ObjectWithOptionalTimestamp;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithOptionalTimezone;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithOptionalUid;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithOptionalUnixTimeStamp;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithRelationship;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithRelationshipWithNullableString;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithRelationshipWithOptionalString;
-use Sunrise\Hydrator\Tests\Fixtures\ObjectWithRelationshipWithString;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithRelationships;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithRelationshipsWithLimit;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithRelationshipsWithUnstantiableObject;
@@ -68,13 +52,17 @@ use Sunrise\Hydrator\Tests\Fixtures\ObjectWithUid;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithUnformattedTimestampProperty;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithUnixTimeStamp;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithUnstantiableRelationship;
-use Sunrise\Hydrator\Tests\Fixtures\ObjectWithUnsupportedProperty;
+use Sunrise\Hydrator\Tests\Fixtures\ObjectWithUnsupportedPropertyType;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithUnsupportedPropertyNotation;
 use Sunrise\Hydrator\Tests\Fixtures\ObjectWithUntypedProperty;
 use Sunrise\Hydrator\Tests\Fixtures\Store\Product;
 use Sunrise\Hydrator\Tests\Fixtures\Store\Status;
 use Sunrise\Hydrator\Tests\Fixtures\StringEnum;
 use Sunrise\Hydrator\Tests\Fixtures\UnstantiableObject;
+use Sunrise\Hydrator\Tests\Stub\Collection;
+use Sunrise\Hydrator\Tests\Stub\OverflowedCollection;
+use Sunrise\Hydrator\Tests\Stub\UnstantiableCollection;
+use Sunrise\Hydrator\TypeConverter\TimestampTypeConverter;
 
 use function sprintf;
 use function version_compare;
@@ -96,8 +84,12 @@ class HydratorTest extends TestCase
      */
     public function testHydrateBooleanProperty(array $data, bool $expected): void
     {
+        $object = new class {
+            public bool $value;
+        };
+
         $this->assertInvalidValueExceptionCount(0);
-        $object = $this->createHydrator()->hydrate(ObjectWithBoolean::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
         $this->assertSame($expected, $object->value);
     }
 
@@ -110,8 +102,12 @@ class HydratorTest extends TestCase
      */
     public function testHydrateNullableBooleanProperty(array $data, ?bool $expected): void
     {
+        $object = new class {
+            public ?bool $value;
+        };
+
         $this->assertInvalidValueExceptionCount(0);
-        $object = $this->createHydrator()->hydrate(ObjectWithNullableBoolean::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
         $this->assertSame($expected, $object->value);
     }
 
@@ -123,8 +119,12 @@ class HydratorTest extends TestCase
      */
     public function testHydrateOptionalBooleanProperty(array $data, bool $expected = true): void
     {
+        $object = new class {
+            public bool $value = true;
+        };
+
         $this->assertInvalidValueExceptionCount(0);
-        $object = $this->createHydrator()->hydrate(ObjectWithOptionalBoolean::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
         $this->assertSame($expected, $object->value);
     }
 
@@ -133,38 +133,50 @@ class HydratorTest extends TestCase
      * @dataProvider strictNullDataProvider
      * @dataProvider nonStrictNullDataProvider
      */
-    public function testHydrateNonNullableBooleanPropertyWithNull(array $data): void
+    public function testHydrateBooleanPropertyWithEmptyValue(array $data): void
     {
+        $object = new class {
+            public bool $value;
+        };
+
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should not be empty.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_NOT_BE_EMPTY);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must not be empty.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_NOT_BE_EMPTY);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
-        $this->createHydrator()->hydrate(ObjectWithBoolean::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
     }
 
     /**
      * @group boolean
      * @dataProvider notBooleanDataProvider
      */
-    public function testHydrateBooleanPropertyWithNonBooleanValue(array $data): void
+    public function testHydrateBooleanPropertyWithInvalidValue(array $data): void
     {
+        $object = new class {
+            public bool $value;
+        };
+
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be of type boolean.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_BOOLEAN);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be of type boolean.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_BOOLEAN);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
-        $this->createHydrator()->hydrate(ObjectWithBoolean::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
     }
 
     /**
      * @group boolean
      */
-    public function testHydrateRequiredBooleanPropertyWithoutValue(): void
+    public function testHydrateBooleanPropertyWithoutValue(): void
     {
+        $object = new class {
+            public bool $value;
+        };
+
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be provided.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_PROVIDED);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be provided.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_PROVIDED);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
-        $this->createHydrator()->hydrate(ObjectWithBoolean::class, []);
+        $this->createHydrator()->hydrate($object, []);
     }
 
     /**
@@ -174,8 +186,12 @@ class HydratorTest extends TestCase
      */
     public function testHydrateIntegerProperty(array $data, int $expected): void
     {
+        $object = new class {
+            public int $value;
+        };
+
         $this->assertInvalidValueExceptionCount(0);
-        $object = $this->createHydrator()->hydrate(ObjectWithInteger::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
         $this->assertSame($expected, $object->value);
     }
 
@@ -188,8 +204,12 @@ class HydratorTest extends TestCase
      */
     public function testHydrateNullableIntegerProperty(array $data, ?int $expected): void
     {
+        $object = new class {
+            public ?int $value;
+        };
+
         $this->assertInvalidValueExceptionCount(0);
-        $object = $this->createHydrator()->hydrate(ObjectWithNullableInteger::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
         $this->assertSame($expected, $object->value);
     }
 
@@ -201,8 +221,12 @@ class HydratorTest extends TestCase
      */
     public function testHydrateOptionalIntegerProperty(array $data, int $expected = 42): void
     {
+        $object = new class {
+            public int $value = 42;
+        };
+
         $this->assertInvalidValueExceptionCount(0);
-        $object = $this->createHydrator()->hydrate(ObjectWithOptionalInteger::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
         $this->assertSame($expected, $object->value);
     }
 
@@ -211,38 +235,50 @@ class HydratorTest extends TestCase
      * @dataProvider strictNullDataProvider
      * @dataProvider nonStrictNullDataProvider
      */
-    public function testHydrateNonNullableIntegerPropertyWithNull(array $data): void
+    public function testHydrateIntegerPropertyWithEmptyValue(array $data): void
     {
+        $object = new class {
+            public int $value;
+        };
+
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should not be empty.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_NOT_BE_EMPTY);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must not be empty.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_NOT_BE_EMPTY);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
-        $this->createHydrator()->hydrate(ObjectWithInteger::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
     }
 
     /**
      * @group integer
      * @dataProvider notIntegerDataProvider
      */
-    public function testHydrateIntegerPropertyWithNotInteger(array $data): void
+    public function testHydrateIntegerPropertyWithInvalidValue(array $data): void
     {
+        $object = new class {
+            public int $value;
+        };
+
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be of type integer.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_INTEGER);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be of type integer.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_INTEGER);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
-        $this->createHydrator()->hydrate(ObjectWithInteger::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
     }
 
     /**
      * @group integer
      */
-    public function testHydrateRequiredIntegerPropertyWithoutValue(): void
+    public function testHydrateIntegerPropertyWithoutValue(): void
     {
+        $object = new class {
+            public int $value;
+        };
+
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be provided.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_PROVIDED);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be provided.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_PROVIDED);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
-        $this->createHydrator()->hydrate(ObjectWithInteger::class, []);
+        $this->createHydrator()->hydrate($object, []);
     }
 
     /**
@@ -252,8 +288,12 @@ class HydratorTest extends TestCase
      */
     public function testHydrateNumericProperty(array $data, float $expected): void
     {
+        $object = new class {
+            public float $value;
+        };
+
         $this->assertInvalidValueExceptionCount(0);
-        $object = $this->createHydrator()->hydrate(ObjectWithNumber::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
         $this->assertSame($expected, $object->value);
     }
 
@@ -266,8 +306,12 @@ class HydratorTest extends TestCase
      */
     public function testHydrateNullableNumericProperty(array $data, ?float $expected): void
     {
+        $object = new class {
+            public ?float $value;
+        };
+
         $this->assertInvalidValueExceptionCount(0);
-        $object = $this->createHydrator()->hydrate(ObjectWithNullableNumber::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
         $this->assertSame($expected, $object->value);
     }
 
@@ -279,8 +323,12 @@ class HydratorTest extends TestCase
      */
     public function testHydrateOptionalNumericProperty(array $data, float $expected = 3.14159): void
     {
+        $object = new class {
+            public float $value = 3.14159;
+        };
+
         $this->assertInvalidValueExceptionCount(0);
-        $object = $this->createHydrator()->hydrate(ObjectWithOptionalNumber::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
         $this->assertSame($expected, $object->value);
     }
 
@@ -289,72 +337,96 @@ class HydratorTest extends TestCase
      * @dataProvider strictNullDataProvider
      * @dataProvider nonStrictNullDataProvider
      */
-    public function testHydrateNonNullableNumericPropertyWithNull(array $data): void
+    public function testHydrateNumericPropertyWithEmptyValue(array $data): void
     {
+        $object = new class {
+            public float $value;
+        };
+
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should not be empty.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_NOT_BE_EMPTY);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must not be empty.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_NOT_BE_EMPTY);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
-        $this->createHydrator()->hydrate(ObjectWithNumber::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
     }
 
     /**
      * @group number
      * @dataProvider notNumberDataProvider
      */
-    public function testHydrateNumericPropertyWithNotNumber(array $data): void
+    public function testHydrateNumericPropertyWithInvalidValue(array $data): void
     {
+        $object = new class {
+            public float $value;
+        };
+
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be of type number.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_NUMBER);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be of type number.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_NUMBER);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
-        $this->createHydrator()->hydrate(ObjectWithNumber::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
     }
 
     /**
      * @group number
      */
-    public function testHydrateRequiredNumericPropertyWithoutValue(): void
+    public function testHydrateNumericPropertyWithoutValue(): void
     {
+        $object = new class {
+            public float $value;
+        };
+
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be provided.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_PROVIDED);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be provided.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_PROVIDED);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
-        $this->createHydrator()->hydrate(ObjectWithNumber::class, []);
+        $this->createHydrator()->hydrate($object, []);
     }
 
     /**
      * @group string
-     * @dataProvider stringDataProvider
+     * @dataProvider nonStrictStringDataProvider
      */
     public function testHydrateStringProperty(array $data, string $expected): void
     {
+        $object = new class {
+            public string $value;
+        };
+
         $this->assertInvalidValueExceptionCount(0);
-        $object = $this->createHydrator()->hydrate(ObjectWithString::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
         $this->assertSame($expected, $object->value);
     }
 
     /**
      * @group string
-     * @dataProvider stringDataProvider
+     * @dataProvider nonStrictStringDataProvider
      * @dataProvider strictNullDataProvider
      */
     public function testHydrateNullableStringProperty(array $data, ?string $expected): void
     {
+        $object = new class {
+            public ?string $value;
+        };
+
         $this->assertInvalidValueExceptionCount(0);
-        $object = $this->createHydrator()->hydrate(ObjectWithNullableString::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
         $this->assertSame($expected, $object->value);
     }
 
     /**
      * @group string
-     * @dataProvider stringDataProvider
+     * @dataProvider nonStrictStringDataProvider
      * @dataProvider emptyDataProvider
      */
     public function testHydrateOptionalStringProperty(array $data, string $expected = 'default'): void
     {
+        $object = new class {
+            public string $value = 'default';
+        };
+
         $this->assertInvalidValueExceptionCount(0);
-        $object = $this->createHydrator()->hydrate(ObjectWithOptionalString::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
         $this->assertSame($expected, $object->value);
     }
 
@@ -362,38 +434,50 @@ class HydratorTest extends TestCase
      * @group string
      * @dataProvider strictNullDataProvider
      */
-    public function testHydrateNonNullableStringPropertyWithNull(array $data): void
+    public function testHydrateStringPropertyWithNull(array $data): void
     {
+        $object = new class {
+            public string $value;
+        };
+
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should not be empty.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_NOT_BE_EMPTY);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must not be empty.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_NOT_BE_EMPTY);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
-        $this->createHydrator()->hydrate(ObjectWithString::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
     }
 
     /**
      * @group string
-     * @dataProvider notStringDataProvider
+     * @dataProvider nonStrictNotStringDataProvider
      */
-    public function testHydrateStringPropertyWithNotString(array $data): void
+    public function testHydrateStringPropertyWithInvalidValue(array $data): void
     {
+        $object = new class {
+            public string $value;
+        };
+
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be of type string.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_STRING);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be of type string.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_STRING);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
-        $this->createHydrator()->hydrate(ObjectWithString::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
     }
 
     /**
      * @group string
      */
-    public function testHydrateRequiredStringPropertyWithoutValue(): void
+    public function testHydrateStringPropertyWithoutValue(): void
     {
+        $object = new class {
+            public string $value;
+        };
+
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be provided.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_PROVIDED);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be provided.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_PROVIDED);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
-        $this->createHydrator()->hydrate(ObjectWithString::class, []);
+        $this->createHydrator()->hydrate($object, []);
     }
 
     /**
@@ -402,8 +486,12 @@ class HydratorTest extends TestCase
      */
     public function testHydrateArrayProperty(array $data, array $expected): void
     {
+        $object = new class {
+            public array $value;
+        };
+
         $this->assertInvalidValueExceptionCount(0);
-        $object = $this->createHydrator()->hydrate(ObjectWithArray::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
         $this->assertSame($expected, $object->value);
     }
 
@@ -414,8 +502,12 @@ class HydratorTest extends TestCase
      */
     public function testHydrateNullableArrayProperty(array $data, ?array $expected): void
     {
+        $object = new class {
+            public ?array $value;
+        };
+
         $this->assertInvalidValueExceptionCount(0);
-        $object = $this->createHydrator()->hydrate(ObjectWithNullableArray::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
         $this->assertSame($expected, $object->value);
     }
 
@@ -426,8 +518,12 @@ class HydratorTest extends TestCase
      */
     public function testHydrateOptionalArrayProperty(array $data, array $expected = []): void
     {
+        $object = new class {
+            public array $value = [];
+        };
+
         $this->assertInvalidValueExceptionCount(0);
-        $object = $this->createHydrator()->hydrate(ObjectWithOptionalArray::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
         $this->assertSame($expected, $object->value);
     }
 
@@ -435,141 +531,267 @@ class HydratorTest extends TestCase
      * @group array
      * @dataProvider strictNullDataProvider
      */
-    public function testHydrateNonNullableArrayPropertyWithNull(array $data): void
+    public function testHydrateArrayPropertyWithNull(array $data): void
     {
+        $object = new class {
+            public array $value;
+        };
+
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should not be empty.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_NOT_BE_EMPTY);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must not be empty.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_NOT_BE_EMPTY);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
-        $this->createHydrator()->hydrate(ObjectWithArray::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
     }
 
     /**
      * @group array
      * @dataProvider notArrayDataProvider
      */
-    public function testHydrateArrayPropertyWithNotArray(array $data): void
+    public function testHydrateArrayPropertyWithInvalidValue(array $data): void
     {
+        $object = new class {
+            public array $value;
+        };
+
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be of type array.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_ARRAY);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be of type array.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_ARRAY);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
-        $this->createHydrator()->hydrate(ObjectWithArray::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
     }
 
     /**
      * @group array
      */
-    public function testHydrateRequiredArrayPropertyWithoutValue(): void
+    public function testHydrateArrayPropertyWithoutValue(): void
     {
+        $object = new class {
+            public array $value;
+        };
+
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be provided.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_PROVIDED);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be provided.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_PROVIDED);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
-        $this->createHydrator()->hydrate(ObjectWithArray::class, []);
+        $this->createHydrator()->hydrate($object, []);
     }
 
     /**
-     * @group collection
+     * @group array
+     */
+    public function testHydrateTypedArrayProperty(): void
+    {
+        $object = new class {
+            /** @Subtype("string") */
+            #[Subtype('string')]
+            public array $value;
+        };
+
+        $this->assertInvalidValueExceptionCount(1);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be of type string.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_STRING);
+        $this->assertInvalidValueExceptionPropertyPath(0, 'value.0');
+        $this->createHydrator()->hydrate($object, ['value' => [[]]]);
+    }
+
+    /**
+     * @group array
+     */
+    public function testHydrateLimitedArrayProperty(): void
+    {
+        $object = new class {
+            /** @Subtype("string", 1) */
+            #[Subtype('string', 1)]
+            public array $value;
+        };
+
+        $this->assertInvalidValueExceptionCount(1);
+        $this->assertInvalidValueExceptionMessage(0, 'This value is limited to 1 elements.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::ARRAY_OVERFLOW);
+        $this->assertInvalidValueExceptionPropertyPath(0, 'value');
+        $this->createHydrator()->hydrate($object, ['value' => ['foo', 'bar']]);
+    }
+
+    /**
+     * @group array-access
      * @dataProvider arrayDataProvider
      */
-    public function testHydrateCollectionProperty(array $data, array $expected): void
+    public function testHydrateArrayAccessProperty(array $data, array $expected): void
     {
+        $object = new class {
+            public Stub\Collection $value;
+        };
+
         $this->assertInvalidValueExceptionCount(0);
-        $object = $this->createHydrator()->hydrate(ObjectWithCollection::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
         $this->assertSame($expected, $object->value->elements);
     }
 
     /**
-     * @group collection
+     * @group array-access
      * @dataProvider arrayDataProvider
      * @dataProvider strictNullDataProvider
      */
-    public function testHydrateNullableCollectionProperty(array $data, ?array $expected): void
+    public function testHydrateNullableArrayAccessProperty(array $data, ?array $expected): void
     {
+        $object = new class {
+            public ?Stub\Collection $value;
+        };
+
         $this->assertInvalidValueExceptionCount(0);
-        $object = $this->createHydrator()->hydrate(ObjectWithNullableCollection::class, $data);
-        $this->assertSame($expected, isset($object->value) ? $object->value->elements : null);
+        $this->createHydrator()->hydrate($object, $data);
+        $this->assertSame($expected, $object->value->elements ?? null);
     }
 
     /**
-     * @group collection
+     * @group array-access
      * @dataProvider arrayDataProvider
      * @dataProvider emptyDataProvider
      */
-    public function testHydrateOptionalCollectionProperty(array $data, array $expected = []): void
+    public function testHydrateOptionalArrayAccessProperty(array $data, array $expected = []): void
     {
+        $object = new class {
+            public ?Stub\Collection $value = null;
+        };
+
         $this->assertInvalidValueExceptionCount(0);
-        $object = $this->createHydrator()->hydrate(ObjectWithOptionalCollection::class, $data);
-        $this->assertSame($expected, isset($object->value) ? $object->value->elements : []);
+        $this->createHydrator()->hydrate($object, $data);
+        $this->assertSame($expected, $object->value->elements ?? []);
     }
 
     /**
-     * @group collection
+     * @group array-access
      * @dataProvider strictNullDataProvider
      */
-    public function testHydrateNonNullableCollectionPropertyWithNull(array $data): void
+    public function testHydrateArrayAccessPropertyWithNull(array $data): void
     {
+        $object = new class {
+            public Stub\Collection $value;
+        };
+
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should not be empty.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_NOT_BE_EMPTY);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must not be empty.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_NOT_BE_EMPTY);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
-        $this->createHydrator()->hydrate(ObjectWithCollection::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
     }
 
     /**
-     * @group collection
+     * @group array-access
      * @dataProvider notArrayDataProvider
      */
-    public function testHydrateCollectionPropertyWithNotArray(array $data): void
+    public function testHydrateArrayAccessPropertyWithInvalidValue(array $data): void
     {
+        $object = new class {
+            public Stub\Collection $value;
+        };
+
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be of type array.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_ARRAY);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be of type array.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_ARRAY);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
-        $this->createHydrator()->hydrate(ObjectWithCollection::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
     }
 
     /**
-     * @group collection
+     * @group array-access
      */
-    public function testHydrateRequiredCollectionPropertyWithoutValue(): void
+    public function testHydrateArrayAccessPropertyWithoutValue(): void
     {
+        $object = new class {
+            public Stub\Collection $value;
+        };
+
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be provided.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_PROVIDED);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be provided.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_PROVIDED);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
-        $this->createHydrator()->hydrate(ObjectWithCollection::class, []);
+        $this->createHydrator()->hydrate($object, []);
     }
 
     /**
-     * @group collection
+     * @group array-access
      */
-    public function testOverflowCollection(): void
+    public function testHydrateTypedArrayAccessProperty(): void
     {
+        $object = new class {
+            /** @Subtype("string") */
+            #[Subtype('string')]
+            public Collection $value;
+        };
+
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'The maximum allowed number of elements is 1.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::REDUNDANT_ELEMENT);
-        $this->assertInvalidValueExceptionPropertyPath(0, 'value.1');
-        $this->createHydrator()->hydrate(ObjectWithCollection::class, ['value' => [
-            ['value' => 'foo'],
-            ['value' => 'bar'],
-        ]]);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be of type string.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_STRING);
+        $this->assertInvalidValueExceptionPropertyPath(0, 'value.0');
+        $this->createHydrator()->hydrate($object, ['value' => [[]]]);
     }
 
     /**
-     * @group datetimeTimestamp
+     * @group array-access
+     */
+    public function testHydrateLimitedArrayAccessProperty(): void
+    {
+        $object = new class {
+            /** @Subtype("string", 1) */
+            #[Subtype('string', 1)]
+            public Collection $value;
+        };
+
+        $this->assertInvalidValueExceptionCount(1);
+        $this->assertInvalidValueExceptionMessage(0, 'This value is limited to 1 elements.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::ARRAY_OVERFLOW);
+        $this->assertInvalidValueExceptionPropertyPath(0, 'value');
+        $this->createHydrator()->hydrate($object, ['value' => ['foo', 'bar']]);
+    }
+
+    /**
+     * @group array-access
+     */
+    public function testHydrateOverflowedArrayAccessProperty(): void
+    {
+        $object = new class {
+            public OverflowedCollection $value;
+        };
+
+        $this->assertInvalidValueExceptionCount(1);
+        $this->assertInvalidValueExceptionMessage(0, 'This value is limited to 0 elements.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::ARRAY_OVERFLOW);
+        $this->assertInvalidValueExceptionPropertyPath(0, 'value');
+        $this->createHydrator()->hydrate($object, ['value' => ['foo']]);
+    }
+
+    /**
+     * @group array-access
+     */
+    public function testHydrateUnstantiableArrayAccessProperty(): void
+    {
+        $object = new class {
+            public UnstantiableCollection $value;
+        };
+
+        $this->expectException(InvalidObjectException::class);
+        $this->createHydrator()->hydrate($object, ['value' => []]);
+    }
+
+    /**
+     * @group timestamp
      * @dataProvider timestampDataProvider
      */
-    public function testHydrateTimestampProperty(array $data, string $expected, string $format): void
+    public function testHydrateTimestampProperty(array $data, string $expected, ?string $format): void
     {
+        $object = new class {
+            public DateTimeImmutable $value;
+        };
+
         $this->assertInvalidValueExceptionCount(0);
-        $object = $this->createHydrator()->hydrate(ObjectWithTimestamp::class, $data);
-        $this->assertSame($expected, $object->value->format($format));
+        $this->createHydrator([ContextKey::TIMESTAMP_FORMAT => $format])->hydrate($object, $data);
+        $this->assertSame($expected, $object->value->format($format ?? TimestampTypeConverter::DEFAULT_FORMAT));
     }
 
     /**
-     * @group datetimeTimestamp
+     * @group timestamp
      * @dataProvider timestampDataProvider
      * @dataProvider strictNullDataProvider
      * @dataProvider nonStrictNullDataProvider
@@ -577,47 +799,63 @@ class HydratorTest extends TestCase
     // phpcs:ignore Generic.Files.LineLength
     public function testHydrateNullableTimestampProperty(array $data, ?string $expected = null, ?string $format = null): void
     {
+        $object = new class {
+            public ?DateTimeImmutable $value;
+        };
+
         $this->assertInvalidValueExceptionCount(0);
-        $object = $this->createHydrator()->hydrate(ObjectWithNullableTimestamp::class, $data);
-        $this->assertSame($expected, isset($object->value, $format) ? $object->value->format($format) : null);
+        $this->createHydrator([ContextKey::TIMESTAMP_FORMAT => $format])->hydrate($object, $data);
+        // phpcs:ignore Generic.Files.LineLength
+        $this->assertSame($expected, isset($object->value) ? $object->value->format($format ?? TimestampTypeConverter::DEFAULT_FORMAT) : null);
     }
 
     /**
-     * @group datetimeTimestamp
+     * @group timestamp
      * @dataProvider timestampDataProvider
      * @dataProvider emptyDataProvider
      */
     // phpcs:ignore Generic.Files.LineLength
     public function testHydrateOptionalTimestampProperty(array $data, ?string $expected = null, ?string $format = null): void
     {
+        $object = new class {
+            public ?DateTimeImmutable $value = null;
+        };
+
         $this->assertInvalidValueExceptionCount(0);
-        $object = $this->createHydrator()->hydrate(ObjectWithOptionalTimestamp::class, $data);
-        $this->assertSame($expected, isset($object->value, $format) ? $object->value->format($format) : null);
+        $this->createHydrator([ContextKey::TIMESTAMP_FORMAT => $format])->hydrate($object, $data);
+        // phpcs:ignore Generic.Files.LineLength
+        $this->assertSame($expected, isset($object->value) ? $object->value->format($format ?? TimestampTypeConverter::DEFAULT_FORMAT) : null);
     }
 
     /**
-     * @group datetimeTimestamp
+     * @group timestamp
      * @dataProvider strictNullDataProvider
      * @dataProvider nonStrictNullDataProvider
      */
-    public function testHydrateNonNullableTimestampPropertyWithNull(array $data): void
+    public function testHydrateTimestampPropertyWithEmptyValue(array $data): void
     {
+        $object = new class {
+            public DateTimeImmutable $value;
+        };
+
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should not be empty.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_NOT_BE_EMPTY);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must not be empty.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_NOT_BE_EMPTY);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
-        $this->createHydrator()->hydrate(ObjectWithTimestamp::class, $data);
+        $this->createHydrator()->hydrate($object, $data);
     }
+
+    // @todo should be improved...
 
     /**
      * @group datetimeTimestamp
-     * @dataProvider notStringDataProvider
+     * @dataProvider nonStrictNotStringDataProvider
      */
     public function testHydrateTimestampPropertyWithNotString(array $data): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be of type string.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_STRING);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be of type string.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_STRING);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate(ObjectWithTimestamp::class, $data);
     }
@@ -629,8 +867,7 @@ class HydratorTest extends TestCase
     public function testHydrateTimestampPropertyWithInvalidTimestamp(array $data): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $message = sprintf('This value should be in the format "%s".', ObjectWithTimestamp::FORMAT);
-        $this->assertInvalidValueExceptionMessage(0, $message);
+        $this->assertInvalidValueExceptionMessage(0, 'This value is not a valid timestamp.');
         $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::INVALID_TIMESTAMP);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate(ObjectWithTimestamp::class, $data);
@@ -642,28 +879,10 @@ class HydratorTest extends TestCase
     public function testHydrateRequiredTimestampPropertyWithoutValue(): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be provided.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_PROVIDED);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be provided.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_PROVIDED);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate(ObjectWithTimestamp::class, []);
-    }
-
-    /**
-     * @group datetimeTimestamp
-     * @dataProvider timestampDataProvider
-     */
-    public function testHydrateUnformattedTimestampProperty(array $data): void
-    {
-        $this->expectException(UnsupportedPropertyTypeException::class);
-        $this->expectExceptionMessage(sprintf(
-            'The property %1$s.%2$s must contain the attribute %3$s, ' .
-            'for example: #[\%3$s(\DateTimeInterface::DATE_RFC3339)].',
-            ObjectWithUnformattedTimestampProperty::class,
-            'value',
-            Format::class,
-        ));
-
-        $this->createHydrator()->hydrate(ObjectWithUnformattedTimestampProperty::class, $data);
     }
 
     /**
@@ -715,8 +934,8 @@ class HydratorTest extends TestCase
     public function testHydrateNonNullableUnixTimeStampPropertyWithNull(array $data): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should not be empty.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_NOT_BE_EMPTY);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must not be empty.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_NOT_BE_EMPTY);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate(ObjectWithUnixTimeStamp::class, $data);
     }
@@ -728,8 +947,8 @@ class HydratorTest extends TestCase
     public function testHydrateUnixTimeStampPropertyWithNotInteger(array $data): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be of type integer.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_INTEGER);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be of type integer.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_INTEGER);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate(ObjectWithUnixTimeStamp::class, $data);
     }
@@ -740,11 +959,60 @@ class HydratorTest extends TestCase
     public function testHydrateRequiredUnixTimeStampPropertyWithoutValue(): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be provided.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_PROVIDED);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be provided.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_PROVIDED);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate(ObjectWithUnixTimeStamp::class, []);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /**
      * @group timezone
@@ -790,21 +1058,21 @@ class HydratorTest extends TestCase
     public function testHydrateNonNullableTimezonePropertyWithNull(array $data): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should not be empty.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_NOT_BE_EMPTY);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must not be empty.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_NOT_BE_EMPTY);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate(ObjectWithTimezone::class, $data);
     }
 
     /**
      * @group timezone
-     * @dataProvider notStringDataProvider
+     * @dataProvider nonStrictNotStringDataProvider
      */
     public function testHydrateTimezonePropertyWithNotString(array $data): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be of type string.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_STRING);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be of type string.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_STRING);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate(ObjectWithTimezone::class, $data);
     }
@@ -828,11 +1096,38 @@ class HydratorTest extends TestCase
     public function testHydrateRequiredTimezonePropertyWithoutValue(): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be provided.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_PROVIDED);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be provided.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_PROVIDED);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate(ObjectWithTimezone::class, []);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /**
      * @group uid
@@ -878,21 +1173,21 @@ class HydratorTest extends TestCase
     public function testHydrateNonNullableUidPropertyWithNull(array $data): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should not be empty.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_NOT_BE_EMPTY);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must not be empty.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_NOT_BE_EMPTY);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate(ObjectWithUid::class, $data);
     }
 
     /**
      * @group uid
-     * @dataProvider notStringDataProvider
+     * @dataProvider nonStrictNotStringDataProvider
      */
     public function testHydrateUidPropertyWithNotString(array $data): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be of type string.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_STRING);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be of type string.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_STRING);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate(ObjectWithUid::class, $data);
     }
@@ -916,8 +1211,8 @@ class HydratorTest extends TestCase
     public function testHydrateRequiredUidPropertyWithoutValue(): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be provided.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_PROVIDED);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be provided.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_PROVIDED);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate(ObjectWithUid::class, []);
     }
@@ -977,8 +1272,8 @@ class HydratorTest extends TestCase
     {
         $this->phpRequired('8.1');
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should not be empty.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_NOT_BE_EMPTY);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must not be empty.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_NOT_BE_EMPTY);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate(ObjectWithIntegerEnum::class, $data);
     }
@@ -991,8 +1286,8 @@ class HydratorTest extends TestCase
     {
         $this->phpRequired('8.1');
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be of type integer.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_INTEGER);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be of type integer.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_INTEGER);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate(ObjectWithIntegerEnum::class, $data);
     }
@@ -1003,8 +1298,8 @@ class HydratorTest extends TestCase
     public function testHydrateRequiredIntegerEnumerationPropertyWithoutValue(): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be provided.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_PROVIDED);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be provided.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_PROVIDED);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate(ObjectWithIntegerEnum::class, []);
     }
@@ -1017,7 +1312,7 @@ class HydratorTest extends TestCase
         $this->phpRequired('8.1');
         $this->assertInvalidValueExceptionCount(1);
         // phpcs:ignore Generic.Files.LineLength
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be one of: 1, 2, 3.');
+        $this->assertInvalidValueExceptionMessage(0, 'This value is not a valid choice.');
         $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::INVALID_CHOICE);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate(ObjectWithIntegerEnum::class, ['value' => 42]);
@@ -1075,22 +1370,22 @@ class HydratorTest extends TestCase
     {
         $this->phpRequired('8.1');
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should not be empty.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_NOT_BE_EMPTY);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must not be empty.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_NOT_BE_EMPTY);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate(ObjectWithStringEnum::class, $data);
     }
 
     /**
      * @group stringEnumeration
-     * @dataProvider notStringDataProvider
+     * @dataProvider nonStrictNotStringDataProvider
      */
     public function testHydrateStringEnumerationPropertyWithNotInteger(array $data): void
     {
         $this->phpRequired('8.1');
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be of type string.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_STRING);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be of type string.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_STRING);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate(ObjectWithStringEnum::class, $data);
     }
@@ -1103,7 +1398,7 @@ class HydratorTest extends TestCase
         $this->phpRequired('8.1');
         $this->assertInvalidValueExceptionCount(1);
         // phpcs:ignore Generic.Files.LineLength
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be one of: foo, bar, baz.');
+        $this->assertInvalidValueExceptionMessage(0, 'This value is not a valid choice.');
         $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::INVALID_CHOICE);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate(ObjectWithStringEnum::class, ['value' => 'unknown']);
@@ -1115,15 +1410,15 @@ class HydratorTest extends TestCase
     public function testHydrateRequiredStringEnumerationPropertyWithoutValue(): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be provided.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_PROVIDED);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be provided.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_PROVIDED);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate(ObjectWithStringEnum::class, []);
     }
 
     /**
      * @group relationship
-     * @dataProvider stringDataProvider
+     * @dataProvider nonStrictStringDataProvider
      */
     public function testHydrateRelationshipProperty(array $data, string $expected): void
     {
@@ -1161,8 +1456,8 @@ class HydratorTest extends TestCase
     public function testHydrateNonNullableRelationshipPropertyWithNull(array $data): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should not be empty.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_NOT_BE_EMPTY);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must not be empty.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_NOT_BE_EMPTY);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate(ObjectWithRelationship::class, $data);
     }
@@ -1174,8 +1469,8 @@ class HydratorTest extends TestCase
     public function testHydrateRelationshipPropertyWithNotArray(array $data): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be of type array.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_ARRAY);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be of type array.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_ARRAY);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate(ObjectWithRelationship::class, $data);
     }
@@ -1186,15 +1481,15 @@ class HydratorTest extends TestCase
     public function testHydrateRequiredRelationshipPropertyWithoutValue(): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be provided.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_PROVIDED);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be provided.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_PROVIDED);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate(ObjectWithRelationship::class, []);
     }
 
     /**
      * @group relationship
-     * @dataProvider stringDataProvider
+     * @dataProvider nonStrictStringDataProvider
      */
     public function testHydrateRelationshipWithStringProperty(array $data, string $expected): void
     {
@@ -1205,7 +1500,7 @@ class HydratorTest extends TestCase
 
     /**
      * @group relationship
-     * @dataProvider stringDataProvider
+     * @dataProvider nonStrictStringDataProvider
      * @dataProvider strictNullDataProvider
      */
     public function testHydrateRelationshipWithNullableStringProperty(array $data, ?string $expected): void
@@ -1217,7 +1512,7 @@ class HydratorTest extends TestCase
 
     /**
      * @group relationship
-     * @dataProvider stringDataProvider
+     * @dataProvider nonStrictStringDataProvider
      * @dataProvider emptyDataProvider
      */
     public function testHydrateRelationshipWithOptionalStringProperty(array $data, string $expected = 'default'): void
@@ -1234,21 +1529,21 @@ class HydratorTest extends TestCase
     public function testHydrateRelationshipWithNonNullablePropertyWithNull(array $data): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should not be empty.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_NOT_BE_EMPTY);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must not be empty.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_NOT_BE_EMPTY);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value.value');
         $this->createHydrator()->hydrate(ObjectWithRelationshipWithString::class, ['value' => $data]);
     }
 
     /**
      * @group relationship
-     * @dataProvider notStringDataProvider
+     * @dataProvider nonStrictNotStringDataProvider
      */
     public function testHydrateRelationshipWithStringPropertyWithNotString(array $data): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be of type string.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_STRING);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be of type string.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_STRING);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value.value');
         $this->createHydrator()->hydrate(ObjectWithRelationshipWithString::class, ['value' => $data]);
     }
@@ -1259,8 +1554,8 @@ class HydratorTest extends TestCase
     public function testHydrateRelationshipWithRequiredStringPropertyWithoutValue(): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be provided.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_PROVIDED);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be provided.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_PROVIDED);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value.value');
         $this->createHydrator()->hydrate(ObjectWithRelationshipWithString::class, ['value' => []]);
     }
@@ -1270,14 +1565,7 @@ class HydratorTest extends TestCase
      */
     public function testHydrateUnstantiableRelationshipProperty(): void
     {
-        $this->expectException(UnsupportedPropertyTypeException::class);
-        $this->expectExceptionMessage(sprintf(
-            'The property %s.%s refers to a non-instantiable class %s.',
-            ObjectWithUnstantiableRelationship::class,
-            'value',
-            UnstantiableObject::class,
-        ));
-
+        $this->expectException(InvalidObjectException::class);
         $this->createHydrator()->hydrate(ObjectWithUnstantiableRelationship::class, ['value' => []]);
     }
 
@@ -1326,8 +1614,8 @@ class HydratorTest extends TestCase
     public function testHydrateNonNullableRelationshipsPropertyWithNull(array $data): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should not be empty.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_NOT_BE_EMPTY);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must not be empty.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_NOT_BE_EMPTY);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate(ObjectWithRelationships::class, $data);
     }
@@ -1339,8 +1627,8 @@ class HydratorTest extends TestCase
     public function testHydrateRelationshipsPropertyWithNotArray(array $data): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be of type array.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_ARRAY);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be of type array.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_ARRAY);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate(ObjectWithRelationships::class, $data);
     }
@@ -1351,8 +1639,8 @@ class HydratorTest extends TestCase
     public function testHydrateRequiredRelationshipsPropertyWithoutValue(): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be provided.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_PROVIDED);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be provided.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_PROVIDED);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate(ObjectWithRelationships::class, []);
     }
@@ -1364,21 +1652,21 @@ class HydratorTest extends TestCase
     public function testHydrateRelationshipsPropertyWithNullsForNonNullableValues(array $data): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should not be empty.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_NOT_BE_EMPTY);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must not be empty.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_NOT_BE_EMPTY);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value.0.value.value');
         $this->createHydrator()->hydrate(ObjectWithRelationships::class, ['value' => [['value' => $data]]]);
     }
 
     /**
      * @group relationships
-     * @dataProvider notStringDataProvider
+     * @dataProvider nonStrictNotStringDataProvider
      */
     public function testHydrateRelationshipsPropertyWithNotStringForStringValue(array $data): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be of type string.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_STRING);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be of type string.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_STRING);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value.0.value.value');
         $this->createHydrator()->hydrate(ObjectWithRelationships::class, ['value' => [['value' => $data]]]);
     }
@@ -1389,8 +1677,8 @@ class HydratorTest extends TestCase
     public function testHydrateRelationshipsPropertyWithoutValueForRequiredValue(): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be provided.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_PROVIDED);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be provided.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_PROVIDED);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value.0.value.value');
         $this->createHydrator()->hydrate(ObjectWithRelationships::class, ['value' => [['value' => []]]]);
     }
@@ -1401,10 +1689,10 @@ class HydratorTest extends TestCase
     public function testHydrateRelationshipsPropertyWithNotArrayForRelation(): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be of type array.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_ARRAY);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be of type array.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_ARRAY);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value.0');
-        $this->createHydrator()->hydrate(ObjectWithRelationships::class, ['value' => [null]]);
+        $this->createHydrator()->hydrate(ObjectWithRelationships::class, ['value' => [42]]);
     }
 
     /**
@@ -1413,14 +1701,14 @@ class HydratorTest extends TestCase
     public function testSeveralErrorsWhenHydratingRelationshipsProperty(): void
     {
         $this->assertInvalidValueExceptionCount(3);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should not be empty.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_NOT_BE_EMPTY);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must not be empty.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_NOT_BE_EMPTY);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value.0.value.value');
-        $this->assertInvalidValueExceptionMessage(1, 'This value should be of type string.');
-        $this->assertInvalidValueExceptionErrorCode(1, ErrorCode::VALUE_SHOULD_BE_STRING);
+        $this->assertInvalidValueExceptionMessage(1, 'This value must be of type string.');
+        $this->assertInvalidValueExceptionErrorCode(1, ErrorCode::MUST_BE_STRING);
         $this->assertInvalidValueExceptionPropertyPath(1, 'value.1.value.value');
-        $this->assertInvalidValueExceptionMessage(2, 'This value should be provided.');
-        $this->assertInvalidValueExceptionErrorCode(2, ErrorCode::VALUE_SHOULD_BE_PROVIDED);
+        $this->assertInvalidValueExceptionMessage(2, 'This value must be provided.');
+        $this->assertInvalidValueExceptionErrorCode(2, ErrorCode::MUST_BE_PROVIDED);
         $this->assertInvalidValueExceptionPropertyPath(2, 'value.2.value.value');
         $this->createHydrator()->hydrate(ObjectWithRelationships::class, ['value' => [
             ['value' => ['value' => null]],
@@ -1435,9 +1723,9 @@ class HydratorTest extends TestCase
     public function testHydrateLimitedRelationshipsProperty(): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'The maximum allowed number of elements is 1.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::REDUNDANT_ELEMENT);
-        $this->assertInvalidValueExceptionPropertyPath(0, 'value.1');
+        $this->assertInvalidValueExceptionMessage(0, 'This value is limited to 1 elements.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::ARRAY_OVERFLOW);
+        $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate(ObjectWithRelationshipsWithLimit::class, ['value' => [
             ['value' => 'foo'],
             ['value' => 'bar'],
@@ -1449,14 +1737,7 @@ class HydratorTest extends TestCase
      */
     public function testHydrateRelationshipsPropertyWithUnstantiableObject(): void
     {
-        $this->expectException(UnsupportedPropertyTypeException::class);
-        $this->expectExceptionMessage(sprintf(
-            'The property %s.%s refers to a non-instantiable class %s.',
-            ObjectWithRelationshipsWithUnstantiableObject::class,
-            'value',
-            UnstantiableObject::class,
-        ));
-
+        $this->expectException(InvalidObjectException::class);
         $this->createHydrator()->hydrate(
             ObjectWithRelationshipsWithUnstantiableObject::class,
             ['value' => [['value' => []]]],
@@ -1506,12 +1787,7 @@ class HydratorTest extends TestCase
 
     public function testUnstantiableObject(): void
     {
-        $this->expectException(UninitializableObjectException::class);
-        $this->expectExceptionMessage(sprintf(
-            'The class %s cannot be hydrated because it is an uninstantiable class.',
-            UnstantiableObject::class,
-        ));
-
+        $this->expectException(InvalidObjectException::class);
         $this->createHydrator()->hydrate(UnstantiableObject::class, []);
     }
 
@@ -1531,76 +1807,42 @@ class HydratorTest extends TestCase
 
     public function testUnsupportedPropertyType(): void
     {
-        $this->expectException(UnsupportedPropertyTypeException::class);
-        $this->expectExceptionMessage(sprintf(
-            'The property %s.%s contains an unsupported type %s.',
-            ObjectWithUnsupportedProperty::class,
-            'value',
-            'iterable',
-        ));
-
-        $this->createHydrator()->hydrate(ObjectWithUnsupportedProperty::class, ['value' => []]);
+        $this->expectException(InvalidObjectException::class);
+        $this->createHydrator()->hydrate(ObjectWithUnsupportedPropertyType::class, ['value' => []]);
     }
 
     public function testUnsupportedPropertyTypeNotation(): void
     {
         $this->phpRequired('8.0');
-
-        $this->expectException(UnsupportedPropertyTypeException::class);
-        $this->expectExceptionMessage(sprintf(
-            'The property %s.%s contains an unsupported type %s.',
-            ObjectWithUnsupportedPropertyNotation::class,
-            'value',
-            'int|float',
-        ));
-
+        $this->expectException(InvalidObjectException::class);
         $this->createHydrator()->hydrate(ObjectWithUnsupportedPropertyNotation::class, ['value' => []]);
+    }
+
+    public function testUnsupportedInternalClass(): void
+    {
+        $this->expectException(InvalidObjectException::class);
+        $this->createHydrator()->hydrate(ObjectWithUnsupportedInternalClass::class, ['value' => []]);
     }
 
     public function testUntypedProperty(): void
     {
-        $this->expectException(UntypedPropertyException::class);
-        $this->expectExceptionMessage(sprintf(
-            'The property %s.%s is not typed.',
-            ObjectWithUntypedProperty::class,
-            'value',
-        ));
+        $object = $this->createHydrator()->hydrate(ObjectWithUntypedProperty::class, ['value' => []]);
 
-        $this->createHydrator()->hydrate(ObjectWithUntypedProperty::class, ['value' => []]);
+        $this->assertSame([], $object->value);
     }
 
     public function testAnnotatedAlias(): void
     {
-        /** @var Hydrator $hydrator */
-        $hydrator = $this->createHydrator();
-        $hydrator->useDefaultAnnotationReader();
-
-        $this->assertInvalidValueExceptionCount(0);
-        $object = $hydrator->hydrate(ObjectWithAnnotatedAlias::class, ['non-normalized-value' => 'foo']);
-        $this->assertSame('foo', $object->value);
-
-        $this->assertInvalidValueExceptionCount(1);
-        $hydrator->hydrate(ObjectWithAnnotatedAlias::class, ['value' => 'foo']);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be provided.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_PROVIDED);
-        $this->assertInvalidValueExceptionPropertyPath(0, 'value');
-    }
-
-    public function testAttributedAlias(): void
-    {
-        $this->phpRequired('8.0');
-
-        /** @var Hydrator $hydrator */
         $hydrator = $this->createHydrator();
 
         $this->assertInvalidValueExceptionCount(0);
-        $object = $hydrator->hydrate(ObjectWithAttributedAlias::class, ['non-normalized-value' => 'foo']);
+        $object = $hydrator->hydrate(ObjectWithAliasedProperty::class, ['non-normalized-value' => 'foo']);
         $this->assertSame('foo', $object->value);
 
         $this->assertInvalidValueExceptionCount(1);
-        $hydrator->hydrate(ObjectWithAttributedAlias::class, ['value' => 'foo']);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be provided.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_PROVIDED);
+        $hydrator->hydrate(ObjectWithAliasedProperty::class, ['value' => 'foo']);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be provided.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_PROVIDED);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
     }
 
@@ -1648,8 +1890,8 @@ class HydratorTest extends TestCase
         $this->assertNotNull($violations);
         $this->assertCount(1, $violations);
         $this->assertTrue($violations->has(0));
-        $this->assertSame(ErrorCode::VALUE_SHOULD_BE_PROVIDED, $violations->get(0)->getCode());
-        $this->assertSame('This value should be provided.', $violations->get(0)->getMessage());
+        $this->assertSame(ErrorCode::MUST_BE_PROVIDED, $violations->get(0)->getCode());
+        $this->assertSame('This value must be provided.', $violations->get(0)->getMessage());
         $this->assertSame('value', $violations->get(0)->getPropertyPath());
     }
 
@@ -1793,16 +2035,16 @@ class HydratorTest extends TestCase
         ];
     }
 
-    public function stringDataProvider(): array
+    public function nonStrictStringDataProvider(): array
     {
         return [
             [['value' => 'foo'], 'foo'],
 
-            // Should not be cast to a null
+            // Must not be cast to a null
             [['value' => ''], ''],
             [['value' => ' '], ' '],
 
-            // Should not be cast to a boolean type
+            // Must not be cast to a boolean
             [['value' => '1'], '1'],
             [['value' => '0'], '0'],
             [['value' => 'true'], 'true'],
@@ -1812,13 +2054,28 @@ class HydratorTest extends TestCase
             [['value' => 'on'], 'on'],
             [['value' => 'off'], 'off'],
 
-            // Should not be cast to a number
+            // Must not be cast to a number
             [['value' => '42'], '42'],
             [['value' => '3.14159'], '3.14159'],
+
+            // Must be cast to a string
+            [['value' => -1], '-1'],
+            [['value' => 0], '0'],
+            [['value' => 1], '1'],
         ];
     }
 
-    public function notStringDataProvider(): array
+    public function nonStrictNotStringDataProvider(): array
+    {
+        return [
+            [['value' => true]],
+            [['value' => false]],
+            [['value' => 3.14159]],
+            [['value' => []]],
+        ];
+    }
+
+    public function strictNotStringDataProvider(): array
     {
         return [
             [['value' => true]],
@@ -1850,7 +2107,14 @@ class HydratorTest extends TestCase
     public function timestampDataProvider(): array
     {
         return [
+            [['value' => '1970-01-01T00:00:00.000+00:00'], '1970-01-01T00:00:00.000+00:00', null],
             [['value' => '1970-01-01 00:00:00'], '1970-01-01 00:00:00', 'Y-m-d H:i:s'],
+            [['value' => '-1'], '-1', 'U'],
+            [['value' => '0'], '0', 'U'],
+            [['value' => '1'], '1', 'U'],
+            [['value' => -1], '-1', 'U'],
+            [['value' => 0], '0', 'U'],
+            [['value' => 1], '1', 'U'],
         ];
     }
 
@@ -1984,15 +2248,15 @@ class HydratorTest extends TestCase
     public function testIssue25(): void
     {
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value should be provided.');
-        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::VALUE_SHOULD_BE_PROVIDED);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be provided.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_PROVIDED);
         $this->assertInvalidValueExceptionPropertyPath(0, 'foo');
         $this->createHydrator()->hydrate(Issue25::class, []);
     }
 
-    private function createHydrator(): HydratorInterface
+    private function createHydrator(array $context = []): HydratorInterface
     {
-        $hydrator = new Hydrator();
+        $hydrator = new Hydrator($context);
         if (PHP_VERSION_ID < 80000) {
             $hydrator->useDefaultAnnotationReader();
         }

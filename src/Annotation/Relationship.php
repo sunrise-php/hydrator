@@ -31,7 +31,7 @@ use Attribute;
  *
  * @psalm-suppress InvalidExtendClass
  */
-#[Attribute(Attribute::TARGET_PROPERTY)]
+#[Attribute(Attribute::TARGET_PROPERTY | Attribute::TARGET_PARAMETER)]
 final class Relationship extends Subtype
 {
 }

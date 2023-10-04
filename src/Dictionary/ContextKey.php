@@ -11,11 +11,15 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Hydrator\Exception;
+namespace Sunrise\Hydrator\Dictionary;
 
 /**
- * UntypedPropertyException
+ * Hydration context keys
+ *
+ * @since 3.2.0
  */
-class UntypedPropertyException extends InvalidObjectException
+final class ContextKey
 {
+    public const TIMESTAMP_FORMAT = 'timestamp_format';
+    public const TIMEZONE = 'timezone';
 }

@@ -26,7 +26,7 @@ use Attribute;
  *
  * @since 3.0.0
  */
-#[Attribute(Attribute::TARGET_PROPERTY)]
+#[Attribute(Attribute::TARGET_PROPERTY | Attribute::TARGET_PARAMETER)]
 final class Format
 {
 

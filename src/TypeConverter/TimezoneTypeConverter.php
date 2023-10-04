@@ -20,7 +20,6 @@ use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\Type;
 use Sunrise\Hydrator\TypeConverterInterface;
 
-use function is_a;
 use function is_string;
 use function trim;
 
@@ -33,15 +32,14 @@ final class TimezoneTypeConverter implements TypeConverterInterface
     /**
      * @inheritDoc
      */
-    public function castValue($value, Type $type, array $path): Generator
+    public function castValue($value, Type $type, array $path, array $context): Generator
     {
-        $className = $type->getName();
-        if (!is_a($className, DateTimeZone::class, true)) {
+        if ($type->getName() <> DateTimeZone::class) {
             return;
         }
 
         if (!is_string($value)) {
-            throw InvalidValueException::shouldBeString($path);
+            throw InvalidValueException::mustBeString($path);
         }
 
         $value = trim($value);
@@ -54,12 +52,11 @@ final class TimezoneTypeConverter implements TypeConverterInterface
                 return yield null;
             }
 
-            throw InvalidValueException::shouldNotBeEmpty($path);
+            throw InvalidValueException::mustNotBeEmpty($path);
         }
 
         try {
-            /** @psalm-suppress UnsafeInstantiation */
-            yield new $className($value);
+            yield new DateTimeZone($value);
         } catch (Exception $e) {
             throw InvalidValueException::invalidTimezone($path);
         }

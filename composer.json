@@ -8,7 +8,10 @@
         "sunrise",
         "hydrator",
         "mapper",
+        "populator",
         "object-hydrator",
+        "object-mapper",
+        "object-populator",
         "data-mapper",
         "php7",
         "php8"
@@ -30,7 +33,9 @@
         "phpstan/phpstan": "^1.10",
         "doctrine/annotations": "^2.0",
         "symfony/validator": "^5.4",
-        "symfony/uid": "^5.4"
+        "symfony/uid": "^5.4",
+        "ramsey/uuid": "^4.2",
+        "myclabs/php-enum": "^1.8"
     },
     "autoload": {
         "psr-4": {

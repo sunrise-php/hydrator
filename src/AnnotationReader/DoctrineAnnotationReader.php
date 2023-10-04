@@ -11,13 +11,14 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Hydrator;
+namespace Sunrise\Hydrator\AnnotationReader;
 
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Annotations\Reader;
 use Generator;
 use LogicException;
 use ReflectionProperty;
+use Sunrise\Hydrator\AnnotationReaderInterface;
 
 use function class_exists;
 use function sprintf;
@@ -46,7 +47,7 @@ final class DoctrineAnnotationReader implements AnnotationReaderInterface
     }
 
     /**
-     * Creates the class instance with the doctrine's default annotation reader
+     * Creates a new instance of the class with the doctrine's default annotation reader
      *
      * @return self
      *
@@ -57,7 +58,7 @@ final class DoctrineAnnotationReader implements AnnotationReaderInterface
         // @codeCoverageIgnoreStart
         if (!class_exists(AnnotationReader::class)) {
             throw new LogicException(sprintf(
-                'The annotation reader {%s} requires the package doctrine/annotations, ' .
+                'The annotation reader {%s} requires the doctrine/annotations package, ' .
                 'run the command `composer require doctrine/annotations` to resolve it.',
                 __CLASS__,
             ));
@@ -69,12 +70,14 @@ final class DoctrineAnnotationReader implements AnnotationReaderInterface
     /**
      * @inheritDoc
      */
-    public function getAnnotations(ReflectionProperty $target, string $name): Generator
+    public function getAnnotations(string $name, $holder): Generator
     {
-        $annotations = $this->reader->getPropertyAnnotations($target);
-        foreach ($annotations as $annotation) {
-            if ($annotation instanceof $name) {
-                yield $annotation;
+        if ($holder instanceof ReflectionProperty) {
+            $annotations = $this->reader->getPropertyAnnotations($holder);
+            foreach ($annotations as $annotation) {
+                if ($annotation instanceof $name) {
+                    yield $annotation;
+                }
             }
         }
     }

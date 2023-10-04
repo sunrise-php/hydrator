@@ -20,6 +20,7 @@ namespace Sunrise\Hydrator\Dictionary;
  */
 final class BuiltinType
 {
+    public const MIXED = 'mixed';
     public const BOOL = 'bool';
     public const INT = 'int';
     public const FLOAT = 'float';

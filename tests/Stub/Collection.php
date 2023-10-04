@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Hydrator\Tests\Fixtures;
+namespace Sunrise\Hydrator\Tests\Stub;
 
 use ArrayAccess;
 use ReturnTypeWillChange;
 
-final class Collection implements ArrayAccess
+class Collection implements ArrayAccess
 {
     public array $elements = [];
 
