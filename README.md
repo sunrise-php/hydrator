@@ -44,33 +44,51 @@ composer require sunrise/hydrator
 Let's consider a typical DTO set:
 
 ```php
-enum Status: int {
+enum Status: int
+{
     case ENABLED = 1;
     case DISABLED = 0;
 }
+```
 
-final class Category {
+```php
+final class CategoryDto
+{
     public function __construct(
         public readonly string $name,
     ) {
     }
 }
+```
 
-final class Tag {
+```php
+final class TagDto
+{
     public function __construct(
         public readonly string $name,
     ) {
     }
 }
+```
 
-final class Product {
+```php
+final class TagDtoCollection implements ArrayAccess
+{
+    public function __construct(TagDto ...$tags)
+    {
+    }
+}
+```
+
+```php
+final class PublicationDto
+{
     public function __construct(
         public readonly string $name,
-        public readonly Category $category,
-        #[\Sunrise\Hydrator\Annotation\Subtype(Tag::class, limit: 100)]
-        public readonly array $tags,
+        public readonly CategoryDto $category,
+        public readonly TagDtoCollection $tags,
         public readonly Status $status = Status::DISABLED,
-        #[\Sunrise\Hydrator\Annotation\Format(\DATE_RFC3339)]
+        #[\Sunrise\Hydrator\Annotation\Format(DateTimeInterface::RFC3339)]
         public readonly DateTimeImmutable $createdAt = new DateTimeImmutable('now'),
     ) {
     }
@@ -96,7 +114,7 @@ $data = [
     'status' => 0,
 ];
 
-$product = (new \Sunrise\Hydrator\Hydrator)->hydrate(Product::class, $data);
+$product = (new \Sunrise\Hydrator\Hydrator)->hydrate(PublicationDto::class, $data);
 ```
 
 Or, you can populate them using JSON:
@@ -120,7 +138,7 @@ $json = <<<JSON
 }
 JSON;
 
-$product = (new \Sunrise\Hydrator\Hydrator)->hydrateWithJson(Product::class, $json);
+$product = (new \Sunrise\Hydrator\Hydrator)->hydrateWithJson(PublicationDto::class, $json);
 ```
 
 ## Allowed property types
@@ -222,20 +240,23 @@ public readonly array $value;
 In addition to arrays, you can also use **collections**, in other words, classes implementing the [ArrayAccess](http://php.net/ArrayAccess) interface, for example:
 
 ```php
-final class TagDto {
+final class TagDto
+{
 }
 ```
 
 ```php
-final class TagCollection implements \ArrayAccess {
+final class TagDtoCollection implements \ArrayAccess
+{
 }
 ```
 
 ```php
-final class CreateProductDto {
+final class CreateProductDto
+{
     public function __construct(
         #[\Sunrise\Hydrator\Annotation\Subtype(TagDto::class, limit: 10)]
-        public readonly TagCollection $tags,
+        public readonly TagDtoCollection $tags,
     ) {
     }
 }
@@ -246,16 +267,19 @@ Note that for collections, instead of the **Subtype** annotation, you can use ty
 > Please note that in this case, you take on the responsibility of limiting the collection. To ensure that the hydrator understands when the collection is full, the [offsetSet](https://www.php.net/arrayaccess.offsetset) method should throw an [OverflowException](https://www.php.net/overflowexception).
 
 ```php
-final class TagCollection implements \ArrayAccess {
-    public function __construct(public TagDto ...$tags) {
+final class TagDtoCollection implements \ArrayAccess
+{
+    public function __construct(public TagDto ...$tags)
+    {
     }
 }
 ```
 
 ```php
-final class CreateProductDto {
+final class CreateProductDto
+{
     public function __construct(
-        public readonly TagCollection $tags,
+        public readonly TagDtoCollection $tags,
     ) {
     }
 }
@@ -273,7 +297,7 @@ This property has no any additional behavior and only accepts arrays.
 
 ### Timestamp
 
-Only the DateTimeImmutable type is supported.
+Only the [DateTimeImmutable](https://www.php.net/DateTimeImmutable) type is supported.
 
 ```php
 #[\Sunrise\Hydrator\Annotation\Format('Y-m-d H:i:s')]
@@ -302,7 +326,7 @@ $hydrator = new Hydrator([
 
 ### Timezone
 
-Only the DateTimeZone type is supported.
+Only the [DateTimeZone](https://www.php.net/DateTimeZone) type is supported.
 
 ```php
 public readonly DateTimeZone $value;
@@ -347,7 +371,7 @@ Also, please note that if a value in a dataset for this property is represented 
 
 ### Enumeration
 
-#### PHP 8.1 built-in enumerations
+#### PHP 8.1 [built-in](https://www.php.net/enum) enumerations
 
 ```php
 public readonly SomeEnum $value;
