@@ -7,9 +7,7 @@ namespace Sunrise\Hydrator\Tests\Stub;
 /**
  * @extends Collection<array-key, mixed>
  */
-final class UnstantiableCollection extends Collection
+final class LimitedCollection extends Collection
 {
-    private function __construct()
-    {
-    }
+    protected const LIMIT = 1;
 }

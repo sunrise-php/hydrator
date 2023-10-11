@@ -27,7 +27,7 @@
         "php": ">=7.4"
     },
     "require-dev": {
-        "sunrise/coding-standard": "~1.0.0",
+        "sunrise/coding-standard": "^1.0",
         "phpunit/phpunit": "^9.6",
         "vimeo/psalm": "^5.15",
         "phpstan/phpstan": "^1.10",

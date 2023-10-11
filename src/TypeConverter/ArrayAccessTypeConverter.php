@@ -30,6 +30,7 @@ use Sunrise\Hydrator\Type;
 use Sunrise\Hydrator\TypeConverterInterface;
 
 use function count;
+use function end;
 use function is_array;
 use function is_subclass_of;
 
@@ -97,9 +98,8 @@ final class ArrayAccessTypeConverter implements
             throw InvalidValueException::mustBeArray($path);
         }
 
-        $subtype = $this->annotationReader->getAnnotations(Subtype::class, $type->getHolder())->current();
-
-        $subtype ??= $this->getContainerSubtype($containerReflection);
+        // phpcs:ignore Generic.Files.LineLength
+        $subtype = $this->annotationReader->getAnnotations(Subtype::class, $type->getHolder())->current() ?? $this->getContainerSubtype($containerReflection);
 
         if ($subtype === null) {
             $counter = 0;
@@ -125,7 +125,7 @@ final class ArrayAccessTypeConverter implements
             try {
                 $container[$key] = $this->hydrator->castValue(
                     $element,
-                    new Type($type->getHolder(), $subtype->name, false),
+                    new Type($type->getHolder(), $subtype->name, $subtype->allowsNull),
                     [...$path, $key],
                     $context,
                 );
@@ -162,6 +162,8 @@ final class ArrayAccessTypeConverter implements
      * @param ReflectionClass $container
      *
      * @return Subtype|null
+     *
+     * @codeCoverageIgnore
      */
     private function getContainerSubtype(ReflectionClass $container): ?Subtype
     {
@@ -171,20 +173,23 @@ final class ArrayAccessTypeConverter implements
         }
 
         $parameters = $constructor->getParameters();
-        if (count($parameters) <> 1) {
+        if ($parameters === []) {
             return null;
         }
 
-        $parameter = $parameters[0];
-        if (!$parameter->isVariadic()) {
+        $parameter = end($parameters);
+        if ($parameter->isVariadic() === false) {
             return null;
         }
 
         $type = $parameter->getType();
-        if (! $type instanceof ReflectionNamedType) {
+        if ($type === null) {
             return null;
         }
 
-        return new Subtype($type->getName());
+        /** @var non-empty-string $name */
+        $name = ($type instanceof ReflectionNamedType) ? $type->getName() : (string) $type;
+
+        return new Subtype($name, $type->allowsNull());
     }
 }

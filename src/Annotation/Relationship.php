@@ -22,6 +22,7 @@ use Attribute;
  *
  * @Attributes({
  *     @Attribute("name", type="string", required=true),
+ *     @Attribute("allowsNull", type="boolean", required=false),
  *     @Attribute("limit", type="integer", required=false),
  * })
  *

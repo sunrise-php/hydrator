@@ -1,4 +1,4 @@
-# Strongly typed hydrator for PHP 7.4+ with support for PHP 8.1 enums
+# Strongly typed hydrator for PHP 7.4+ with extensibility
 
 [![Build Status](https://scrutinizer-ci.com/g/sunrise-php/hydrator/badges/build.png?b=main)](https://scrutinizer-ci.com/g/sunrise-php/hydrator/build-status/main)
 [![Code Coverage](https://scrutinizer-ci.com/g/sunrise-php/hydrator/badges/coverage.png?b=main)](https://scrutinizer-ci.com/g/sunrise-php/hydrator/?branch=main)
@@ -30,8 +30,8 @@ composer require sunrise/hydrator
 * * [Array](#array)
 * * [Timestamp](#timestamp)
 * * [Timezone](#timezone)
-* * [UID](#uid)
 * * [Enumeration](#enumeration)
+* * [UUID](#uid)
 * * [Relationship](#relationship)
 * * [Custom type](#support-for-custom-types)
 * [Ignored property](#ignored-property)
@@ -49,33 +49,47 @@ enum Status: int
     case ENABLED = 1;
     case DISABLED = 0;
 }
+```
 
-final class Category
+```php
+final class CategoryDto
 {
     public function __construct(
         public readonly string $name,
     ) {
     }
 }
+```
 
-final class Tag
+```php
+final class TagDto
 {
     public function __construct(
         public readonly string $name,
     ) {
     }
 }
+```
 
-final class Product
+```php
+final class TagDtoCollection implements ArrayAccess
+{
+    public function __construct(TagDto ...$tags)
+    {
+    }
+}
+```
+
+```php
+final class PublicationDto
 {
     public function __construct(
         public readonly string $name,
-        public readonly Category $category,
-        #[\Sunrise\Hydrator\Annotation\Subtype(Tag::class, limit: 100)]
-        public readonly array $tags,
+        public readonly CategoryDto $category,
+        public readonly TagDtoCollection $tags,
         public readonly Status $status = Status::DISABLED,
-        #[\Sunrise\Hydrator\Annotation\Format(\DATE_RFC3339)]
-        public readonly DateTimeImmutable $createdAt = new DateTimeImmutable(),
+        #[\Sunrise\Hydrator\Annotation\Format(DateTimeInterface::RFC3339)]
+        public readonly DateTimeImmutable $createdAt = new DateTimeImmutable('now'),
     ) {
     }
 }
@@ -100,7 +114,7 @@ $data = [
     'status' => 0,
 ];
 
-$product = (new \Sunrise\Hydrator\Hydrator)->hydrate(Product::class, $data);
+$product = (new \Sunrise\Hydrator\Hydrator)->hydrate(PublicationDto::class, $data);
 ```
 
 Or, you can populate them using JSON:
@@ -124,7 +138,7 @@ $json = <<<JSON
 }
 JSON;
 
-$product = (new \Sunrise\Hydrator\Hydrator)->hydrateWithJson(Product::class, $json);
+$product = (new \Sunrise\Hydrator\Hydrator)->hydrateWithJson(PublicationDto::class, $json);
 ```
 
 ## Allowed property types
@@ -232,7 +246,7 @@ final class TagDto
 ```
 
 ```php
-final class TagCollection implements \ArrayAccess
+final class TagDtoCollection implements \ArrayAccess
 {
 }
 ```
@@ -242,7 +256,7 @@ final class CreateProductDto
 {
     public function __construct(
         #[\Sunrise\Hydrator\Annotation\Subtype(TagDto::class, limit: 10)]
-        public readonly TagCollection $tags,
+        public readonly TagDtoCollection $tags,
     ) {
     }
 }
@@ -253,7 +267,7 @@ Note that for collections, instead of the **Subtype** annotation, you can use ty
 > Please note that in this case, you take on the responsibility of limiting the collection. To ensure that the hydrator understands when the collection is full, the [offsetSet](https://www.php.net/arrayaccess.offsetset) method should throw an [OverflowException](https://www.php.net/overflowexception).
 
 ```php
-final class TagCollection implements \ArrayAccess
+final class TagDtoCollection implements \ArrayAccess
 {
     public function __construct(public TagDto ...$tags)
     {
@@ -265,7 +279,7 @@ final class TagCollection implements \ArrayAccess
 final class CreateProductDto
 {
     public function __construct(
-        public readonly TagCollection $tags,
+        public readonly TagDtoCollection $tags,
     ) {
     }
 }
@@ -283,7 +297,7 @@ This property has no any additional behavior and only accepts arrays.
 
 ### Timestamp
 
-Only the DateTimeImmutable type is supported.
+Only the [DateTimeImmutable](https://www.php.net/DateTimeImmutable) type is supported.
 
 ```php
 #[\Sunrise\Hydrator\Annotation\Format('Y-m-d H:i:s')]
@@ -312,7 +326,7 @@ $hydrator = new Hydrator([
 
 ### Timezone
 
-Only the DateTimeZone type is supported.
+Only the [DateTimeZone](https://www.php.net/DateTimeZone) type is supported.
 
 ```php
 public readonly DateTimeZone $value;
@@ -331,7 +345,19 @@ $hydrator = new Hydrator([
 ]);
 ```
 
-### UID
+### UUID
+
+#### Using the [ramsey/uuid](https://github.com/ramsey/uuid) package
+
+```bash
+composer require ramsey/uuid
+```
+
+```php
+public readonly \Ramsey\Uuid\UuidInterface $value;
+```
+
+#### Using the [symfony/uid](https://github.com/symfony/uid) package
 
 ```bash
 composer require symfony/uid
@@ -345,14 +371,27 @@ Also, please note that if a value in a dataset for this property is represented 
 
 ### Enumeration
 
+#### PHP 8.1 [built-in](https://www.php.net/enum) enumerations
+
 ```php
 public readonly SomeEnum $value;
 ```
 
 This property should be typed only with typed enumerations. Therefore, for integer enumerations, a value in a dataset can be either an integer or an integer represented as a string. For string enumerations, a value in a dataset can only be a string.
 
-Also, please note that if a value in a dataset for this property is represented as an empty string or a string consisting only of whitespace, then the value will be handled as [null](#null).
+#### [MyCLabs](https://github.com/myclabs/php-enum) enumerations
 
+_The popular alternative for PHP less than 8.1..._
+
+```bash
+composer require myclabs/php-enum
+```
+
+```php
+public readonly SomeEnum $value;
+```
+
+Also, please note that if a value in a dataset for this property is represented as an empty string or a string consisting only of whitespace, then the value will be handled as [null](#null).
 
 ### Relationship
 
@@ -364,20 +403,24 @@ A value in a dataset can only be an array. However, please note that if you need
 
 ## Support for custom types
 
-If you need support for a custom type, it is a relatively simple task. Let's write such support for UUID from the [ramsey/uuid](https://github.com/ramsey/uuid) package:
+If you need support for a custom type, it is a relatively simple task. Let's write such support for PSR-7 URI from the [sunrise/http-message](https://github.com/sunrise-php/http-message) package:
+
+```bash
+composer require sunrise/http-message
+```
 
 ```php
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\Type;
 use Sunrise\Hydrator\TypeConverterInterface;
-use Ramsey\Uuid\Uuid;
-use Ramsey\Uuid\UuidInterface;
+use Psr\Message\UriInterface;
+use Sunrise\Http\Message\Uri;
 
-final class UuidTypeConverter implements TypeConverterInterface
+final class UriTypeConverter implements TypeConverterInterface
 {
     public function castValue($value, Type $type, array $path): Generator
     {
-        if ($type->getName() <> UuidInterface::class) {
+        if ($type->getName() <> UriInterface::class) {
             return;
         }
 
@@ -385,20 +428,20 @@ final class UuidTypeConverter implements TypeConverterInterface
             throw InvalidValueException::mustBeString($path);
         }
 
-        if (!Uuid::isValid($value)) {
+        try {
+            yield new Uri($value);
+        } catch (\InvalidArgumentException $e) {
             throw new InvalidValueException(
-                'This value is not a valid UUID.',
+                'This value is not a valid URI.',
                 'c66741c6-e3c0-4522-a8e3-97528d7712a3',
                 $path,
             );
         }
-
-        yield Uuid::fromString($value);
     }
 
     public function getWeight(): int
     {
-        return 31;
+        return 0;
     }
 }
 ```
@@ -406,7 +449,7 @@ final class UuidTypeConverter implements TypeConverterInterface
 Now, let's inform the hydrator about the new type:
 
 ```php
-$hydrator->addTypeConverter(new UuidTypeConverter());
+$hydrator->addTypeConverter(new UriTypeConverter());
 ```
 
 ## Ignored property
