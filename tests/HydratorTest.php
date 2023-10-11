@@ -10,8 +10,11 @@ use Generator;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionFunction;
+use ReflectionIntersectionType;
 use ReflectionMethod;
+use ReflectionNamedType;
 use ReflectionParameter;
+use ReflectionUnionType;
 use Sunrise\Hydrator\Annotation\Alias;
 use Sunrise\Hydrator\Annotation\Ignore;
 use Sunrise\Hydrator\Annotation\Subtype;
@@ -2338,6 +2341,101 @@ class HydratorTest extends TestCase
         $e = InvalidObjectException::unsupportedParameterType($type, $parameter);
         // phpcs:ignore Generic.Files.LineLength
         $this->assertSame('The parameter {foo($bar[0])} is associated with an unsupported type {mixed}.', $e->getMessage());
+    }
+
+    public function testTypeFromParameter(): void
+    {
+        $parameter = $this->createMock(ReflectionParameter::class);
+        $parameter->method('getType')->willReturn(null);
+        $type = Type::fromParameter($parameter);
+        $this->assertSame(BuiltinType::MIXED, $type->getName());
+        $this->assertTrue($type->allowsNull());
+
+        $namedType = $this->createMock(ReflectionNamedType::class);
+        $namedType->method('getName')->willReturn('foo');
+        $namedType->method('allowsNull')->willReturn(false);
+        $parameter = $this->createMock(ReflectionParameter::class);
+        $parameter->method('getType')->willReturn($namedType);
+        $type = Type::fromParameter($parameter);
+        $this->assertSame('foo', $type->getName());
+        $this->assertFalse($type->allowsNull());
+
+        $namedType = $this->createMock(ReflectionNamedType::class);
+        $namedType->method('getName')->willReturn('foo');
+        $namedType->method('allowsNull')->willReturn(true);
+        $parameter = $this->createMock(ReflectionParameter::class);
+        $parameter->method('getType')->willReturn($namedType);
+        $type = Type::fromParameter($parameter);
+        $this->assertSame('foo', $type->getName());
+        $this->assertTrue($type->allowsNull());
+
+        if (PHP_VERSION_ID < 80000) {
+            return;
+        }
+
+        $namedTypes = [];
+        $namedTypes[0] = $this->createMock(ReflectionNamedType::class);
+        $namedTypes[0]->method('getName')->willReturn('foo');
+        $namedTypes[1] = $this->createMock(ReflectionNamedType::class);
+        $namedTypes[1]->method('getName')->willReturn('bar');
+        $unionType = $this->createMock(ReflectionUnionType::class);
+        $unionType->method('getTypes')->willReturn($namedTypes);
+        $unionType->method('allowsNull')->willReturn(false);
+        $unionType->method('__toString')->willReturn('foo|bar');
+        $parameter = $this->createMock(ReflectionParameter::class);
+        $parameter->method('getType')->willReturn($unionType);
+        $type = Type::fromParameter($parameter);
+        $this->assertSame('foo|bar', $type->getName());
+        $this->assertFalse($type->allowsNull());
+
+        $namedTypes = [];
+        $namedTypes[0] = $this->createMock(ReflectionNamedType::class);
+        $namedTypes[0]->method('getName')->willReturn('foo');
+        $namedTypes[1] = $this->createMock(ReflectionNamedType::class);
+        $namedTypes[1]->method('getName')->willReturn('bar');
+        $unionType = $this->createMock(ReflectionUnionType::class);
+        $unionType->method('getTypes')->willReturn($namedTypes);
+        $unionType->method('allowsNull')->willReturn(true);
+        $unionType->method('__toString')->willReturn('foo|bar|null');
+        $parameter = $this->createMock(ReflectionParameter::class);
+        $parameter->method('getType')->willReturn($unionType);
+        $type = Type::fromParameter($parameter);
+        $this->assertSame('foo|bar|null', $type->getName());
+        $this->assertTrue($type->allowsNull());
+
+        if (PHP_VERSION_ID < 80100) {
+            return;
+        }
+
+        $namedTypes = [];
+        $namedTypes[0] = $this->createMock(ReflectionNamedType::class);
+        $namedTypes[0]->method('getName')->willReturn('foo');
+        $namedTypes[1] = $this->createMock(ReflectionNamedType::class);
+        $namedTypes[1]->method('getName')->willReturn('bar');
+        $intersectionType = $this->createMock(ReflectionIntersectionType::class);
+        $intersectionType->method('getTypes')->willReturn($namedTypes);
+        $intersectionType->method('allowsNull')->willReturn(false);
+        $intersectionType->method('__toString')->willReturn('foo&bar');
+        $parameter = $this->createMock(ReflectionParameter::class);
+        $parameter->method('getType')->willReturn($intersectionType);
+        $type = Type::fromParameter($parameter);
+        $this->assertSame('foo&bar', $type->getName());
+        $this->assertFalse($type->allowsNull());
+
+        $namedTypes = [];
+        $namedTypes[0] = $this->createMock(ReflectionNamedType::class);
+        $namedTypes[0]->method('getName')->willReturn('foo');
+        $namedTypes[1] = $this->createMock(ReflectionNamedType::class);
+        $namedTypes[1]->method('getName')->willReturn('bar');
+        $intersectionType = $this->createMock(ReflectionIntersectionType::class);
+        $intersectionType->method('getTypes')->willReturn($namedTypes);
+        $intersectionType->method('allowsNull')->willReturn(true);
+        $intersectionType->method('__toString')->willReturn('(foo&bar)|null');
+        $parameter = $this->createMock(ReflectionParameter::class);
+        $parameter->method('getType')->willReturn($intersectionType);
+        $type = Type::fromParameter($parameter);
+        $this->assertSame('(foo&bar)|null', $type->getName());
+        $this->assertTrue($type->allowsNull());
     }
 
     public function testHydrateStore(): void

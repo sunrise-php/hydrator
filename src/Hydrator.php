@@ -17,15 +17,12 @@ use Generator;
 use JsonException;
 use LogicException;
 use ReflectionClass;
-use ReflectionNamedType;
-use ReflectionProperty;
 use Sunrise\Hydrator\Annotation\Alias;
 use Sunrise\Hydrator\Annotation\Context;
 use Sunrise\Hydrator\Annotation\Ignore;
 use Sunrise\Hydrator\AnnotationReader\BuiltinAnnotationReader;
 use Sunrise\Hydrator\AnnotationReader\DoctrineAnnotationReader;
 use Sunrise\Hydrator\AnnotationReader\NullAnnotationReader;
-use Sunrise\Hydrator\Dictionary\BuiltinType;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidObjectException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
@@ -237,7 +234,7 @@ class Hydrator implements HydratorInterface
 
             try {
                 // phpcs:ignore Generic.Files.LineLength
-                $property->setValue($object, $this->castValue($data[$key], $this->getPropertyType($property), [...$path, $key], $context));
+                $property->setValue($object, $this->castValue($data[$key], Type::fromProperty($property), [...$path, $key], $context));
             } catch (InvalidValueException $e) {
                 $violations[] = $e;
             } catch (InvalidDataException $e) {
@@ -310,27 +307,6 @@ class Hydrator implements HydratorInterface
         }
 
         return [$class->newInstanceWithoutConstructor(), $class];
-    }
-
-    /**
-     * Gets the given property's type
-     *
-     * @param ReflectionProperty $property
-     *
-     * @return Type
-     */
-    private function getPropertyType(ReflectionProperty $property): Type
-    {
-        $type = $property->getType();
-        if ($type === null) {
-            return new Type($property, BuiltinType::MIXED, true);
-        }
-
-        if ($type instanceof ReflectionNamedType) {
-            return new Type($property, $type->getName(), $type->allowsNull());
-        }
-
-        return new Type($property, (string) $type, $type->allowsNull());
     }
 
     /**
