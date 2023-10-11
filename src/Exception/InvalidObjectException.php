@@ -117,7 +117,7 @@ class InvalidObjectException extends LogicException implements ExceptionInterfac
     final public static function unsupportedFunctionParameterType(Type $type, ReflectionParameter $parameter, ReflectionFunctionAbstract $function): self
     {
         return new self(sprintf(
-            'The parameter {%s($%s[%d])} is associated with the unsupported type {%s}.',
+            'The parameter {%s($%s[%d])} is associated with an unsupported type {%s}.',
             $function->getName(),
             $parameter->getName(),
             $parameter->getPosition(),

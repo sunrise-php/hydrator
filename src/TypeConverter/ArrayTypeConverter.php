@@ -98,7 +98,7 @@ final class ArrayTypeConverter implements
             try {
                 $value[$key] = $this->hydrator->castValue(
                     $element,
-                    new Type($type->getHolder(), $subtype->name, false),
+                    new Type($type->getHolder(), $subtype->name, $subtype->allowsNull),
                     [...$path, $key],
                     $context,
                 );

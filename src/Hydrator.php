@@ -384,7 +384,7 @@ class Hydrator implements HydratorInterface
         if (class_exists(\MyCLabs\Enum\Enum::class)) {
             yield new MyclabsEnumTypeConverter();
         }
-        if (class_exists(\Ramsey\Uuid\UuidInterface::class)) {
+        if (class_exists(\Ramsey\Uuid\Uuid::class)) {
             yield new RamseyUuidTypeConverter();
         }
         if (class_exists(\Symfony\Component\Uid\AbstractUid::class)) {
