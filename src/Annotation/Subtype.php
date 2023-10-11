@@ -22,6 +22,7 @@ use Attribute;
  *
  * @Attributes({
  *     @Attribute("name", type="string", required=true),
+ *     @Attribute("allowsNull", type="boolean", required=false),
  *     @Attribute("limit", type="integer", required=false),
  * })
  *
@@ -41,6 +42,13 @@ class Subtype
     public string $name;
 
     /**
+     * @var bool
+     *
+     * @readonly
+     */
+    public bool $allowsNull;
+
+    /**
      * @var int<0, max>|null
      *
      * @readonly
@@ -51,11 +59,13 @@ class Subtype
      * Constructor of the class
      *
      * @param non-empty-string $name
+     * @param bool $allowsNull
      * @param int<0, max>|null $limit
      */
-    public function __construct(string $name, ?int $limit = null)
+    public function __construct(string $name, bool $allowsNull = false, ?int $limit = null)
     {
         $this->name = $name;
+        $this->allowsNull = $allowsNull;
         $this->limit = $limit;
     }
 }

@@ -1,4 +1,4 @@
-# Strongly typed hydrator for PHP 7.4+ with support for PHP 8.1 enums
+# Strongly typed hydrator for PHP 7.4+ with extensibility
 
 [![Build Status](https://scrutinizer-ci.com/g/sunrise-php/hydrator/badges/build.png?b=main)](https://scrutinizer-ci.com/g/sunrise-php/hydrator/build-status/main)
 [![Code Coverage](https://scrutinizer-ci.com/g/sunrise-php/hydrator/badges/coverage.png?b=main)](https://scrutinizer-ci.com/g/sunrise-php/hydrator/?branch=main)
@@ -30,8 +30,8 @@ composer require sunrise/hydrator
 * * [Array](#array)
 * * [Timestamp](#timestamp)
 * * [Timezone](#timezone)
-* * [UID](#uid)
 * * [Enumeration](#enumeration)
+* * [UUID](#uid)
 * * [Relationship](#relationship)
 * * [Custom type](#support-for-custom-types)
 * [Ignored property](#ignored-property)
@@ -44,30 +44,26 @@ composer require sunrise/hydrator
 Let's consider a typical DTO set:
 
 ```php
-enum Status: int
-{
+enum Status: int {
     case ENABLED = 1;
     case DISABLED = 0;
 }
 
-final class Category
-{
+final class Category {
     public function __construct(
         public readonly string $name,
     ) {
     }
 }
 
-final class Tag
-{
+final class Tag {
     public function __construct(
         public readonly string $name,
     ) {
     }
 }
 
-final class Product
-{
+final class Product {
     public function __construct(
         public readonly string $name,
         public readonly Category $category,
@@ -75,7 +71,7 @@ final class Product
         public readonly array $tags,
         public readonly Status $status = Status::DISABLED,
         #[\Sunrise\Hydrator\Annotation\Format(\DATE_RFC3339)]
-        public readonly DateTimeImmutable $createdAt = new DateTimeImmutable(),
+        public readonly DateTimeImmutable $createdAt = new DateTimeImmutable('now'),
     ) {
     }
 }
@@ -226,20 +222,17 @@ public readonly array $value;
 In addition to arrays, you can also use **collections**, in other words, classes implementing the [ArrayAccess](http://php.net/ArrayAccess) interface, for example:
 
 ```php
-final class TagDto
-{
+final class TagDto {
 }
 ```
 
 ```php
-final class TagCollection implements \ArrayAccess
-{
+final class TagCollection implements \ArrayAccess {
 }
 ```
 
 ```php
-final class CreateProductDto
-{
+final class CreateProductDto {
     public function __construct(
         #[\Sunrise\Hydrator\Annotation\Subtype(TagDto::class, limit: 10)]
         public readonly TagCollection $tags,
@@ -253,17 +246,14 @@ Note that for collections, instead of the **Subtype** annotation, you can use ty
 > Please note that in this case, you take on the responsibility of limiting the collection. To ensure that the hydrator understands when the collection is full, the [offsetSet](https://www.php.net/arrayaccess.offsetset) method should throw an [OverflowException](https://www.php.net/overflowexception).
 
 ```php
-final class TagCollection implements \ArrayAccess
-{
-    public function __construct(public TagDto ...$tags)
-    {
+final class TagCollection implements \ArrayAccess {
+    public function __construct(public TagDto ...$tags) {
     }
 }
 ```
 
 ```php
-final class CreateProductDto
-{
+final class CreateProductDto {
     public function __construct(
         public readonly TagCollection $tags,
     ) {
@@ -331,7 +321,19 @@ $hydrator = new Hydrator([
 ]);
 ```
 
-### UID
+### UUID
+
+#### Using the [ramsey/uuid](https://github.com/ramsey/uuid) package
+
+```bash
+composer require ramsey/uuid
+```
+
+```php
+public readonly \Ramsey\Uuid\UuidInterface $value;
+```
+
+#### Using the [symfony/uid](https://github.com/symfony/uid) package
 
 ```bash
 composer require symfony/uid
@@ -345,14 +347,27 @@ Also, please note that if a value in a dataset for this property is represented 
 
 ### Enumeration
 
+#### PHP 8.1 built-in enumerations
+
 ```php
 public readonly SomeEnum $value;
 ```
 
 This property should be typed only with typed enumerations. Therefore, for integer enumerations, a value in a dataset can be either an integer or an integer represented as a string. For string enumerations, a value in a dataset can only be a string.
 
-Also, please note that if a value in a dataset for this property is represented as an empty string or a string consisting only of whitespace, then the value will be handled as [null](#null).
+#### [MyCLabs](https://github.com/myclabs/php-enum) enumerations
 
+_The popular alternative for PHP less than 8.1..._
+
+```bash
+composer require myclabs/php-enum
+```
+
+```php
+public readonly SomeEnum $value;
+```
+
+Also, please note that if a value in a dataset for this property is represented as an empty string or a string consisting only of whitespace, then the value will be handled as [null](#null).
 
 ### Relationship
 
@@ -364,20 +379,24 @@ A value in a dataset can only be an array. However, please note that if you need
 
 ## Support for custom types
 
-If you need support for a custom type, it is a relatively simple task. Let's write such support for UUID from the [ramsey/uuid](https://github.com/ramsey/uuid) package:
+If you need support for a custom type, it is a relatively simple task. Let's write such support for PSR-7 URI from the [sunrise/http-message](https://github.com/sunrise-php/http-message) package:
+
+```bash
+composer require sunrise/http-message
+```
 
 ```php
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\Type;
 use Sunrise\Hydrator\TypeConverterInterface;
-use Ramsey\Uuid\Uuid;
-use Ramsey\Uuid\UuidInterface;
+use Psr\Message\UriInterface;
+use Sunrise\Http\Message\Uri;
 
-final class UuidTypeConverter implements TypeConverterInterface
+final class UriTypeConverter implements TypeConverterInterface
 {
     public function castValue($value, Type $type, array $path): Generator
     {
-        if ($type->getName() <> UuidInterface::class) {
+        if ($type->getName() <> UriInterface::class) {
             return;
         }
 
@@ -385,20 +404,20 @@ final class UuidTypeConverter implements TypeConverterInterface
             throw InvalidValueException::mustBeString($path);
         }
 
-        if (!Uuid::isValid($value)) {
+        try {
+            yield new Uri($value);
+        } catch (\InvalidArgumentException $e) {
             throw new InvalidValueException(
-                'This value is not a valid UUID.',
+                'This value is not a valid URI.',
                 'c66741c6-e3c0-4522-a8e3-97528d7712a3',
                 $path,
             );
         }
-
-        yield Uuid::fromString($value);
     }
 
     public function getWeight(): int
     {
-        return 31;
+        return 0;
     }
 }
 ```
@@ -406,7 +425,7 @@ final class UuidTypeConverter implements TypeConverterInterface
 Now, let's inform the hydrator about the new type:
 
 ```php
-$hydrator->addTypeConverter(new UuidTypeConverter());
+$hydrator->addTypeConverter(new UriTypeConverter());
 ```
 
 ## Ignored property
