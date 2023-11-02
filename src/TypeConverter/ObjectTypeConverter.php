@@ -15,6 +15,7 @@ namespace Sunrise\Hydrator\TypeConverter;
 
 use Generator;
 use ReflectionClass;
+use stdClass;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorAwareInterface;
 use Sunrise\Hydrator\HydratorInterface;
@@ -22,6 +23,7 @@ use Sunrise\Hydrator\Type;
 use Sunrise\Hydrator\TypeConverterInterface;
 
 use function class_exists;
+use function get_object_vars;
 use function is_array;
 
 /**
@@ -58,6 +60,11 @@ final class ObjectTypeConverter implements TypeConverterInterface, HydratorAware
         $class = new ReflectionClass($className);
         if ($class->isInternal() || !$class->isInstantiable()) {
             return;
+        }
+
+        // https://www.php.net/stdClass
+        if ($value instanceof stdClass) {
+            $value = get_object_vars($value);
         }
 
         if (!is_array($value)) {

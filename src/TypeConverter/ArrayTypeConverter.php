@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Sunrise\Hydrator\TypeConverter;
 
 use Generator;
+use stdClass;
 use Sunrise\Hydrator\Annotation\Subtype;
 use Sunrise\Hydrator\AnnotationReaderAwareInterface;
 use Sunrise\Hydrator\AnnotationReaderInterface;
@@ -26,6 +27,7 @@ use Sunrise\Hydrator\Type;
 use Sunrise\Hydrator\TypeConverterInterface;
 
 use function count;
+use function get_object_vars;
 use function is_array;
 
 /**
@@ -74,6 +76,11 @@ final class ArrayTypeConverter implements
     {
         if ($type->getName() <> BuiltinType::ARRAY) {
             return;
+        }
+
+        // https://www.php.net/stdClass
+        if ($value instanceof stdClass) {
+            $value = get_object_vars($value);
         }
 
         if ($value === []) {
