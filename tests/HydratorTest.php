@@ -15,6 +15,7 @@ use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionParameter;
 use ReflectionUnionType;
+use stdClass;
 use Sunrise\Hydrator\Annotation\Alias;
 use Sunrise\Hydrator\Annotation\Ignore;
 use Sunrise\Hydrator\Annotation\Subtype;
@@ -50,6 +51,39 @@ class HydratorTest extends TestCase
         $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_PROVIDED);
         $this->assertInvalidValueExceptionPropertyPath(0, 'foo');
         $this->createHydrator()->hydrate(Stub\Issue25::class, []);
+    }
+
+    public function testStdClassWithArrayProperty(): void
+    {
+        $object = new class {
+            public array $value;
+        };
+
+        $this->assertInvalidValueExceptionCount(0);
+        $this->createHydrator()->hydrate($object, ['value' => (object) ['foo' => 'bar']]);
+        $this->assertSame(['foo' => 'bar'], $object->value);
+    }
+
+    public function testStdClassWithArrayAccessProperty(): void
+    {
+        $object = new class {
+            public Stub\Collection $value;
+        };
+
+        $this->assertInvalidValueExceptionCount(0);
+        $this->createHydrator()->hydrate($object, ['value' => (object) ['foo' => 'bar']]);
+        $this->assertSame(['foo' => 'bar'], $object->value->elements);
+    }
+
+    public function testStdClassWithAssociationProperty(): void
+    {
+        $object = new class {
+            public Stub\StringAssociation $value;
+        };
+
+        $this->assertInvalidValueExceptionCount(0);
+        $this->createHydrator()->hydrate($object, ['value' => (object) ['value' => 'foo']]);
+        $this->assertSame('foo', $object->value->value);
     }
 
     /**

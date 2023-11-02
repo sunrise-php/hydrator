@@ -18,6 +18,7 @@ use Generator;
 use OverflowException;
 use ReflectionClass;
 use ReflectionNamedType;
+use stdClass;
 use Sunrise\Hydrator\Annotation\Subtype;
 use Sunrise\Hydrator\AnnotationReaderAwareInterface;
 use Sunrise\Hydrator\AnnotationReaderInterface;
@@ -31,6 +32,7 @@ use Sunrise\Hydrator\TypeConverterInterface;
 
 use function count;
 use function end;
+use function get_object_vars;
 use function is_array;
 use function is_subclass_of;
 
@@ -89,6 +91,11 @@ final class ArrayAccessTypeConverter implements
         }
 
         $container = $containerReflection->newInstanceWithoutConstructor();
+
+        // https://www.php.net/stdClass
+        if ($value instanceof stdClass) {
+            $value = get_object_vars($value);
+        }
 
         if ($value === []) {
             return yield $container;
