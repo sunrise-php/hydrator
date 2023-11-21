@@ -16,6 +16,8 @@ namespace Sunrise\Hydrator\AnnotationReader;
 use Generator;
 use LogicException;
 use ReflectionAttribute;
+use ReflectionParameter;
+use ReflectionProperty;
 use Sunrise\Hydrator\AnnotationReaderInterface;
 
 use function sprintf;
@@ -55,6 +57,11 @@ final class BuiltinAnnotationReader implements AnnotationReaderInterface
         if (PHP_MAJOR_VERSION < 8) {
             return;
         } // @codeCoverageIgnoreEnd
+
+        if (! $holder instanceof ReflectionProperty &&
+            ! $holder instanceof ReflectionParameter) {
+            return;
+        }
 
         $attributes = $holder->getAttributes($name, ReflectionAttribute::IS_INSTANCEOF);
         foreach ($attributes as $attribute) {

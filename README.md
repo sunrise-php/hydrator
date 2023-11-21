@@ -31,7 +31,7 @@ composer require sunrise/hydrator
 * * [Timestamp](#timestamp)
 * * [Timezone](#timezone)
 * * [Enumeration](#enumeration)
-* * [UUID](#uid)
+* * [UUID](#uuid)
 * * [Relationship](#relationship)
 * * [Custom type](#support-for-custom-types)
 * [Ignored property](#ignored-property)
@@ -291,6 +291,16 @@ In general, remember that regardless of whether arrays or collections are used, 
 #[\Sunrise\Hydrator\Annotation\Subtype(\DateTimeImmutable::class, limit: 100)]
 #[\Sunrise\Hydrator\Annotation\Format('Y-m-d H:i:s')]
 public readonly array $value;
+```
+
+Sometimes, there is a need to map a typed list to a collection. It's a relatively simple task; just use the example below:
+
+```php
+use Sunrise\Hydrator\Type;
+
+$data = [...];
+
+$collection = $hydrator->castValue($data, Type::fromName(SomeDtoCollection::class));
 ```
 
 This property has no any additional behavior and only accepts arrays.

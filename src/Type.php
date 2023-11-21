@@ -27,7 +27,7 @@ final class Type
     /**
      * The type holder
      *
-     * @var ReflectionParameter|ReflectionProperty
+     * @var mixed
      */
     private $holder;
 
@@ -48,7 +48,7 @@ final class Type
     /**
      * Constructor of the class
      *
-     * @param ReflectionParameter|ReflectionProperty $holder
+     * @param mixed $holder
      * @param string $name
      * @param bool $allowsNull
      */
@@ -60,26 +60,18 @@ final class Type
     }
 
     /**
-     * Creates a new type from the given property
+     * Creates a new type from the given name
      *
-     * @param ReflectionProperty $property
+     * @param string $name
+     * @param bool $allowsNull
      *
      * @return self
      *
-     * @since 3.4.0
+     * @since 3.6.0
      */
-    public static function fromProperty(ReflectionProperty $property): self
+    public static function fromName(string $name, bool $allowsNull = false): self
     {
-        $type = $property->getType();
-        if ($type === null) {
-            return new Type($property, BuiltinType::MIXED, true);
-        }
-
-        if ($type instanceof ReflectionNamedType) {
-            return new Type($property, $type->getName(), $type->allowsNull());
-        }
-
-        return new Type($property, (string) $type, $type->allowsNull());
+        return new Type(null, $name, $allowsNull);
     }
 
     /**
@@ -106,9 +98,32 @@ final class Type
     }
 
     /**
+     * Creates a new type from the given property
+     *
+     * @param ReflectionProperty $property
+     *
+     * @return self
+     *
+     * @since 3.4.0
+     */
+    public static function fromProperty(ReflectionProperty $property): self
+    {
+        $type = $property->getType();
+        if ($type === null) {
+            return new Type($property, BuiltinType::MIXED, true);
+        }
+
+        if ($type instanceof ReflectionNamedType) {
+            return new Type($property, $type->getName(), $type->allowsNull());
+        }
+
+        return new Type($property, (string) $type, $type->allowsNull());
+    }
+
+    /**
      * Gets the type holder
      *
-     * @return ReflectionParameter|ReflectionProperty
+     * @return mixed
      */
     public function getHolder()
     {
