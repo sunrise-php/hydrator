@@ -26,6 +26,7 @@ use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidObjectException;
 use Sunrise\Hydrator\Hydrator;
 use Sunrise\Hydrator\HydratorInterface;
+use Sunrise\Hydrator\Tests\Stub\BooleanCollection;
 use Sunrise\Hydrator\Type;
 use Sunrise\Hydrator\TypeConverter\TimestampTypeConverter;
 
@@ -2600,6 +2601,17 @@ class HydratorTest extends TestCase
         $this->assertSame(ErrorCode::MUST_BE_PROVIDED, $violations->get(0)->getCode());
         $this->assertSame('This value must be provided.', $violations->get(0)->getMessage());
         $this->assertSame('value', $violations->get(0)->getPropertyPath());
+    }
+
+    /**
+     * @dataProvider strictBooleanProvider
+     * @dataProvider nonStrictBooleanProvider
+     */
+    public function testSourcelessType($element, bool $expected): void
+    {
+        $type = Type::fromName(BuiltinType::BOOL);
+
+        $this->assertSame($expected, $this->createHydrator()->castValue($element, $type));
     }
 
     public function strictNullProvider(): Generator

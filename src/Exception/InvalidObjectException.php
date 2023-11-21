@@ -48,11 +48,20 @@ class InvalidObjectException extends LogicException implements ExceptionInterfac
      */
     final public static function unsupportedType(Type $type): self
     {
+        /** @var mixed $holder */
         $holder = $type->getHolder();
 
-        return $holder instanceof ReflectionProperty ?
-            self::unsupportedPropertyType($type, $holder) :
-            self::unsupportedParameterType($type, $holder);
+        if ($holder instanceof ReflectionProperty) {
+            return self::unsupportedPropertyType($type, $holder);
+        }
+        if ($holder instanceof ReflectionParameter) {
+            return self::unsupportedParameterType($type, $holder);
+        }
+
+        return new self(sprintf(
+            'The type {%s} is not supported.',
+            $type->getName(),
+        ));
     }
 
     /**
