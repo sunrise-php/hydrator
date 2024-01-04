@@ -93,7 +93,12 @@ final class BackedEnumTypeConverter implements TypeConverterInterface
         try {
             yield $enumName::from($value);
         } catch (ValueError $e) {
-            throw InvalidValueException::invalidChoice($path);
+            $expectedValues = [];
+            foreach ($enumName::cases() as $case) {
+                $expectedValues[] = $case->value;
+            }
+
+            throw InvalidValueException::invalidChoice($path, $expectedValues);
         }
     }
 

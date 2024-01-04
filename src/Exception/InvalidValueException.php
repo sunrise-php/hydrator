@@ -14,10 +14,11 @@ declare(strict_types=1);
 namespace Sunrise\Hydrator\Exception;
 
 use Sunrise\Hydrator\Dictionary\ErrorCode;
+use Sunrise\Hydrator\Dictionary\ErrorMessage;
 use RuntimeException;
 
 use function join;
-use function sprintf;
+use function strtr;
 
 /**
  * InvalidValueException
@@ -36,26 +37,37 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
     private array $propertyPath;
 
     /**
+     * @var string
+     */
+    private string $messageTemplate;
+
+    /**
+     * @var array<string, int|float|string>
+     */
+    private array $messagePlaceholders;
+
+    /**
      * Constructor of the class
      *
      * @param string $message
      * @param string $errorCode
      * @param list<array-key> $propertyPath
+     * @param string $messageTemplate
+     * @param array<string, int|float|string> $messagePlaceholders
      */
-    public function __construct(string $message, string $errorCode, array $propertyPath)
-    {
+    public function __construct(
+        string $message,
+        string $errorCode,
+        array $propertyPath,
+        string $messageTemplate,
+        array $messagePlaceholders
+    ) {
         parent::__construct($message);
 
         $this->errorCode = $errorCode;
         $this->propertyPath = $propertyPath;
-    }
-
-    /**
-     * @return string
-     */
-    final public function getErrorCode(): string
-    {
-        return $this->errorCode;
+        $this->messageTemplate = $messageTemplate;
+        $this->messagePlaceholders = $messagePlaceholders;
     }
 
     /**
@@ -67,16 +79,50 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
     }
 
     /**
+     * @return string
+     *
+     * @since 3.0.0
+     */
+    final public function getErrorCode(): string
+    {
+        return $this->errorCode;
+    }
+
+    /**
+     * @return string
+     *
+     * @since 3.7.0
+     */
+    public function getMessageTemplate(): string
+    {
+        return $this->messageTemplate;
+    }
+
+    /**
+     * @return array<string, int|float|string>
+     *
+     * @since 3.7.0
+     */
+    public function getMessagePlaceholders(): array
+    {
+        return $this->messagePlaceholders;
+    }
+
+    /**
      * @param list<array-key> $propertyPath
      *
      * @return self
+     *
+     * @since 3.0.0
      */
     final public static function mustBeProvided(array $propertyPath): self
     {
         return new self(
-            'This value must be provided.',
+            ErrorMessage::MUST_BE_PROVIDED,
             ErrorCode::MUST_BE_PROVIDED,
             $propertyPath,
+            ErrorMessage::MUST_BE_PROVIDED,
+            [],
         );
     }
 
@@ -84,13 +130,17 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
      * @param list<array-key> $propertyPath
      *
      * @return self
+     *
+     * @since 3.0.0
      */
     final public static function mustNotBeEmpty(array $propertyPath): self
     {
         return new self(
-            'This value must not be empty.',
+            ErrorMessage::MUST_NOT_BE_EMPTY,
             ErrorCode::MUST_NOT_BE_EMPTY,
             $propertyPath,
+            ErrorMessage::MUST_NOT_BE_EMPTY,
+            [],
         );
     }
 
@@ -98,13 +148,17 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
      * @param list<array-key> $propertyPath
      *
      * @return self
+     *
+     * @since 3.0.0
      */
     final public static function mustBeBoolean(array $propertyPath): self
     {
         return new self(
-            'This value must be of type boolean.',
+            ErrorMessage::MUST_BE_BOOLEAN,
             ErrorCode::MUST_BE_BOOLEAN,
             $propertyPath,
+            ErrorMessage::MUST_BE_BOOLEAN,
+            [],
         );
     }
 
@@ -112,13 +166,17 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
      * @param list<array-key> $propertyPath
      *
      * @return self
+     *
+     * @since 3.0.0
      */
     final public static function mustBeInteger(array $propertyPath): self
     {
         return new self(
-            'This value must be of type integer.',
+            ErrorMessage::MUST_BE_INTEGER,
             ErrorCode::MUST_BE_INTEGER,
             $propertyPath,
+            ErrorMessage::MUST_BE_INTEGER,
+            [],
         );
     }
 
@@ -126,13 +184,17 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
      * @param list<array-key> $propertyPath
      *
      * @return self
+     *
+     * @since 3.0.0
      */
     final public static function mustBeNumber(array $propertyPath): self
     {
         return new self(
-            'This value must be of type number.',
+            ErrorMessage::MUST_BE_NUMBER,
             ErrorCode::MUST_BE_NUMBER,
             $propertyPath,
+            ErrorMessage::MUST_BE_NUMBER,
+            [],
         );
     }
 
@@ -140,13 +202,17 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
      * @param list<array-key> $propertyPath
      *
      * @return self
+     *
+     * @since 3.0.0
      */
     final public static function mustBeString(array $propertyPath): self
     {
         return new self(
-            'This value must be of type string.',
+            ErrorMessage::MUST_BE_STRING,
             ErrorCode::MUST_BE_STRING,
             $propertyPath,
+            ErrorMessage::MUST_BE_STRING,
+            [],
         );
     }
 
@@ -154,56 +220,86 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
      * @param list<array-key> $propertyPath
      *
      * @return self
+     *
+     * @since 3.0.0
      */
     final public static function mustBeArray(array $propertyPath): self
     {
         return new self(
-            'This value must be of type array.',
+            ErrorMessage::MUST_BE_ARRAY,
             ErrorCode::MUST_BE_ARRAY,
             $propertyPath,
+            ErrorMessage::MUST_BE_ARRAY,
+            [],
         );
     }
 
     /**
      * @param list<array-key> $propertyPath
-     * @param int<0, max> $limit
+     * @param int<0, max> $maximumElements
      *
      * @return self
+     *
+     * @since 3.0.0
      */
-    final public static function arrayOverflow(array $propertyPath, int $limit): self
+    final public static function arrayOverflow(array $propertyPath, int $maximumElements): self
     {
+        $placeholders = [
+            '{maximum_elements}' => $maximumElements,
+        ];
+
         return new self(
-            sprintf('This value is limited to %d elements.', $limit),
+            strtr(ErrorMessage::ARRAY_OVERFLOW, $placeholders),
             ErrorCode::ARRAY_OVERFLOW,
             $propertyPath,
+            ErrorMessage::ARRAY_OVERFLOW,
+            $placeholders,
         );
     }
 
     /**
      * @param list<array-key> $propertyPath
+     * @param list<int|string> $expectedValues
      *
      * @return self
+     *
+     * @since 3.0.0
      */
-    final public static function invalidChoice(array $propertyPath): self
+    final public static function invalidChoice(array $propertyPath, array $expectedValues): self
     {
+        $placeholders = [
+            '{expected_values}' => join(', ', $expectedValues),
+        ];
+
         return new self(
-            'This value is not a valid choice.',
+            strtr(ErrorMessage::INVALID_CHOICE, $placeholders),
             ErrorCode::INVALID_CHOICE,
             $propertyPath,
+            ErrorMessage::INVALID_CHOICE,
+            $placeholders,
         );
     }
 
     /**
      * @param list<array-key> $propertyPath
+     * @param string $expectedFormat
      *
      * @return self
+     *
+     * @since 3.0.0
      */
-    final public static function invalidTimestamp(array $propertyPath): self
+    final public static function invalidTimestamp(array $propertyPath, string $expectedFormat): self
     {
+        $placeholders = [
+            '{expected_format}' => $expectedFormat,
+        ];
+
         return new self(
-            'This value is not a valid timestamp.',
+            strtr(ErrorMessage::INVALID_TIMESTAMP, $placeholders),
             ErrorCode::INVALID_TIMESTAMP,
             $propertyPath,
+            ErrorMessage::INVALID_TIMESTAMP,
+            $placeholders,
         );
     }
 
@@ -211,13 +307,17 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
      * @param list<array-key> $propertyPath
      *
      * @return self
+     *
+     * @since 3.0.0
      */
     final public static function invalidTimezone(array $propertyPath): self
     {
         return new self(
-            'This value is not a valid timezone.',
+            ErrorMessage::INVALID_TIMEZONE,
             ErrorCode::INVALID_TIMEZONE,
             $propertyPath,
+            ErrorMessage::INVALID_TIMEZONE,
+            [],
         );
     }
 
@@ -225,13 +325,17 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
      * @param list<array-key> $propertyPath
      *
      * @return self
+     *
+     * @since 3.0.0
      */
     final public static function invalidUid(array $propertyPath): self
     {
         return new self(
-            'This value is not a valid UID.',
+            ErrorMessage::INVALID_UID,
             ErrorCode::INVALID_UID,
             $propertyPath,
+            ErrorMessage::INVALID_UID,
+            [],
         );
     }
 }

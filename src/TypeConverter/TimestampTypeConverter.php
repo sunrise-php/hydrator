@@ -112,7 +112,7 @@ final class TimestampTypeConverter implements TypeConverterInterface, Annotation
 
         $timestamp = DateTimeImmutable::createFromFormat($format, (string) $value, $timezone);
         if ($timestamp === false) {
-            throw InvalidValueException::invalidTimestamp($path);
+            throw InvalidValueException::invalidTimestamp($path, $format);
         }
 
         yield $timestamp;

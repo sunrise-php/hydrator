@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Hydrator\Tests\Stub;
+namespace Sunrise\Hydrator\Tests\Fixture;
 
 /**
  * @extends Collection<array-key, BooleanAssociation>
