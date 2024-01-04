@@ -37,6 +37,7 @@ composer require sunrise/hydrator
 * [Ignored property](#ignored-property)
 * [Property alias](#property-alias)
 * [Error handling](#error-handling)
+* [Localization](#localization)
 * [Doctrine annotations](#doctrine-annotations)
 
 ## How to use
@@ -515,6 +516,39 @@ try {
         echo $error->getMessage(), PHP_EOL;
         echo $error->getPropertyPath(), PHP_EOL;
         echo $error->getErrorCode(), PHP_EOL;
+    }
+}
+```
+
+## Localization
+
+```php
+$localizedMessages = [
+    // using the error code dictionary...
+    \Sunrise\Hydrator\Dictionary\ErrorCode::INVALID_TIMESTAMP => 'Это значение не является валидной временной меткой; ожидаемый формат: {expected_format}.',
+
+    // or using the error message dictionary...
+    \Sunrise\Hydrator\Dictionary\ErrorMessage::INVALID_TIMESTAMP => 'Это значение не является валидной временной меткой; ожидаемый формат: {expected_format}.',
+];
+
+try {
+    $hydrator->hydrate(...);
+} catch (\Sunrise\Hydrator\Exception\InvalidDataException $e) {
+    foreach ($e->getExceptions() as $error) {
+        // original message...
+        $message = $error->getMessage();
+
+        // using the error code dictionary...
+        if (isset($localizedMessages[$error->getErrorCode()])) {
+            // localized message
+            $message = \strtr($localizedMessages[$error->getErrorCode()], $error->getMessagePlaceholders()), PHP_EOL;
+        }
+
+        // or using the error message dictionary...
+        if (isset($localizedMessages[$error->getMessageTemplate()])) {
+            // localized message
+            $message = \strtr($localizedMessages[$error->getMessageTemplate()], $error->getMessagePlaceholders()), PHP_EOL;
+        }
     }
 }
 ```

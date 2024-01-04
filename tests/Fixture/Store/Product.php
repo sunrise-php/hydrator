@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Hydrator\Tests\Stub\Store;
+namespace Sunrise\Hydrator\Tests\Fixture\Store;
 
 use DateTimeImmutable;
 use Sunrise\Hydrator\Annotation\Format;

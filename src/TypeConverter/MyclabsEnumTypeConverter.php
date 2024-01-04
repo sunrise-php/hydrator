@@ -60,7 +60,13 @@ final class MyclabsEnumTypeConverter implements TypeConverterInterface
         try {
             yield $enumName::from($value);
         } catch (UnexpectedValueException $e) {
-            throw InvalidValueException::invalidChoice($path);
+            $expectedValues = [];
+            foreach ($enumName::values() as $case) {
+                /** @var int|string */
+                $expectedValues[] = $case->getValue();
+            }
+
+            throw InvalidValueException::invalidChoice($path, $expectedValues);
         }
     }
 

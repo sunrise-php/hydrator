@@ -15,7 +15,6 @@ use ReflectionMethod;
 use ReflectionNamedType;
 use ReflectionParameter;
 use ReflectionUnionType;
-use stdClass;
 use Sunrise\Hydrator\Annotation\Alias;
 use Sunrise\Hydrator\Annotation\Ignore;
 use Sunrise\Hydrator\Annotation\Subtype;
@@ -26,12 +25,12 @@ use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidObjectException;
 use Sunrise\Hydrator\Hydrator;
 use Sunrise\Hydrator\HydratorInterface;
-use Sunrise\Hydrator\Tests\Stub\BooleanCollection;
 use Sunrise\Hydrator\Type;
 use Sunrise\Hydrator\TypeConverter\TimestampTypeConverter;
 
 use function date;
 use function get_class;
+use function join;
 use function sprintf;
 use function version_compare;
 
@@ -51,7 +50,7 @@ class HydratorTest extends TestCase
         $this->assertInvalidValueExceptionMessage(0, 'This value must be provided.');
         $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_PROVIDED);
         $this->assertInvalidValueExceptionPropertyPath(0, 'foo');
-        $this->createHydrator()->hydrate(Stub\Issue25::class, []);
+        $this->createHydrator()->hydrate(Fixture\Issue25::class, []);
     }
 
     public function testStdClassWithArrayProperty(): void
@@ -68,7 +67,7 @@ class HydratorTest extends TestCase
     public function testStdClassWithArrayAccessProperty(): void
     {
         $object = new class {
-            public Stub\Collection $value;
+            public Fixture\Collection $value;
         };
 
         $this->assertInvalidValueExceptionCount(0);
@@ -79,7 +78,7 @@ class HydratorTest extends TestCase
     public function testStdClassWithAssociationProperty(): void
     {
         $object = new class {
-            public Stub\StringAssociation $value;
+            public Fixture\StringAssociation $value;
         };
 
         $this->assertInvalidValueExceptionCount(0);
@@ -503,7 +502,7 @@ class HydratorTest extends TestCase
         $this->phpRequired('8.1');
 
         $object = new class {
-            public Stub\IntegerEnum $value;
+            public Fixture\IntegerEnum $value;
         };
 
         $this->assertInvalidValueExceptionCount(0);
@@ -523,7 +522,7 @@ class HydratorTest extends TestCase
         $this->phpRequired('8.1');
 
         $object = new class {
-            public ?Stub\IntegerEnum $value;
+            public ?Fixture\IntegerEnum $value;
         };
 
         $this->assertInvalidValueExceptionCount(0);
@@ -542,7 +541,7 @@ class HydratorTest extends TestCase
         $this->phpRequired('8.1');
 
         $object = new class {
-            public ?Stub\IntegerEnum $value = null;
+            public ?Fixture\IntegerEnum $value = null;
         };
 
         $this->assertInvalidValueExceptionCount(0);
@@ -561,7 +560,7 @@ class HydratorTest extends TestCase
         $this->phpRequired('8.1');
 
         $object = new class {
-            public Stub\IntegerEnum $value;
+            public Fixture\IntegerEnum $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -581,7 +580,7 @@ class HydratorTest extends TestCase
         $this->phpRequired('8.1');
 
         $object = new class {
-            public Stub\IntegerEnum $value;
+            public Fixture\IntegerEnum $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -600,11 +599,12 @@ class HydratorTest extends TestCase
         $this->phpRequired('8.1');
 
         $object = new class {
-            public Stub\IntegerEnum $value;
+            public Fixture\IntegerEnum $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value is not a valid choice.');
+        // phpcs:ignore Generic.Files.LineLength
+        $this->assertInvalidValueExceptionMessage(0, 'This value is not a valid choice; expected values: ' . join(', ', Fixture\IntegerEnum::values()) . '.');
         $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::INVALID_CHOICE);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate($object, ['value' => 42]);
@@ -619,7 +619,7 @@ class HydratorTest extends TestCase
         $this->phpRequired('8.1');
 
         $object = new class {
-            public Stub\IntegerEnum $value;
+            public Fixture\IntegerEnum $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -639,7 +639,7 @@ class HydratorTest extends TestCase
         $this->phpRequired('8.1');
 
         $object = new class {
-            public Stub\StringEnum $value;
+            public Fixture\StringEnum $value;
         };
 
         $this->assertInvalidValueExceptionCount(0);
@@ -659,7 +659,7 @@ class HydratorTest extends TestCase
         $this->phpRequired('8.1');
 
         $object = new class {
-            public ?Stub\StringEnum $value;
+            public ?Fixture\StringEnum $value;
         };
 
         $this->assertInvalidValueExceptionCount(0);
@@ -678,7 +678,7 @@ class HydratorTest extends TestCase
         $this->phpRequired('8.1');
 
         $object = new class {
-            public ?Stub\StringEnum $value = null;
+            public ?Fixture\StringEnum $value = null;
         };
 
         $this->assertInvalidValueExceptionCount(0);
@@ -697,7 +697,7 @@ class HydratorTest extends TestCase
         $this->phpRequired('8.1');
 
         $object = new class {
-            public Stub\StringEnum $value;
+            public Fixture\StringEnum $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -717,7 +717,7 @@ class HydratorTest extends TestCase
         $this->phpRequired('8.1');
 
         $object = new class {
-            public Stub\StringEnum $value;
+            public Fixture\StringEnum $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -736,11 +736,12 @@ class HydratorTest extends TestCase
         $this->phpRequired('8.1');
 
         $object = new class {
-            public Stub\StringEnum $value;
+            public Fixture\StringEnum $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value is not a valid choice.');
+        // phpcs:ignore Generic.Files.LineLength
+        $this->assertInvalidValueExceptionMessage(0, 'This value is not a valid choice; expected values: ' . join(', ', Fixture\StringEnum::values()) . '.');
         $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::INVALID_CHOICE);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate($object, ['value' => 'foo']);
@@ -755,7 +756,7 @@ class HydratorTest extends TestCase
         $this->phpRequired('8.1');
 
         $object = new class {
-            public Stub\StringEnum $value;
+            public Fixture\StringEnum $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -972,10 +973,10 @@ class HydratorTest extends TestCase
     {
         $object = new class {
             /**
-             * @Subtype(\Sunrise\Hydrator\Tests\Stub\BooleanAssociation::class)
-             * @var non-empty-list<Stub\BooleanAssociation>
+             * @Subtype(\Sunrise\Hydrator\Tests\Fixture\BooleanAssociation::class)
+             * @var non-empty-list<Fixture\BooleanAssociation>
              */
-            #[Subtype(Stub\BooleanAssociation::class)]
+            #[Subtype(Fixture\BooleanAssociation::class)]
             public array $value;
         };
 
@@ -992,10 +993,10 @@ class HydratorTest extends TestCase
     {
         $object = new class {
             /**
-             * @Subtype(\Sunrise\Hydrator\Tests\Stub\BooleanAssociation::class)
-             * @var non-empty-list<Stub\BooleanAssociation>
+             * @Subtype(\Sunrise\Hydrator\Tests\Fixture\BooleanAssociation::class)
+             * @var non-empty-list<Fixture\BooleanAssociation>
              */
-            #[Subtype(Stub\BooleanAssociation::class)]
+            #[Subtype(Fixture\BooleanAssociation::class)]
             public array $value;
         };
 
@@ -1015,10 +1016,10 @@ class HydratorTest extends TestCase
     {
         $object = new class {
             /**
-             * @Subtype(\Sunrise\Hydrator\Tests\Stub\BooleanAssociation::class)
-             * @var non-empty-list<Stub\BooleanAssociation>
+             * @Subtype(\Sunrise\Hydrator\Tests\Fixture\BooleanAssociation::class)
+             * @var non-empty-list<Fixture\BooleanAssociation>
              */
-            #[Subtype(Stub\BooleanAssociation::class)]
+            #[Subtype(Fixture\BooleanAssociation::class)]
             public array $value;
         };
 
@@ -1037,10 +1038,10 @@ class HydratorTest extends TestCase
     {
         $object = new class {
             /**
-             * @Subtype(\Sunrise\Hydrator\Tests\Stub\BooleanAssociation::class)
-             * @var non-empty-list<Stub\BooleanAssociation>
+             * @Subtype(\Sunrise\Hydrator\Tests\Fixture\BooleanAssociation::class)
+             * @var non-empty-list<Fixture\BooleanAssociation>
              */
-            #[Subtype(Stub\BooleanAssociation::class)]
+            #[Subtype(Fixture\BooleanAssociation::class)]
             public array $value;
         };
 
@@ -1060,10 +1061,10 @@ class HydratorTest extends TestCase
     {
         $object = new class {
             /**
-             * @Subtype(\Sunrise\Hydrator\Tests\Stub\BooleanAssociation::class)
-             * @var non-empty-list<Stub\BooleanAssociation>
+             * @Subtype(\Sunrise\Hydrator\Tests\Fixture\BooleanAssociation::class)
+             * @var non-empty-list<Fixture\BooleanAssociation>
              */
-            #[Subtype(Stub\BooleanAssociation::class)]
+            #[Subtype(Fixture\BooleanAssociation::class)]
             public array $value;
         };
 
@@ -1084,10 +1085,10 @@ class HydratorTest extends TestCase
     {
         $object = new class {
             /**
-             * @Subtype(\Sunrise\Hydrator\Tests\Stub\BooleanAssociation::class)
-             * @var non-empty-list<Stub\BooleanAssociation>
+             * @Subtype(\Sunrise\Hydrator\Tests\Fixture\BooleanAssociation::class)
+             * @var non-empty-list<Fixture\BooleanAssociation>
              */
-            #[Subtype(Stub\BooleanAssociation::class)]
+            #[Subtype(Fixture\BooleanAssociation::class)]
             public array $value;
         };
 
@@ -1107,10 +1108,10 @@ class HydratorTest extends TestCase
     {
         $object = new class {
             /**
-             * @Subtype(\Sunrise\Hydrator\Tests\Stub\BooleanAssociation::class)
-             * @var non-empty-list<Stub\BooleanAssociation>
+             * @Subtype(\Sunrise\Hydrator\Tests\Fixture\BooleanAssociation::class)
+             * @var non-empty-list<Fixture\BooleanAssociation>
              */
-            #[Subtype(Stub\BooleanAssociation::class)]
+            #[Subtype(Fixture\BooleanAssociation::class)]
             public array $value;
         };
 
@@ -1128,7 +1129,7 @@ class HydratorTest extends TestCase
     public function testHydrateArrayAccessProperty(array $data, array $expected): void
     {
         $object = new class {
-            public Stub\Collection $value;
+            public Fixture\Collection $value;
         };
 
         $this->assertInvalidValueExceptionCount(0);
@@ -1144,7 +1145,7 @@ class HydratorTest extends TestCase
     public function testHydrateNullableArrayAccessProperty(array $data, ?array $expected): void
     {
         $object = new class {
-            public ?Stub\Collection $value;
+            public ?Fixture\Collection $value;
         };
 
         $this->assertInvalidValueExceptionCount(0);
@@ -1160,7 +1161,7 @@ class HydratorTest extends TestCase
     public function testHydrateOptionalArrayAccessProperty(array $data, array $expected = []): void
     {
         $object = new class {
-            public ?Stub\Collection $value = null;
+            public ?Fixture\Collection $value = null;
         };
 
         $this->assertInvalidValueExceptionCount(0);
@@ -1175,7 +1176,7 @@ class HydratorTest extends TestCase
     public function testHydrateArrayAccessPropertyWithNull(array $data): void
     {
         $object = new class {
-            public Stub\Collection $value;
+            public Fixture\Collection $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -1192,7 +1193,7 @@ class HydratorTest extends TestCase
     public function testHydrateArrayAccessPropertyWithInvalidValue(array $data): void
     {
         $object = new class {
-            public Stub\Collection $value;
+            public Fixture\Collection $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -1208,7 +1209,7 @@ class HydratorTest extends TestCase
     public function testHydrateArrayAccessPropertyWithoutValue(): void
     {
         $object = new class {
-            public Stub\Collection $value;
+            public Fixture\Collection $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -1224,7 +1225,7 @@ class HydratorTest extends TestCase
     public function testHydrateOverflowedArrayAccessProperty(): void
     {
         $object = new class {
-            public Stub\LimitedCollection $value;
+            public Fixture\LimitedCollection $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -1240,7 +1241,7 @@ class HydratorTest extends TestCase
     public function testHydrateUnstantiableArrayAccessProperty(): void
     {
         $object = new class {
-            public Stub\UnstantiableCollection $value;
+            public Fixture\UnstantiableCollection $value;
         };
 
         $this->expectException(InvalidObjectException::class);
@@ -1258,7 +1259,7 @@ class HydratorTest extends TestCase
         $object = new class {
             /** @Subtype(BuiltinType::BOOL) */
             #[Subtype(BuiltinType::BOOL)]
-            public Stub\Collection $value;
+            public Fixture\Collection $value;
         };
 
         $this->createHydrator()->hydrate($object, ['value' => [$element]]);
@@ -1278,7 +1279,7 @@ class HydratorTest extends TestCase
         $object = new class {
             /** @Subtype(BuiltinType::BOOL, allowsNull=true) */
             #[Subtype(BuiltinType::BOOL, allowsNull: true)]
-            public Stub\Collection $value;
+            public Fixture\Collection $value;
         };
 
         $this->createHydrator()->hydrate($object, ['value' => [$element]]);
@@ -1296,7 +1297,7 @@ class HydratorTest extends TestCase
         $object = new class {
             /** @Subtype(BuiltinType::BOOL) */
             #[Subtype(BuiltinType::BOOL)]
-            public Stub\Collection $value;
+            public Fixture\Collection $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -1316,7 +1317,7 @@ class HydratorTest extends TestCase
         $object = new class {
             /** @Subtype(BuiltinType::BOOL) */
             #[Subtype(BuiltinType::BOOL)]
-            public Stub\Collection $value;
+            public Fixture\Collection $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -1337,7 +1338,7 @@ class HydratorTest extends TestCase
         $object = new class {
             /** @Subtype(BuiltinType::BOOL, limit=1) */
             #[Subtype(BuiltinType::BOOL, limit: 1)]
-            public Stub\Collection $value;
+            public Fixture\Collection $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -1358,7 +1359,7 @@ class HydratorTest extends TestCase
         $object = new class {
             /** @Subtype(BuiltinType::BOOL) */
             #[Subtype(BuiltinType::BOOL)]
-            public Stub\LimitedCollection $value;
+            public Fixture\LimitedCollection $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -1377,7 +1378,7 @@ class HydratorTest extends TestCase
     public function testHydrateTypedBooleanArrayAccessProperty($element, bool $expected): void
     {
         $object = new class {
-            public Stub\BooleanCollection $value;
+            public Fixture\BooleanCollection $value;
         };
 
         $this->createHydrator()->hydrate($object, ['value' => [$element]]);
@@ -1395,7 +1396,7 @@ class HydratorTest extends TestCase
     public function testHydrateTypedNullableBooleanArrayAccessProperty($element, ?bool $expected): void
     {
         $object = new class {
-            public Stub\NullableBooleanCollection $value;
+            public Fixture\NullableBooleanCollection $value;
         };
 
         $this->createHydrator()->hydrate($object, ['value' => [$element]]);
@@ -1411,7 +1412,7 @@ class HydratorTest extends TestCase
     public function testHydrateTypedBooleanArrayAccessPropertyWithEmptyElement($element): void
     {
         $object = new class {
-            public Stub\BooleanCollection $value;
+            public Fixture\BooleanCollection $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -1429,7 +1430,7 @@ class HydratorTest extends TestCase
     public function testHydrateTypedBooleanArrayAccessPropertyWithInvalidElement($element): void
     {
         $object = new class {
-            public Stub\BooleanCollection $value;
+            public Fixture\BooleanCollection $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -1448,7 +1449,7 @@ class HydratorTest extends TestCase
     public function testHydrateTypedLimitedBooleanArrayAccessProperty($element): void
     {
         $object = new class {
-            public Stub\LimitedCollection $value;
+            public Fixture\LimitedCollection $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -1467,7 +1468,7 @@ class HydratorTest extends TestCase
     public function testHydrateTypedOverflowedBooleanArrayAccessProperty($element): void
     {
         $object = new class {
-            public Stub\LimitedBooleanCollection $value;
+            public Fixture\LimitedBooleanCollection $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -1486,7 +1487,7 @@ class HydratorTest extends TestCase
     public function testHydrateBooleanAssociationArrayAccessProperty(array $data, bool $expected): void
     {
         $object = new class {
-            public Stub\BooleanAssociationCollection $value;
+            public Fixture\BooleanAssociationCollection $value;
         };
 
         $this->createHydrator()->hydrate($object, ['value' => [$data]]);
@@ -1501,7 +1502,7 @@ class HydratorTest extends TestCase
     public function testHydrateBooleanAssociationArrayAccessPropertyWithNull(array $data): void
     {
         $object = new class {
-            public Stub\BooleanAssociationCollection $value;
+            public Fixture\BooleanAssociationCollection $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -1519,7 +1520,7 @@ class HydratorTest extends TestCase
     public function testHydrateBooleanAssociationArrayAccessPropertyWithInvalidValue(array $data): void
     {
         $object = new class {
-            public Stub\BooleanAssociationCollection $value;
+            public Fixture\BooleanAssociationCollection $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -1536,7 +1537,7 @@ class HydratorTest extends TestCase
     public function testHydrateBooleanAssociationArrayAccessPropertyWithoutValue(): void
     {
         $object = new class {
-            public Stub\BooleanAssociationCollection $value;
+            public Fixture\BooleanAssociationCollection $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -1554,7 +1555,7 @@ class HydratorTest extends TestCase
     public function testHydrateBooleanAssociationArrayAccessPropertyWithInvalidAssociation($actual): void
     {
         $object = new class {
-            public Stub\BooleanAssociationCollection $value;
+            public Fixture\BooleanAssociationCollection $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -1573,7 +1574,7 @@ class HydratorTest extends TestCase
     public function testHydrateBooleanAssociationArrayAccessPropertyWithEmptyAssociationValue(array $data): void
     {
         $object = new class {
-            public Stub\BooleanAssociationCollection $value;
+            public Fixture\BooleanAssociationCollection $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -1591,7 +1592,7 @@ class HydratorTest extends TestCase
     public function testHydrateBooleanAssociationArrayAccessPropertyWithInvalidAssociationValue(array $data): void
     {
         $object = new class {
-            public Stub\BooleanAssociationCollection $value;
+            public Fixture\BooleanAssociationCollection $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -1607,7 +1608,7 @@ class HydratorTest extends TestCase
     public function testHydrateUnstantiableAssociationProperty(): void
     {
         $object = new class {
-            public Stub\UnstantiableObject $value;
+            public Fixture\UnstantiableObject $value;
         };
 
         $this->expectException(InvalidObjectException::class);
@@ -1623,7 +1624,7 @@ class HydratorTest extends TestCase
     public function testHydrateBooleanAssociationProperty(array $data, bool $expected): void
     {
         $object = new class {
-            public Stub\BooleanAssociation $value;
+            public Fixture\BooleanAssociation $value;
         };
 
         $this->assertInvalidValueExceptionCount(0);
@@ -1638,7 +1639,7 @@ class HydratorTest extends TestCase
     public function testHydrateNullableBooleanAssociationProperty(): void
     {
         $object = new class {
-            public ?Stub\BooleanAssociation $value;
+            public ?Fixture\BooleanAssociation $value;
         };
 
         $this->assertInvalidValueExceptionCount(0);
@@ -1653,7 +1654,7 @@ class HydratorTest extends TestCase
     public function testHydrateOptionalBooleanAssociationProperty(): void
     {
         $object = new class {
-            public ?Stub\BooleanAssociation $value = null;
+            public ?Fixture\BooleanAssociation $value = null;
         };
 
         $this->assertInvalidValueExceptionCount(0);
@@ -1668,7 +1669,7 @@ class HydratorTest extends TestCase
     public function testHydrateBooleanAssociationPropertyWithNull(): void
     {
         $object = new class {
-            public Stub\BooleanAssociation $value;
+            public Fixture\BooleanAssociation $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -1686,7 +1687,7 @@ class HydratorTest extends TestCase
     public function testHydrateBooleanAssociationPropertyWithInvalidValue(array $data): void
     {
         $object = new class {
-            public Stub\BooleanAssociation $value;
+            public Fixture\BooleanAssociation $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -1703,7 +1704,7 @@ class HydratorTest extends TestCase
     public function testHydrateBooleanAssociationPropertyWithoutValue(): void
     {
         $object = new class {
-            public Stub\BooleanAssociation $value;
+            public Fixture\BooleanAssociation $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -1720,7 +1721,7 @@ class HydratorTest extends TestCase
     public function testHydrateBooleanAssociationPropertyWithEmptyAssociation(): void
     {
         $object = new class {
-            public Stub\BooleanAssociation $value;
+            public Fixture\BooleanAssociation $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -1738,7 +1739,7 @@ class HydratorTest extends TestCase
     public function testHydrateBooleanAssociationPropertyWithInvalidAssociationValue(array $data): void
     {
         $object = new class {
-            public Stub\BooleanAssociation $value;
+            public Fixture\BooleanAssociation $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -1978,7 +1979,7 @@ class HydratorTest extends TestCase
     public function testHydrateMyclabsEnumProperty(array $data, $expected): void
     {
         $object = new class {
-            public Stub\MyclabsEnum $value;
+            public Fixture\MyclabsEnum $value;
         };
 
         $this->assertInvalidValueExceptionCount(0);
@@ -1995,7 +1996,7 @@ class HydratorTest extends TestCase
     public function testHydrateNullableMyclabsEnumProperty(array $data, $expected): void
     {
         $object = new class {
-            public ?Stub\MyclabsEnum $value;
+            public ?Fixture\MyclabsEnum $value;
         };
 
         $this->assertInvalidValueExceptionCount(0);
@@ -2011,7 +2012,7 @@ class HydratorTest extends TestCase
     public function testHydrateOptionalMyclabsEnumProperty(array $data, $expected = null): void
     {
         $object = new class {
-            public ?Stub\MyclabsEnum $value = null;
+            public ?Fixture\MyclabsEnum $value = null;
         };
 
         $this->assertInvalidValueExceptionCount(0);
@@ -2027,7 +2028,7 @@ class HydratorTest extends TestCase
     public function testHydrateMyclabsEnumPropertyWithEmptyValue(array $data): void
     {
         $object = new class {
-            public Stub\MyclabsEnum $value;
+            public Fixture\MyclabsEnum $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -2043,11 +2044,12 @@ class HydratorTest extends TestCase
     public function testHydrateMyclabsEnumPropertyWithUnknownValue(): void
     {
         $object = new class {
-            public Stub\MyclabsEnum $value;
+            public Fixture\MyclabsEnum $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
-        $this->assertInvalidValueExceptionMessage(0, 'This value is not a valid choice.');
+        // phpcs:ignore Generic.Files.LineLength
+        $this->assertInvalidValueExceptionMessage(0, 'This value is not a valid choice; expected values: ' . join(', ', Fixture\MyclabsEnum::toArray()) . '.');
         $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::INVALID_CHOICE);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate($object, ['value' => 'foo']);
@@ -2059,7 +2061,7 @@ class HydratorTest extends TestCase
     public function testHydrateMyclabsEnumPropertyWithoutValue(): void
     {
         $object = new class {
-            public Stub\MyclabsEnum $value;
+            public Fixture\MyclabsEnum $value;
         };
 
         $this->assertInvalidValueExceptionCount(1);
@@ -2477,7 +2479,7 @@ class HydratorTest extends TestCase
     {
         $this->phpRequired('8.1');
 
-        $sold = Stub\Store\Status::SOLD;
+        $sold = Fixture\Store\Status::SOLD;
 
         $data = [
             'name' => 'Pear',
@@ -2496,7 +2498,7 @@ class HydratorTest extends TestCase
         ];
 
         $this->assertInvalidValueExceptionCount(0);
-        $product = $this->createHydrator()->hydrate(Stub\Store\Product::class, $data);
+        $product = $this->createHydrator()->hydrate(Fixture\Store\Product::class, $data);
         $this->assertSame('Pear', $product->name);
         $this->assertSame('Vegetables', $product->category->name);
         $this->assertCount(2, $product->tags);
@@ -2517,7 +2519,7 @@ class HydratorTest extends TestCase
     public function testUnstantiableObject(): void
     {
         $this->expectException(InvalidObjectException::class);
-        $this->createHydrator()->hydrate(Stub\UnstantiableObject::class, []);
+        $this->createHydrator()->hydrate(Fixture\UnstantiableObject::class, []);
     }
 
     public function testStaticalProperty(): void
@@ -2926,9 +2928,9 @@ class HydratorTest extends TestCase
             return [[[], null]];
         }
 
-        $foo = Stub\IntegerEnum::FOO;
-        $bar = Stub\IntegerEnum::BAR;
-        $baz = Stub\IntegerEnum::BAZ;
+        $foo = Fixture\IntegerEnum::FOO;
+        $bar = Fixture\IntegerEnum::BAR;
+        $baz = Fixture\IntegerEnum::BAZ;
 
         yield [['value' => $foo->value], $foo];
         yield [['value' => $bar->value], $bar];
@@ -2945,9 +2947,9 @@ class HydratorTest extends TestCase
             return [[[], null]];
         }
 
-        $foo = Stub\StringEnum::FOO;
-        $bar = Stub\StringEnum::BAR;
-        $baz = Stub\StringEnum::BAZ;
+        $foo = Fixture\StringEnum::FOO;
+        $bar = Fixture\StringEnum::BAR;
+        $baz = Fixture\StringEnum::BAZ;
 
         yield [['value' => $foo->value], $foo];
         yield [['value' => $bar->value], $bar];
@@ -2956,9 +2958,9 @@ class HydratorTest extends TestCase
 
     public function myclabsEnumDataProvider(): Generator
     {
-        $foo = Stub\MyclabsEnum::FOO();
-        $bar = Stub\MyclabsEnum::BAR();
-        $baz = Stub\MyclabsEnum::BAZ();
+        $foo = Fixture\MyclabsEnum::FOO();
+        $bar = Fixture\MyclabsEnum::BAR();
+        $baz = Fixture\MyclabsEnum::BAZ();
 
         yield [['value' => $foo->getValue()], $foo];
         yield [['value' => $bar->getValue()], $bar];
@@ -3009,7 +3011,7 @@ class HydratorTest extends TestCase
             ['value' => '01/01/1970 00:00:00'],
             'Y-m-d H:i:s',
             ErrorCode::INVALID_TIMESTAMP,
-            'This value is not a valid timestamp.',
+            'This value is not a valid timestamp; expected format: Y-m-d H:i:s.',
         ];
 
         yield [
