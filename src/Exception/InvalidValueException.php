@@ -245,7 +245,7 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
     final public static function arrayOverflow(array $propertyPath, int $maximumElements): self
     {
         $placeholders = [
-            '{maximum_elements}' => $maximumElements,
+            '{{ maximum_elements }}' => $maximumElements,
         ];
 
         return new self(
@@ -268,7 +268,7 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
     final public static function invalidChoice(array $propertyPath, array $expectedValues): self
     {
         $placeholders = [
-            '{expected_values}' => join(', ', $expectedValues),
+            '{{ expected_values }}' => join(', ', $expectedValues),
         ];
 
         return new self(
@@ -291,7 +291,7 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
     final public static function invalidTimestamp(array $propertyPath, string $expectedFormat): self
     {
         $placeholders = [
-            '{expected_format}' => $expectedFormat,
+            '{{ expected_format }}' => $expectedFormat,
         ];
 
         return new self(
