@@ -3003,6 +3003,14 @@ class HydratorTest extends TestCase
 
         // The timezone must be applied...
         yield [['value' => '00:00:00'], '00:00:00', 'H:i:s', 'Europe/Kiev'];
+
+        // ISO 8601
+        yield [['value' => '00:00:00.123456'], '00:00:00.123456', 'H:i:s.u'];
+        yield [['value' => '00:00:00.123456+00:00'], '00:00:00.123456+00:00', 'H:i:s.uP'];
+        yield [['value' => 'Monday 00:00:00.123456'], 'Monday 00:00:00.123456', 'l H:i:s.u'];
+        yield [['value' => '00:00:00.1234567890'], '00:00:00.123456', 'H:i:s.u'];
+        yield [['value' => '00:00:00.1234567890+00:00'], '00:00:00.123456+00:00', 'H:i:s.uP'];
+        yield [['value' => 'Monday 00:00:00.1234567890'], 'Monday 00:00:00.123456', 'l H:i:s.u'];
     }
 
     public function invalidTimestampDataProvider(): Generator
