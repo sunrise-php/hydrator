@@ -525,10 +525,10 @@ try {
 ```php
 $localizedMessages = [
     // using the error code dictionary...
-    \Sunrise\Hydrator\Dictionary\ErrorCode::INVALID_TIMESTAMP => 'Это значение не является валидной временной меткой; ожидаемый формат: {expected_format}.',
+    \Sunrise\Hydrator\Dictionary\ErrorCode::INVALID_TIMESTAMP => 'Это значение не является валидной временной меткой; ожидаемый формат: {{ expected_format }}.',
 
     // or using the error message dictionary...
-    \Sunrise\Hydrator\Dictionary\ErrorMessage::INVALID_TIMESTAMP => 'Это значение не является валидной временной меткой; ожидаемый формат: {expected_format}.',
+    \Sunrise\Hydrator\Dictionary\ErrorMessage::INVALID_TIMESTAMP => 'Это значение не является валидной временной меткой; ожидаемый формат: {{ expected_format }}.',
 ];
 
 try {
