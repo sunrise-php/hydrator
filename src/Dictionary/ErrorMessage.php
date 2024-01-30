@@ -27,9 +27,9 @@ final class ErrorMessage
     public const MUST_BE_NUMBER = 'This value must be of type number.';
     public const MUST_BE_STRING = 'This value must be of type string.';
     public const MUST_BE_ARRAY = 'This value must be of type array.';
-    public const ARRAY_OVERFLOW = 'This value is limited to {maximum_elements} elements.';
-    public const INVALID_CHOICE = 'This value is not a valid choice; expected values: {expected_values}.';
-    public const INVALID_TIMESTAMP = 'This value is not a valid timestamp; expected format: {expected_format}.';
+    public const ARRAY_OVERFLOW = 'This value is limited to {{ maximum_elements }} elements.';
+    public const INVALID_CHOICE = 'This value is not a valid choice; expected values: {{ expected_values }}.';
+    public const INVALID_TIMESTAMP = 'This value is not a valid timestamp; expected format: {{ expected_format }}.';
     public const INVALID_TIMEZONE = 'This value is not a valid timezone.';
     public const INVALID_UID = 'This value is not a valid UID.';
 }

@@ -28,6 +28,7 @@ use Sunrise\Hydrator\TypeConverterInterface;
 use function filter_var;
 use function is_int;
 use function is_string;
+use function preg_replace;
 use function trim;
 
 use const FILTER_NULL_ON_FAILURE;
@@ -88,6 +89,9 @@ final class TimestampTypeConverter implements TypeConverterInterface, Annotation
 
                 throw InvalidValueException::mustNotBeEmpty($path);
             }
+
+            // Support for ISO 8601
+            $value = preg_replace('/((?:^|\D)\d{2}:\d{2}:\d{2}[.]\d{6})\d+/', '$1', $value);
 
             if ($format === 'U') {
                 // https://github.com/php/php-src/blob/b7d90f09d4a1688f2692f2fa9067d0a07f78cc7d/ext/filter/logical_filters.c#L94

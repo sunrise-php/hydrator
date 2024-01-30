@@ -63,8 +63,8 @@ class InvalidDataException extends RuntimeException implements ExceptionInterfac
             $violations->add(
                 new ConstraintViolation(
                     $exception->getMessage(),
-                    null,
-                    [],
+                    $exception->getMessageTemplate(),
+                    $exception->getMessagePlaceholders(),
                     null,
                     $exception->getPropertyPath(),
                     null,
