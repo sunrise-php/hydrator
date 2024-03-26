@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Sunrise\Hydrator\Exception;
 
-use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\ConstraintViolationListInterface;
 use RuntimeException;
@@ -58,20 +57,8 @@ class InvalidDataException extends RuntimeException implements ExceptionInterfac
     final public function getViolations(): ConstraintViolationListInterface
     {
         $violations = new ConstraintViolationList();
-
         foreach ($this->exceptions as $exception) {
-            $violations->add(
-                new ConstraintViolation(
-                    $exception->getMessage(),
-                    $exception->getMessageTemplate(),
-                    $exception->getMessagePlaceholders(),
-                    null,
-                    $exception->getPropertyPath(),
-                    null,
-                    null,
-                    $exception->getErrorCode()
-                )
-            );
+            $violations->add($exception->getViolation());
         }
 
         return $violations;
