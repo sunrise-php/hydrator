@@ -16,6 +16,8 @@ namespace Sunrise\Hydrator\Exception;
 use Sunrise\Hydrator\Dictionary\ErrorCode;
 use Sunrise\Hydrator\Dictionary\ErrorMessage;
 use RuntimeException;
+use Symfony\Component\Validator\ConstraintViolation;
+use Symfony\Component\Validator\ConstraintViolationInterface;
 
 use function join;
 use function strtr;
@@ -93,7 +95,7 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
      *
      * @since 3.7.0
      */
-    public function getMessageTemplate(): string
+    final public function getMessageTemplate(): string
     {
         return $this->messageTemplate;
     }
@@ -103,9 +105,26 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
      *
      * @since 3.7.0
      */
-    public function getMessagePlaceholders(): array
+    final public function getMessagePlaceholders(): array
     {
         return $this->messagePlaceholders;
+    }
+
+    /**
+     * @since 3.8.0
+     */
+    final public function getViolation(): ConstraintViolationInterface
+    {
+        return new ConstraintViolation(
+            $this->getMessage(),
+            $this->getMessageTemplate(),
+            $this->getMessagePlaceholders(),
+            null,
+            $this->getPropertyPath(),
+            null,
+            null,
+            $this->getErrorCode(),
+        );
     }
 
     /**
