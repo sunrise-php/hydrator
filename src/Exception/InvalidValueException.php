@@ -111,7 +111,7 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
     }
 
     /**
-     * @since 3.8.0
+     * @since 3.9.0
      */
     final public function getViolation(): ConstraintViolationInterface
     {
