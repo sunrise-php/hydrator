@@ -26,6 +26,7 @@ use Sunrise\Hydrator\Type;
 use Sunrise\Hydrator\TypeConverterInterface;
 
 use function filter_var;
+use function is_a;
 use function is_int;
 use function is_string;
 use function preg_replace;
@@ -69,7 +70,9 @@ final class TimestampTypeConverter implements TypeConverterInterface, Annotation
     {
         /** @var array{timestamp_format?: string, timezone?: string} $context */
 
-        if ($type->getName() <> DateTimeImmutable::class) {
+        $className = $type->getName();
+
+        if (!is_a($className, DateTimeImmutable::class, true)) {
             return;
         }
 
@@ -114,7 +117,7 @@ final class TimestampTypeConverter implements TypeConverterInterface, Annotation
             $timezone = new DateTimeZone($context[ContextKey::TIMEZONE]);
         }
 
-        $timestamp = DateTimeImmutable::createFromFormat($format, (string) $value, $timezone);
+        $timestamp = $className::createFromFormat($format, (string) $value, $timezone);
         if ($timestamp === false) {
             throw InvalidValueException::invalidTimestamp($path, $format);
         }
