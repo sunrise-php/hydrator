@@ -1864,6 +1864,8 @@ class HydratorTest extends TestCase
     // phpcs:ignore Generic.Files.LineLength
     public function testHydrateOverriddenDateTimeImmutable(array $data, string $expected, ?string $format = null, ?string $timezone = null): void
     {
+        $this->phpRequired('8.0');
+
         $object = new class {
             public Fixture\OverriddenDateTimeImmutable $value;
         };
