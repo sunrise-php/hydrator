@@ -21,11 +21,13 @@ use Sunrise\Hydrator\Annotation\Format;
 use Sunrise\Hydrator\AnnotationReaderAwareInterface;
 use Sunrise\Hydrator\AnnotationReaderInterface;
 use Sunrise\Hydrator\Dictionary\ContextKey;
+use Sunrise\Hydrator\Exception\InvalidObjectException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\Type;
 use Sunrise\Hydrator\TypeConverterInterface;
 
 use function filter_var;
+use function is_a;
 use function is_int;
 use function is_string;
 use function preg_replace;
@@ -33,6 +35,7 @@ use function trim;
 
 use const FILTER_NULL_ON_FAILURE;
 use const FILTER_VALIDATE_INT;
+use const PHP_MAJOR_VERSION;
 
 /**
  * @since 3.1.0
@@ -69,8 +72,15 @@ final class TimestampTypeConverter implements TypeConverterInterface, Annotation
     {
         /** @var array{timestamp_format?: string, timezone?: string} $context */
 
-        if ($type->getName() <> DateTimeImmutable::class) {
+        $className = $type->getName();
+
+        if (!is_a($className, DateTimeImmutable::class, true)) {
             return;
+        }
+
+        // The DateTimeImmutable::createFromFormat method returns self instead of static...
+        if (PHP_MAJOR_VERSION === 7 && $className !== DateTimeImmutable::class) {
+            throw InvalidObjectException::unsupportedType($type);
         }
 
         // phpcs:ignore Generic.Files.LineLength
@@ -107,14 +117,14 @@ final class TimestampTypeConverter implements TypeConverterInterface, Annotation
             throw InvalidValueException::mustBeString($path);
         }
 
-        /** @var int|string $value */
+        $value = (string) $value;
 
         $timezone = null;
         if (isset($context[ContextKey::TIMEZONE])) {
             $timezone = new DateTimeZone($context[ContextKey::TIMEZONE]);
         }
 
-        $timestamp = DateTimeImmutable::createFromFormat($format, (string) $value, $timezone);
+        $timestamp = $className::createFromFormat($format, $value, $timezone);
         if ($timestamp === false) {
             throw InvalidValueException::invalidTimestamp($path, $format);
         }

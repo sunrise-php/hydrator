@@ -25,7 +25,7 @@ use function is_string;
 use function trim;
 
 use const FILTER_NULL_ON_FAILURE;
-use const FILTER_VALIDATE_BOOL;
+use const FILTER_VALIDATE_BOOLEAN;
 
 /**
  * @since 3.1.0
@@ -55,7 +55,7 @@ final class BooleanTypeConverter implements TypeConverterInterface
             }
 
             // https://github.com/php/php-src/blob/b7d90f09d4a1688f2692f2fa9067d0a07f78cc7d/ext/filter/logical_filters.c#L273
-            $value = filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+            $value = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
         }
 
         if (!is_bool($value)) {

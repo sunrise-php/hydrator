@@ -1858,6 +1858,25 @@ class HydratorTest extends TestCase
     }
 
     /**
+     * @group timestamp
+     * @dataProvider timestampDataProvider
+     */
+    // phpcs:ignore Generic.Files.LineLength
+    public function testHydrateOverriddenDateTimeImmutable(array $data, string $expected, ?string $format = null, ?string $timezone = null): void
+    {
+        $this->phpRequired('8.0');
+
+        $object = new class {
+            public Fixture\OverriddenDateTimeImmutable $value;
+        };
+
+        $this->assertInvalidValueExceptionCount(0);
+        // phpcs:ignore Generic.Files.LineLength
+        $this->createHydrator([ContextKey::TIMESTAMP_FORMAT => $format, ContextKey::TIMEZONE => $timezone])->hydrate($object, $data);
+        $this->assertSame($expected, $object->value->format($format ?? TimestampTypeConverter::DEFAULT_FORMAT));
+    }
+
+    /**
      * @group timezone
      * @dataProvider timezoneDataProvider
      */
