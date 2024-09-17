@@ -27,6 +27,7 @@ use Sunrise\Hydrator\Hydrator;
 use Sunrise\Hydrator\HydratorInterface;
 use Sunrise\Hydrator\Type;
 use Sunrise\Hydrator\TypeConverter\TimestampTypeConverter;
+use Sunrise\Hydrator\TypeConverterInterface;
 
 use function date;
 use function get_class;
@@ -84,6 +85,31 @@ class HydratorTest extends TestCase
         $this->assertInvalidValueExceptionCount(0);
         $this->createHydrator()->hydrate($object, ['value' => (object) ['value' => 'foo']]);
         $this->assertSame('foo', $object->value->value);
+    }
+
+    public function testCreateHydratorWithTypeConverters(): void
+    {
+        $object = new class {
+            public \Closure $foo;
+        };
+
+        $typeConverter = $this->createMock(TypeConverterInterface::class);
+
+        $typeConverter->method('castValue')->willReturnCallback(
+            static function ($value, Type $type, array $path, array $context): Generator {
+                if ($type->getName() === \Closure::class) {
+                    yield static function () use ($value) {
+                        return $value;
+                    };
+                }
+            }
+        );
+
+        $this->createHydrator([], [$typeConverter])->hydrate($object, [
+            'foo' => 'bar',
+        ]);
+
+        $this->assertSame('bar', ($object->foo)());
     }
 
     /**
@@ -3068,9 +3094,9 @@ class HydratorTest extends TestCase
         yield [['value' => '207ddb61-c300-4368-9f26-33d0a99eac00'], '207ddb61-c300-4368-9f26-33d0a99eac00'];
     }
 
-    private function createHydrator(array $context = []): HydratorInterface
+    private function createHydrator(array $context = [], array $typeConverters = []): HydratorInterface
     {
-        $hydrator = new Hydrator($context);
+        $hydrator = new Hydrator($context, $typeConverters);
         if (PHP_VERSION_ID < 80000) {
             $hydrator->useDefaultAnnotationReader();
         }

@@ -83,8 +83,9 @@ class Hydrator implements HydratorInterface
      * Constructor of the class
      *
      * @param array<string, mixed> $context
+     * @param list<TypeConverterInterface> $typeConverters
      */
-    public function __construct(array $context = [])
+    public function __construct(array $context = [], array $typeConverters = [])
     {
         $this->context = $context;
 
@@ -92,7 +93,7 @@ class Hydrator implements HydratorInterface
             new BuiltinAnnotationReader() :
             new NullAnnotationReader();
 
-        $this->addTypeConverter(...self::defaultTypeConverters());
+        $this->addTypeConverter(...self::defaultTypeConverters(), ...$typeConverters);
     }
 
     /**
