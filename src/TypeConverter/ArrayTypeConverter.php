@@ -96,7 +96,7 @@ final class ArrayTypeConverter implements
             return yield $value;
         }
 
-        if (isset($subtype->limit) && count($value) > $subtype->limit) {
+        if ($subtype->limit !== null && count($value) > $subtype->limit) {
             throw InvalidValueException::arrayOverflow($path, $subtype->limit);
         }
 
@@ -116,11 +116,11 @@ final class ArrayTypeConverter implements
             }
         }
 
-        if ($violations === []) {
-            return yield $value;
+        if ($violations !== []) {
+            throw new InvalidDataException('Invalid data', $violations);
         }
 
-        throw new InvalidDataException('Invalid data', $violations);
+        yield $value;
     }
 
     /**

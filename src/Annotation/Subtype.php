@@ -35,6 +35,13 @@ class Subtype
 {
 
     /**
+     * @var mixed
+     *
+     * @internal
+     */
+    public $holder = null;
+
+    /**
      * @var non-empty-string
      *
      * @readonly

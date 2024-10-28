@@ -112,9 +112,11 @@ class InvalidObjectException extends LogicException implements ExceptionInterfac
      *
      * @since 3.2.0
      */
-    // phpcs:ignore Generic.Files.LineLength
-    final public static function unsupportedMethodParameterType(Type $type, ReflectionParameter $parameter, ReflectionMethod $method): self
-    {
+    final public static function unsupportedMethodParameterType(
+        Type $type,
+        ReflectionParameter $parameter,
+        ReflectionMethod $method
+    ): self {
         return new self(sprintf(
             'The parameter {%s::%s($%s[%d])} is associated with an unsupported type {%s}.',
             $method->getDeclaringClass()->getName(),
@@ -134,9 +136,11 @@ class InvalidObjectException extends LogicException implements ExceptionInterfac
      *
      * @since 3.2.0
      */
-    // phpcs:ignore Generic.Files.LineLength
-    final public static function unsupportedFunctionParameterType(Type $type, ReflectionParameter $parameter, ReflectionFunctionAbstract $function): self
-    {
+    final public static function unsupportedFunctionParameterType(
+        Type $type,
+        ReflectionParameter $parameter,
+        ReflectionFunctionAbstract $function
+    ): self {
         return new self(sprintf(
             'The parameter {%s($%s[%d])} is associated with an unsupported type {%s}.',
             $function->getName(),

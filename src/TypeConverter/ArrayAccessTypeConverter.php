@@ -80,12 +80,12 @@ final class ArrayAccessTypeConverter implements
      */
     public function castValue($value, Type $type, array $path, array $context): Generator
     {
-        $containerName = $type->getName();
-        if (!is_subclass_of($containerName, ArrayAccess::class)) {
+        $typeName = $type->getName();
+        if (!is_subclass_of($typeName, ArrayAccess::class)) {
             return;
         }
 
-        $containerReflection = new ReflectionClass($containerName);
+        $containerReflection = new ReflectionClass($typeName);
         if (!$containerReflection->isInstantiable()) {
             throw InvalidObjectException::unsupportedType($type);
         }
@@ -105,8 +105,8 @@ final class ArrayAccessTypeConverter implements
             throw InvalidValueException::mustBeArray($path);
         }
 
-        // phpcs:ignore Generic.Files.LineLength
-        $subtype = $this->annotationReader->getAnnotations(Subtype::class, $type->getHolder())->current() ?? $this->getContainerSubtype($containerReflection);
+        $subtype = $this->annotationReader->getAnnotations(Subtype::class, $type->getHolder())->current()
+            ?? self::getContainerSubtype($containerReflection);
 
         if ($subtype === null) {
             $counter = 0;
@@ -122,9 +122,11 @@ final class ArrayAccessTypeConverter implements
             return yield $container;
         }
 
-        if (isset($subtype->limit) && count($value) > $subtype->limit) {
+        if ($subtype->limit !== null && count($value) > $subtype->limit) {
             throw InvalidValueException::arrayOverflow($path, $subtype->limit);
         }
+
+        $subtype->holder ??= $type->getHolder();
 
         $counter = 0;
         $violations = [];
@@ -132,7 +134,7 @@ final class ArrayAccessTypeConverter implements
             try {
                 $container[$key] = $this->hydrator->castValue(
                     $element,
-                    new Type($type->getHolder(), $subtype->name, $subtype->allowsNull),
+                    new Type($subtype->holder, $subtype->name, $subtype->allowsNull),
                     [...$path, $key],
                     $context,
                 );
@@ -148,11 +150,11 @@ final class ArrayAccessTypeConverter implements
             }
         }
 
-        if ($violations === []) {
-            return yield $container;
+        if ($violations !== []) {
+            throw new InvalidDataException('Invalid data', $violations);
         }
 
-        throw new InvalidDataException('Invalid data', $violations);
+        yield $container;
     }
 
     /**
@@ -166,37 +168,46 @@ final class ArrayAccessTypeConverter implements
     /**
      * Gets a subtype from the given container's constructor
      *
-     * @param ReflectionClass $container
+     * @param ReflectionClass<ArrayAccess> $class
      *
      * @return Subtype|null
      *
      * @codeCoverageIgnore
      */
-    private function getContainerSubtype(ReflectionClass $container): ?Subtype
+    private static function getContainerSubtype(ReflectionClass $class): ?Subtype
     {
-        $constructor = $container->getConstructor();
+        $constructor = $class->getConstructor();
         if ($constructor === null) {
             return null;
         }
 
-        $parameters = $constructor->getParameters();
-        if ($parameters === []) {
+        $constructorParameters = $constructor->getParameters();
+        if ($constructorParameters === []) {
             return null;
         }
 
-        $parameter = end($parameters);
-        if ($parameter->isVariadic() === false) {
+        $lastConstructorParameter = end($constructorParameters);
+        if ($lastConstructorParameter->isVariadic() === false) {
             return null;
         }
 
-        $type = $parameter->getType();
-        if ($type === null) {
+        $lastConstructorParameterType = $lastConstructorParameter->getType();
+        if ($lastConstructorParameterType === null) {
             return null;
         }
 
-        /** @var non-empty-string $name */
-        $name = ($type instanceof ReflectionNamedType) ? $type->getName() : (string) $type;
+        /** @var non-empty-string $lastConstructorParameterTypeName */
+        $lastConstructorParameterTypeName = ($lastConstructorParameterType instanceof ReflectionNamedType)
+            ? $lastConstructorParameterType->getName()
+            : (string) $lastConstructorParameterType;
 
-        return new Subtype($name, $type->allowsNull());
+        $subtype = new Subtype(
+            $lastConstructorParameterTypeName,
+            $lastConstructorParameterType->allowsNull(),
+        );
+
+        $subtype->holder = $lastConstructorParameter;
+
+        return $subtype;
     }
 }
