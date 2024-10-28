@@ -16,6 +16,7 @@ use ReflectionNamedType;
 use ReflectionParameter;
 use ReflectionUnionType;
 use Sunrise\Hydrator\Annotation\Alias;
+use Sunrise\Hydrator\Annotation\DefaultValue;
 use Sunrise\Hydrator\Annotation\Ignore;
 use Sunrise\Hydrator\Annotation\Subtype;
 use Sunrise\Hydrator\Dictionary\BuiltinType;
@@ -25,6 +26,7 @@ use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidObjectException;
 use Sunrise\Hydrator\Hydrator;
 use Sunrise\Hydrator\HydratorInterface;
+use Sunrise\Hydrator\Tests\Fixture\BooleanArrayCollection;
 use Sunrise\Hydrator\Type;
 use Sunrise\Hydrator\TypeConverter\TimestampTypeConverter;
 use Sunrise\Hydrator\TypeConverterInterface;
@@ -1629,6 +1631,40 @@ class HydratorTest extends TestCase
     }
 
     /**
+     * @group array-access
+     */
+    public function testHydrateBooleanArrayCollectionParameterWithValidData(): void
+    {
+        $this->phpRequired('8.0');
+
+        $object = new class {
+            public BooleanArrayCollection $value;
+        };
+
+        $this->assertInvalidValueExceptionCount(0);
+        $this->createHydrator()->hydrate($object, ['value' => [[true]]]);
+        $this->assertSame([[true]], (array) $object->value);
+    }
+
+    /**
+     * @group array-access
+     */
+    public function testHydrateBooleanArrayCollectionParameterWithInvalidData(): void
+    {
+        $this->phpRequired('8.0');
+
+        $object = new class {
+            public BooleanArrayCollection $value;
+        };
+
+        $this->assertInvalidValueExceptionCount(1);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be of type boolean.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_BOOLEAN);
+        $this->assertInvalidValueExceptionPropertyPath(0, 'value.0.0');
+        $this->createHydrator()->hydrate($object, ['value' => [['foo']]]);
+    }
+
+    /**
      * @group association
      */
     public function testHydrateUnstantiableAssociationProperty(): void
@@ -2608,6 +2644,19 @@ class HydratorTest extends TestCase
         $this->assertInvalidValueExceptionMessage(0, 'This value must be provided.');
         $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_PROVIDED);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
+    }
+
+    public function testDefaultValuedProperty(): void
+    {
+        $object = new class {
+            /** @DefaultValue("foo") */
+            #[DefaultValue('foo')]
+            public string $value;
+        };
+
+        $this->assertInvalidValueExceptionCount(0);
+        $this->createHydrator()->hydrate($object, []);
+        $this->assertSame('foo', $object->value);
     }
 
     public function testUntypedProperty(): void

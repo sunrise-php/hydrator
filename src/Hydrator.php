@@ -19,6 +19,7 @@ use LogicException;
 use ReflectionClass;
 use Sunrise\Hydrator\Annotation\Alias;
 use Sunrise\Hydrator\Annotation\Context;
+use Sunrise\Hydrator\Annotation\DefaultValue;
 use Sunrise\Hydrator\Annotation\Ignore;
 use Sunrise\Hydrator\AnnotationReader\BuiltinAnnotationReader;
 use Sunrise\Hydrator\AnnotationReader\DoctrineAnnotationReader;
@@ -159,8 +160,10 @@ class Hydrator implements HydratorInterface
             $this->typeConverters[] = $typeConverter;
         }
 
-        // phpcs:ignore Generic.Files.LineLength
-        usort($this->typeConverters, static fn(TypeConverterInterface $a, TypeConverterInterface $b): int => $b->getWeight() <=> $a->getWeight());
+        usort($this->typeConverters, static fn(
+            TypeConverterInterface $a,
+            TypeConverterInterface $b
+        ): int => $b->getWeight() <=> $a->getWeight());
 
         return $this;
     }
@@ -196,9 +199,9 @@ class Hydrator implements HydratorInterface
      */
     public function hydrate($object, array $data, array $path = [], array $context = []): object
     {
-        [$object, $class] = $this->instantObject($object);
+        [$object, $class] = self::instantObject($object);
         $properties = $class->getProperties();
-        $constructorDefaultValues = $this->getClassConstructorDefaultValues($class);
+        $constructorDefaultValues = self::getConstructorDefaultValues($class);
 
         $violations = [];
         foreach ($properties as $property) {
@@ -216,8 +219,8 @@ class Hydrator implements HydratorInterface
                 continue;
             }
 
-            // phpcs:ignore Generic.Files.LineLength
-            $key = $this->annotationReader->getAnnotations(Alias::class, $property)->current()->value ?? $property->getName();
+            $key = $this->annotationReader->getAnnotations(Alias::class, $property)->current()->value
+                ?? $property->getName();
 
             if (array_key_exists($key, $data) === false) {
                 if ($property->isInitialized($object)) {
@@ -226,6 +229,12 @@ class Hydrator implements HydratorInterface
 
                 if (array_key_exists($property->getName(), $constructorDefaultValues)) {
                     $property->setValue($object, $constructorDefaultValues[$property->getName()]);
+                    continue;
+                }
+
+                $defaultValue = $this->annotationReader->getAnnotations(DefaultValue::class, $property)->current();
+                if ($defaultValue !== null) {
+                    $property->setValue($object, $defaultValue->value);
                     continue;
                 }
 
@@ -243,7 +252,7 @@ class Hydrator implements HydratorInterface
             }
         }
 
-        if (!empty($violations)) {
+        if ($violations !== []) {
             throw new InvalidDataException('Invalid data', $violations);
         }
 
@@ -264,8 +273,10 @@ class Hydrator implements HydratorInterface
         try {
             $data = json_decode($json, true, $depth, $flags | JSON_BIGINT_AS_STRING | JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
-            // phpcs:ignore Generic.Files.LineLength
-            throw new InvalidDataException(sprintf('The JSON is invalid and couldn‘t be decoded due to: %s', $e->getMessage()));
+            throw new InvalidDataException(sprintf(
+                'The JSON is invalid and couldn‘t be decoded due to: %s',
+                $e->getMessage(),
+            ));
         }
 
         if (!is_array($data)) {
@@ -286,7 +297,7 @@ class Hydrator implements HydratorInterface
      *
      * @template T of object
      */
-    private function instantObject($object): array
+    private static function instantObject($object): array
     {
         if (is_object($object)) {
             return [$object, new ReflectionClass($object)];
@@ -294,8 +305,10 @@ class Hydrator implements HydratorInterface
 
         /** @psalm-suppress DocblockTypeContradiction */
         if (!is_string($object)) {
-            // phpcs:ignore Generic.Files.LineLength
-            throw new TypeError(sprintf('Argument #1 ($object) must be of type object or string, %s given', gettype($object)));
+            throw new TypeError(sprintf(
+                'Argument #1 ($object) must be of type object or string, %s given',
+                gettype($object),
+            ));
         }
 
         if (!class_exists($object)) {
@@ -319,7 +332,7 @@ class Hydrator implements HydratorInterface
      *
      * @template T of object
      */
-    private function getClassConstructorDefaultValues(ReflectionClass $class): array
+    private static function getConstructorDefaultValues(ReflectionClass $class): array
     {
         $constructor = $class->getConstructor();
         if ($constructor === null) {

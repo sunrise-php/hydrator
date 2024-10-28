@@ -16,7 +16,6 @@ namespace Sunrise\Hydrator\TypeConverter;
 use BackedEnum;
 use Generator;
 use ReflectionEnum;
-use ReflectionNamedType;
 use Sunrise\Hydrator\Dictionary\BuiltinType;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\Type;
@@ -54,11 +53,7 @@ final class BackedEnumTypeConverter implements TypeConverterInterface
             return;
         }
 
-        /** @var ReflectionNamedType $enumType */
-        $enumType = (new ReflectionEnum($enumName))->getBackingType();
-
-        /** @var BuiltinType::INT|BuiltinType::STRING $enumTypeName */
-        $enumTypeName = $enumType->getName();
+        $enumTypeName = (string) (new ReflectionEnum($enumName))->getBackingType();
 
         if (is_string($value)) {
             $value = trim($value);

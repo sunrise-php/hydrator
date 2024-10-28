@@ -83,8 +83,9 @@ final class TimestampTypeConverter implements TypeConverterInterface, Annotation
             throw InvalidObjectException::unsupportedType($type);
         }
 
-        // phpcs:ignore Generic.Files.LineLength
-        $format = $this->annotationReader->getAnnotations(Format::class, $type->getHolder())->current()->value ?? $context[ContextKey::TIMESTAMP_FORMAT] ?? self::DEFAULT_FORMAT;
+        $format = $this->annotationReader->getAnnotations(Format::class, $type->getHolder())->current()->value
+            ?? $context[ContextKey::TIMESTAMP_FORMAT]
+            ?? self::DEFAULT_FORMAT;
 
         if (is_string($value)) {
             $value = trim($value);
