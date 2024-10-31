@@ -23,34 +23,17 @@ use Sunrise\Hydrator\Dictionary\BuiltinType;
  */
 final class Type
 {
-
     /**
-     * The type holder
-     *
      * @var mixed
      */
     private $holder;
 
-    /**
-     * The type name
-     *
-     * @var string
-     */
     private string $name;
 
-    /**
-     * Indicates whether the type allows null
-     *
-     * @var bool
-     */
     private bool $allowsNull;
 
     /**
-     * Constructor of the class
-     *
      * @param mixed $holder
-     * @param string $name
-     * @param bool $allowsNull
      */
     public function __construct($holder, string $name, bool $allowsNull)
     {
@@ -60,13 +43,6 @@ final class Type
     }
 
     /**
-     * Creates a new type from the given name
-     *
-     * @param string $name
-     * @param bool $allowsNull
-     *
-     * @return self
-     *
      * @since 3.6.0
      */
     public static function fromName(string $name, bool $allowsNull = false): self
@@ -75,12 +51,6 @@ final class Type
     }
 
     /**
-     * Creates a new type from the given parameter
-     *
-     * @param ReflectionParameter $parameter
-     *
-     * @return self
-     *
      * @since 3.4.0
      */
     public static function fromParameter(ReflectionParameter $parameter): self
@@ -98,12 +68,6 @@ final class Type
     }
 
     /**
-     * Creates a new type from the given property
-     *
-     * @param ReflectionProperty $property
-     *
-     * @return self
-     *
      * @since 3.4.0
      */
     public static function fromProperty(ReflectionProperty $property): self
@@ -121,8 +85,6 @@ final class Type
     }
 
     /**
-     * Gets the type holder
-     *
      * @return mixed
      */
     public function getHolder()
@@ -130,21 +92,11 @@ final class Type
         return $this->holder;
     }
 
-    /**
-     * Gets the type name
-     *
-     * @return string
-     */
     public function getName(): string
     {
         return $this->name;
     }
 
-    /**
-     * Checks if the type allows null
-     *
-     * @return bool
-     */
     public function allowsNull(): bool
     {
         return $this->allowsNull;

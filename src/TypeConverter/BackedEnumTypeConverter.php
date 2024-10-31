@@ -37,7 +37,6 @@ use const PHP_VERSION_ID;
  */
 final class BackedEnumTypeConverter implements TypeConverterInterface
 {
-
     /**
      * @inheritDoc
      */
@@ -66,7 +65,7 @@ final class BackedEnumTypeConverter implements TypeConverterInterface
                     return yield null;
                 }
 
-                throw InvalidValueException::mustNotBeEmpty($path);
+                throw InvalidValueException::mustNotBeEmpty($path, $value);
             }
 
             if ($enumTypeName === BuiltinType::INT) {
@@ -77,10 +76,10 @@ final class BackedEnumTypeConverter implements TypeConverterInterface
         }
 
         if ($enumTypeName === BuiltinType::INT && !is_int($value)) {
-            throw InvalidValueException::mustBeInteger($path);
+            throw InvalidValueException::mustBeInteger($path, $value);
         }
         if ($enumTypeName === BuiltinType::STRING && !is_string($value)) {
-            throw InvalidValueException::mustBeString($path);
+            throw InvalidValueException::mustBeString($path, $value);
         }
 
         /** @var int|string $value */
@@ -93,7 +92,7 @@ final class BackedEnumTypeConverter implements TypeConverterInterface
                 $expectedValues[] = $case->value;
             }
 
-            throw InvalidValueException::invalidChoice($path, $expectedValues);
+            throw InvalidValueException::invalidChoice($path, $expectedValues, $value);
         }
     }
 

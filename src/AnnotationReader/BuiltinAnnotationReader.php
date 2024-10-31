@@ -25,16 +25,11 @@ use function sprintf;
 use const PHP_MAJOR_VERSION;
 
 /**
- * @link https://www.php.net/attributes
- *
  * @since 3.1.0
  */
 final class BuiltinAnnotationReader implements AnnotationReaderInterface
 {
-
     /**
-     * Constructor of the class
-     *
      * @throws LogicException If the PHP version less than 8.0.
      */
     public function __construct()

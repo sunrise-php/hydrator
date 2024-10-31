@@ -15,9 +15,6 @@ namespace Sunrise\Hydrator\Exception;
 
 use Throwable;
 
-/**
- * ExceptionInterface
- */
 interface ExceptionInterface extends Throwable
 {
 }

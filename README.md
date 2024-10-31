@@ -17,29 +17,6 @@
 composer require sunrise/hydrator
 ```
 
-## Navigation
-
-* [Allowed property types](#allowed-property-types)
-* * [Required](#required)
-* * [Optional](#optional)
-* * [Null](#null)
-* * [Boolean](#boolean)
-* * [Integer](#integer)
-* * [Number](#number)
-* * [String](#string)
-* * [Array](#array)
-* * [Timestamp](#timestamp)
-* * [Timezone](#timezone)
-* * [Enumeration](#enumeration)
-* * [UUID](#uuid)
-* * [Relationship](#relationship)
-* * [Custom type](#support-for-custom-types)
-* [Ignored property](#ignored-property)
-* [Property alias](#property-alias)
-* [Error handling](#error-handling)
-* [Localization](#localization)
-* [Doctrine annotations](#doctrine-annotations)
-
 ## How to use
 
 Let's consider a typical DTO set:
@@ -47,50 +24,51 @@ Let's consider a typical DTO set:
 ```php
 enum Status: int
 {
-    case ENABLED = 1;
-    case DISABLED = 0;
+    case Disabled = 0;
+    case Enabled = 1;
 }
 ```
 
 ```php
-final class CategoryDto
+final readonly class Category
 {
     public function __construct(
-        public readonly string $name,
+        public string $name,
     ) {
     }
 }
 ```
 
 ```php
-final class TagDto
+final readonly class Tag
 {
     public function __construct(
-        public readonly string $name,
+        public string $name,
     ) {
     }
 }
 ```
 
 ```php
-final class TagDtoCollection implements ArrayAccess
+final class Tags extends ArrayObject
 {
     public function __construct(TagDto ...$tags)
     {
+        parent::__construct($tags);
     }
 }
 ```
 
 ```php
-final class PublicationDto
+final readonly class Publication
 {
     public function __construct(
-        public readonly string $name,
-        public readonly CategoryDto $category,
-        public readonly TagDtoCollection $tags,
-        public readonly Status $status = Status::DISABLED,
+        public string $name,
+        public Category $category,
+        public Tags $tags,
+        public Status $status = Status::Disabled,
         #[\Sunrise\Hydrator\Annotation\Format(DateTimeInterface::RFC3339)]
-        public readonly DateTimeImmutable $createdAt = new DateTimeImmutable('now'),
+        public DateTimeImmutable $createdAt = new DateTimeImmutable(),
     ) {
     }
 }
@@ -436,7 +414,7 @@ final class UriTypeConverter implements TypeConverterInterface
         }
 
         if (!\is_string($value)) {
-            throw InvalidValueException::mustBeString($path);
+            throw InvalidValueException::mustBeString($path, $value);
         }
 
         try {

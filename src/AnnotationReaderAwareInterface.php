@@ -18,13 +18,5 @@ namespace Sunrise\Hydrator;
  */
 interface AnnotationReaderAwareInterface
 {
-
-    /**
-     * Sets the given annotation reader to the object
-     *
-     * @param AnnotationReaderInterface $annotationReader
-     *
-     * @return void
-     */
     public function setAnnotationReader(AnnotationReaderInterface $annotationReader): void;
 }

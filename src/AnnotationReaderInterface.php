@@ -20,7 +20,6 @@ use Generator;
  */
 interface AnnotationReaderInterface
 {
-
     /**
      * Gets annotations by the given name from the given holder
      *

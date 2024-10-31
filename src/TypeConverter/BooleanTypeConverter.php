@@ -32,13 +32,12 @@ use const FILTER_VALIDATE_BOOLEAN;
  */
 final class BooleanTypeConverter implements TypeConverterInterface
 {
-
     /**
      * @inheritDoc
      */
     public function castValue($value, Type $type, array $path, array $context): Generator
     {
-        if ($type->getName() <> BuiltinType::BOOL) {
+        if ($type->getName() !== BuiltinType::BOOL) {
             return;
         }
 
@@ -51,7 +50,7 @@ final class BooleanTypeConverter implements TypeConverterInterface
                     return yield null;
                 }
 
-                throw InvalidValueException::mustNotBeEmpty($path);
+                throw InvalidValueException::mustNotBeEmpty($path, $value);
             }
 
             // https://github.com/php/php-src/blob/b7d90f09d4a1688f2692f2fa9067d0a07f78cc7d/ext/filter/logical_filters.c#L273
@@ -59,7 +58,7 @@ final class BooleanTypeConverter implements TypeConverterInterface
         }
 
         if (!is_bool($value)) {
-            throw InvalidValueException::mustBeBoolean($path);
+            throw InvalidValueException::mustBeBoolean($path, $value);
         }
 
         yield $value;

@@ -26,14 +26,11 @@ use Attribute;
  *     @Attribute("limit", type="integer", required=false),
  * })
  *
- * @final See the {@see Relationship} class.
- *
  * @since 3.1.0
  */
 #[Attribute(Attribute::TARGET_PROPERTY | Attribute::TARGET_PARAMETER)]
 class Subtype
 {
-
     /**
      * @var mixed
      *
@@ -63,8 +60,6 @@ class Subtype
     public ?int $limit;
 
     /**
-     * Constructor of the class
-     *
      * @param non-empty-string $name
      * @param bool $allowsNull
      * @param int<0, max>|null $limit

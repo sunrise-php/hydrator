@@ -46,28 +46,14 @@ final class ArrayAccessTypeConverter implements
     AnnotationReaderAwareInterface,
     HydratorAwareInterface
 {
-
-    /**
-     * @var AnnotationReaderInterface
-     */
     private AnnotationReaderInterface $annotationReader;
-
-    /**
-     * @var HydratorInterface
-     */
     private HydratorInterface $hydrator;
 
-    /**
-     * @inheritDoc
-     */
     public function setAnnotationReader(AnnotationReaderInterface $annotationReader): void
     {
         $this->annotationReader = $annotationReader;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function setHydrator(HydratorInterface $hydrator): void
     {
         $this->hydrator = $hydrator;
@@ -85,6 +71,7 @@ final class ArrayAccessTypeConverter implements
             return;
         }
 
+        /** @var ReflectionClass<ArrayAccess<array-key, mixed>> $containerReflection */
         $containerReflection = new ReflectionClass($typeName);
         if (!$containerReflection->isInstantiable()) {
             throw InvalidObjectException::unsupportedType($type);
@@ -102,11 +89,16 @@ final class ArrayAccessTypeConverter implements
         }
 
         if (!is_array($value)) {
-            throw InvalidValueException::mustBeArray($path);
+            throw InvalidValueException::mustBeArray($path, $value);
         }
 
-        $subtype = $this->annotationReader->getAnnotations(Subtype::class, $type->getHolder())->current()
-            ?? self::getContainerSubtype($containerReflection);
+        /**
+         * @phpstan-var Subtype|null $subtype
+         * @psalm-suppress UnnecessaryVarAnnotation
+         */
+        $subtype = $this->annotationReader->getAnnotations(Subtype::class, $type->getHolder())->current();
+
+        $subtype ??= self::getContainerSubtype($containerReflection);
 
         if ($subtype === null) {
             $counter = 0;
@@ -115,7 +107,7 @@ final class ArrayAccessTypeConverter implements
                     $container[$key] = $element;
                     ++$counter;
                 } catch (OverflowException $e) {
-                    throw InvalidValueException::arrayOverflow($path, $counter);
+                    throw InvalidValueException::arrayOverflow($path, $counter, $value);
                 }
             }
 
@@ -123,7 +115,7 @@ final class ArrayAccessTypeConverter implements
         }
 
         if ($subtype->limit !== null && count($value) > $subtype->limit) {
-            throw InvalidValueException::arrayOverflow($path, $subtype->limit);
+            throw InvalidValueException::arrayOverflow($path, $subtype->limit, $value);
         }
 
         $subtype->holder ??= $type->getHolder();
@@ -145,7 +137,7 @@ final class ArrayAccessTypeConverter implements
             } catch (InvalidValueException $e) {
                 $violations[] = $e;
             } catch (OverflowException $e) {
-                $violations[] = InvalidValueException::arrayOverflow($path, $counter);
+                $violations[] = InvalidValueException::arrayOverflow($path, $counter, $value);
                 break;
             }
         }
@@ -168,9 +160,7 @@ final class ArrayAccessTypeConverter implements
     /**
      * Gets a subtype from the given container's constructor
      *
-     * @param ReflectionClass<ArrayAccess> $class
-     *
-     * @return Subtype|null
+     * @param ReflectionClass<ArrayAccess<array-key, mixed>> $class
      *
      * @codeCoverageIgnore
      */
@@ -187,7 +177,7 @@ final class ArrayAccessTypeConverter implements
         }
 
         $lastConstructorParameter = end($constructorParameters);
-        if ($lastConstructorParameter->isVariadic() === false) {
+        if (!$lastConstructorParameter->isVariadic()) {
             return null;
         }
 

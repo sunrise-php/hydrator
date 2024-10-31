@@ -44,7 +44,6 @@ use const PHP_MAJOR_VERSION;
  */
 final class TimestampTypeConverter implements TypeConverterInterface, AnnotationReaderAwareInterface
 {
-
     /**
      * The default timestamp format
      *
@@ -52,9 +51,6 @@ final class TimestampTypeConverter implements TypeConverterInterface, Annotation
      */
     public const DEFAULT_FORMAT = DateTimeInterface::RFC3339_EXTENDED;
 
-    /**
-     * @var AnnotationReaderInterface
-     */
     private AnnotationReaderInterface $annotationReader;
 
     /**
@@ -70,10 +66,9 @@ final class TimestampTypeConverter implements TypeConverterInterface, Annotation
      */
     public function castValue($value, Type $type, array $path, array $context): Generator
     {
-        /** @var array{timestamp_format?: string, timezone?: string} $context */
+        /** @var array{timestamp_format?: non-empty-string, timezone?: non-empty-string} $context */
 
         $className = $type->getName();
-
         if (!is_a($className, DateTimeImmutable::class, true)) {
             return;
         }
@@ -98,7 +93,7 @@ final class TimestampTypeConverter implements TypeConverterInterface, Annotation
                     return yield null;
                 }
 
-                throw InvalidValueException::mustNotBeEmpty($path);
+                throw InvalidValueException::mustNotBeEmpty($path, $value);
             }
 
             // Support for ISO 8601
@@ -112,12 +107,13 @@ final class TimestampTypeConverter implements TypeConverterInterface, Annotation
         }
 
         if ($format === 'U' && !is_int($value)) {
-            throw InvalidValueException::mustBeInteger($path);
+            throw InvalidValueException::mustBeInteger($path, $value);
         }
         if ($format !== 'U' && !is_string($value)) {
-            throw InvalidValueException::mustBeString($path);
+            throw InvalidValueException::mustBeString($path, $value);
         }
 
+        // @phpstan-ignore-next-line Cannot cast mixed to string.
         $value = (string) $value;
 
         $timezone = null;
@@ -127,7 +123,7 @@ final class TimestampTypeConverter implements TypeConverterInterface, Annotation
 
         $timestamp = $className::createFromFormat($format, $value, $timezone);
         if ($timestamp === false) {
-            throw InvalidValueException::invalidTimestamp($path, $format);
+            throw InvalidValueException::invalidTimestamp($path, $format, $value);
         }
 
         yield $timestamp;

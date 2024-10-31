@@ -21,7 +21,6 @@ use Sunrise\Hydrator\AnnotationReaderInterface;
  */
 final class NullAnnotationReader implements AnnotationReaderInterface
 {
-
     /**
      * @inheritDoc
      *

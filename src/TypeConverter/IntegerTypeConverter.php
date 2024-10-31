@@ -32,13 +32,12 @@ use const FILTER_VALIDATE_INT;
  */
 final class IntegerTypeConverter implements TypeConverterInterface
 {
-
     /**
      * @inheritDoc
      */
     public function castValue($value, Type $type, array $path, array $context): Generator
     {
-        if ($type->getName() <> BuiltinType::INT) {
+        if ($type->getName() !== BuiltinType::INT) {
             return;
         }
 
@@ -51,7 +50,7 @@ final class IntegerTypeConverter implements TypeConverterInterface
                     return yield null;
                 }
 
-                throw InvalidValueException::mustNotBeEmpty($path);
+                throw InvalidValueException::mustNotBeEmpty($path, $value);
             }
 
             // https://github.com/php/php-src/blob/b7d90f09d4a1688f2692f2fa9067d0a07f78cc7d/ext/filter/logical_filters.c#L94
@@ -60,7 +59,7 @@ final class IntegerTypeConverter implements TypeConverterInterface
         }
 
         if (!is_int($value)) {
-            throw InvalidValueException::mustBeInteger($path);
+            throw InvalidValueException::mustBeInteger($path, $value);
         }
 
         yield $value;

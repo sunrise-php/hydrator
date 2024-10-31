@@ -27,10 +27,7 @@ use Attribute;
 #[Attribute(Attribute::TARGET_PROPERTY)]
 final class Alias
 {
-
     /**
-     * The attribute value
-     *
      * @var non-empty-string
      *
      * @readonly
@@ -38,8 +35,6 @@ final class Alias
     public string $value;
 
     /**
-     * Constructor of the class
-     *
      * @param non-empty-string $value
      */
     public function __construct(string $value)

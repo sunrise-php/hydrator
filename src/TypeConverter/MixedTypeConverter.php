@@ -23,13 +23,12 @@ use Sunrise\Hydrator\TypeConverterInterface;
  */
 final class MixedTypeConverter implements TypeConverterInterface
 {
-
     /**
      * @inheritDoc
      */
     public function castValue($value, Type $type, array $path, array $context): Generator
     {
-        if ($type->getName() <> BuiltinType::MIXED) {
+        if ($type->getName() !== BuiltinType::MIXED) {
             return;
         }
 
