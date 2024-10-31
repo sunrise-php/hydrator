@@ -30,7 +30,7 @@ enum Status: int
 ```
 
 ```php
-final readonly class Category
+final readonly class CategoryDto
 {
     public function __construct(
         public string $name,
@@ -40,7 +40,7 @@ final readonly class Category
 ```
 
 ```php
-final readonly class Tag
+final readonly class TagDto
 {
     public function __construct(
         public string $name,
@@ -50,7 +50,7 @@ final readonly class Tag
 ```
 
 ```php
-final class Tags extends ArrayObject
+final class TagDtoCollection extends ArrayObject
 {
     public function __construct(TagDto ...$tags)
     {
@@ -60,12 +60,12 @@ final class Tags extends ArrayObject
 ```
 
 ```php
-final readonly class Publication
+final readonly class PublicationDto
 {
     public function __construct(
         public string $name,
-        public Category $category,
-        public Tags $tags,
+        public CategoryDto $category,
+        public TagDtoCollection $tags,
         public Status $status = Status::Disabled,
         #[\Sunrise\Hydrator\Annotation\Format(DateTimeInterface::RFC3339)]
         public DateTimeImmutable $createdAt = new DateTimeImmutable(),
@@ -83,12 +83,8 @@ $data = [
         'name' => 'Some category',
     ],
     'tags' => [
-        [
-            'name' => 'foo',
-        ],
-        [
-            'name' => 'bar',
-        ],
+        [ 'name' => 'foo' ],
+        [ 'name' => 'bar' ],
     ],
     'status' => 0,
 ];
@@ -106,12 +102,8 @@ $json = <<<JSON
         "name": "Some category"
     },
     "tags": [
-        {
-            "name": "foo"
-        },
-        {
-            "name": "bar"
-        }
+        { "name": "foo" },
+        { "name": "bar" }
     ],
     "status": 0
 }
@@ -133,10 +125,17 @@ If a property has no a default value, then the property is required.
 ### Optional
 
 ```php
-public readonly string $value = 'foo';
+public string $value = 'foo';
 ```
 
 If a property has a default value, then the property is optional.
+
+There are situations when it is necessary to assign a value to a readonly property. This cannot be done outside the constructor; however, you can use a special annotation, as shown in the example below:
+
+```php
+#[\Sunrise\Hydrator\Annotation\DefaultValue('foo')]
+public readonly string $value;
+```
 
 ### Null
 
