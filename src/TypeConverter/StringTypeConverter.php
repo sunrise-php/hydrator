@@ -27,13 +27,12 @@ use function is_string;
  */
 final class StringTypeConverter implements TypeConverterInterface
 {
-
     /**
      * @inheritDoc
      */
     public function castValue($value, Type $type, array $path, array $context): Generator
     {
-        if ($type->getName() <> BuiltinType::STRING) {
+        if ($type->getName() !== BuiltinType::STRING) {
             return;
         }
 
@@ -42,7 +41,7 @@ final class StringTypeConverter implements TypeConverterInterface
         }
 
         if (!is_string($value)) {
-            throw InvalidValueException::mustBeString($path);
+            throw InvalidValueException::mustBeString($path, $value);
         }
 
         yield $value;

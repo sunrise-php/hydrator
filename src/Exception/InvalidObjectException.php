@@ -22,17 +22,9 @@ use Sunrise\Hydrator\Type;
 
 use function sprintf;
 
-/**
- * InvalidObjectException
- */
 class InvalidObjectException extends LogicException implements ExceptionInterface
 {
-
     /**
-     * @param string $className
-     *
-     * @return self
-     *
      * @since 3.2.0
      */
     final public static function uninstantiableObject(string $className): self
@@ -44,10 +36,6 @@ class InvalidObjectException extends LogicException implements ExceptionInterfac
     }
 
     /**
-     * @param Type $type
-     *
-     * @return self
-     *
      * @since 3.2.0
      */
     final public static function unsupportedType(Type $type): self
@@ -69,11 +57,6 @@ class InvalidObjectException extends LogicException implements ExceptionInterfac
     }
 
     /**
-     * @param Type $type
-     * @param ReflectionProperty $property
-     *
-     * @return self
-     *
      * @since 3.2.0
      */
     final public static function unsupportedPropertyType(Type $type, ReflectionProperty $property): self
@@ -87,11 +70,6 @@ class InvalidObjectException extends LogicException implements ExceptionInterfac
     }
 
     /**
-     * @param Type $type
-     * @param ReflectionParameter $parameter
-     *
-     * @return self
-     *
      * @since 3.2.0
      */
     final public static function unsupportedParameterType(Type $type, ReflectionParameter $parameter): self
@@ -104,12 +82,6 @@ class InvalidObjectException extends LogicException implements ExceptionInterfac
     }
 
     /**
-     * @param Type $type
-     * @param ReflectionParameter $parameter
-     * @param ReflectionMethod $method
-     *
-     * @return self
-     *
      * @since 3.2.0
      */
     final public static function unsupportedMethodParameterType(
@@ -128,12 +100,6 @@ class InvalidObjectException extends LogicException implements ExceptionInterfac
     }
 
     /**
-     * @param Type $type
-     * @param ReflectionParameter $parameter
-     * @param ReflectionFunctionAbstract $function
-     *
-     * @return self
-     *
      * @since 3.2.0
      */
     final public static function unsupportedFunctionParameterType(

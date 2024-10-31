@@ -31,18 +31,17 @@ use function trim;
  */
 final class RamseyUuidTypeConverter implements TypeConverterInterface
 {
-
     /**
      * @inheritDoc
      */
     public function castValue($value, Type $type, array $path, array $context): Generator
     {
-        if ($type->getName() <> UuidInterface::class) {
+        if ($type->getName() !== UuidInterface::class) {
             return;
         }
 
         if (!is_string($value)) {
-            throw InvalidValueException::mustBeString($path);
+            throw InvalidValueException::mustBeString($path, $value);
         }
 
         $value = trim($value);
@@ -55,13 +54,13 @@ final class RamseyUuidTypeConverter implements TypeConverterInterface
                 return yield null;
             }
 
-            throw InvalidValueException::mustNotBeEmpty($path);
+            throw InvalidValueException::mustNotBeEmpty($path, $value);
         }
 
         try {
             yield Uuid::fromString($value);
         } catch (InvalidArgumentException $e) {
-            throw InvalidValueException::invalidUid($path);
+            throw InvalidValueException::invalidUid($path, $value);
         }
     }
 

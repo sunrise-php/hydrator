@@ -18,22 +18,16 @@ use Symfony\Component\Validator\ConstraintViolationListInterface;
 use RuntimeException;
 
 /**
- * InvalidDataException
- *
  * @since 3.0.0
  */
 class InvalidDataException extends RuntimeException implements ExceptionInterface
 {
-
     /**
      * @var list<InvalidValueException>
      */
     private array $exceptions;
 
     /**
-     * Constructor of the class
-     *
-     * @param string $message
      * @param list<InvalidValueException> $exceptions
      */
     public function __construct(string $message, array $exceptions = [])
@@ -51,9 +45,6 @@ class InvalidDataException extends RuntimeException implements ExceptionInterfac
         return $this->exceptions;
     }
 
-    /**
-     * @return ConstraintViolationListInterface
-     */
     final public function getViolations(): ConstraintViolationListInterface
     {
         $violations = new ConstraintViolationList();

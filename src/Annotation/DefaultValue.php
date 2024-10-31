@@ -29,10 +29,7 @@ use Attribute;
 #[Attribute(Attribute::TARGET_PROPERTY)]
 final class DefaultValue
 {
-
     /**
-     * The attribute value
-     *
      * @var mixed
      *
      * @readonly
@@ -40,8 +37,6 @@ final class DefaultValue
     public $value;
 
     /**
-     * Constructor of the class
-     *
      * @param mixed $value
      */
     public function __construct($value)

@@ -33,13 +33,12 @@ use const FILTER_VALIDATE_FLOAT;
  */
 final class NumberTypeConverter implements TypeConverterInterface
 {
-
     /**
      * @inheritDoc
      */
     public function castValue($value, Type $type, array $path, array $context): Generator
     {
-        if ($type->getName() <> BuiltinType::FLOAT) {
+        if ($type->getName() !== BuiltinType::FLOAT) {
             return;
         }
 
@@ -56,7 +55,7 @@ final class NumberTypeConverter implements TypeConverterInterface
                     return yield null;
                 }
 
-                throw InvalidValueException::mustNotBeEmpty($path);
+                throw InvalidValueException::mustNotBeEmpty($path, $value);
             }
 
             // https://github.com/php/php-src/blob/b7d90f09d4a1688f2692f2fa9067d0a07f78cc7d/ext/filter/logical_filters.c#L342
@@ -64,7 +63,7 @@ final class NumberTypeConverter implements TypeConverterInterface
         }
 
         if (!is_float($value)) {
-            throw InvalidValueException::mustBeNumber($path);
+            throw InvalidValueException::mustBeNumber($path, $value);
         }
 
         yield $value;

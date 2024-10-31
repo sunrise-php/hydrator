@@ -31,7 +31,6 @@ use function trim;
  */
 final class MyclabsEnumTypeConverter implements TypeConverterInterface
 {
-
     /**
      * @inheritDoc
      */
@@ -53,7 +52,7 @@ final class MyclabsEnumTypeConverter implements TypeConverterInterface
                     return yield null;
                 }
 
-                throw InvalidValueException::mustNotBeEmpty($path);
+                throw InvalidValueException::mustNotBeEmpty($path, $value);
             }
         }
 
@@ -62,11 +61,12 @@ final class MyclabsEnumTypeConverter implements TypeConverterInterface
         } catch (UnexpectedValueException $e) {
             $expectedValues = [];
             foreach ($enumName::values() as $case) {
-                /** @var int|string */
-                $expectedValues[] = $case->getValue();
+                /** @var int|string $value */
+                $value = $case->getValue();
+                $expectedValues[] = $value;
             }
 
-            throw InvalidValueException::invalidChoice($path, $expectedValues);
+            throw InvalidValueException::invalidChoice($path, $expectedValues, $value);
         }
     }
 

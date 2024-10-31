@@ -27,15 +27,15 @@
         "php": ">=7.4"
     },
     "require-dev": {
-        "sunrise/coding-standard": "^1.0",
-        "phpunit/phpunit": "^9.6",
-        "vimeo/psalm": "^5.15",
-        "phpstan/phpstan": "^1.10",
         "doctrine/annotations": "^2.0",
-        "symfony/validator": "^5.4",
-        "symfony/uid": "^5.4",
+        "myclabs/php-enum": "^1.8",
+        "phpstan/phpstan": "^1.10",
+        "phpunit/phpunit": "^9.6",
         "ramsey/uuid": "^4.2",
-        "myclabs/php-enum": "^1.8"
+        "sunrise/coding-standard": "^1.0",
+        "symfony/uid": "^5.4",
+        "symfony/validator": "^5.4",
+        "vimeo/psalm": "^5.15"
     },
     "autoload": {
         "psr-4": {
@@ -58,5 +58,8 @@
             "phpdoc -d src/ -t phpdoc/",
             "XDEBUG_MODE=coverage phpunit --coverage-html coverage/"
         ]
+    },
+    "config": {
+        "sort-packages": true
     }
 }

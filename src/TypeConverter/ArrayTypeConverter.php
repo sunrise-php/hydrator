@@ -40,28 +40,14 @@ final class ArrayTypeConverter implements
     AnnotationReaderAwareInterface,
     HydratorAwareInterface
 {
-
-    /**
-     * @var AnnotationReaderInterface
-     */
     private AnnotationReaderInterface $annotationReader;
-
-    /**
-     * @var HydratorInterface
-     */
     private HydratorInterface $hydrator;
 
-    /**
-     * @inheritDoc
-     */
     public function setAnnotationReader(AnnotationReaderInterface $annotationReader): void
     {
         $this->annotationReader = $annotationReader;
     }
 
-    /**
-     * @inheritDoc
-     */
     public function setHydrator(HydratorInterface $hydrator): void
     {
         $this->hydrator = $hydrator;
@@ -74,7 +60,7 @@ final class ArrayTypeConverter implements
      */
     public function castValue($value, Type $type, array $path, array $context): Generator
     {
-        if ($type->getName() <> BuiltinType::ARRAY) {
+        if ($type->getName() !== BuiltinType::ARRAY) {
             return;
         }
 
@@ -88,16 +74,21 @@ final class ArrayTypeConverter implements
         }
 
         if (!is_array($value)) {
-            throw InvalidValueException::mustBeArray($path);
+            throw InvalidValueException::mustBeArray($path, $value);
         }
 
+        /**
+         * @phpstan-var Subtype|null $subtype
+         * @psalm-suppress UnnecessaryVarAnnotation
+         */
         $subtype = $this->annotationReader->getAnnotations(Subtype::class, $type->getHolder())->current();
+
         if ($subtype === null) {
             return yield $value;
         }
 
         if ($subtype->limit !== null && count($value) > $subtype->limit) {
-            throw InvalidValueException::arrayOverflow($path, $subtype->limit);
+            throw InvalidValueException::arrayOverflow($path, $subtype->limit, $value);
         }
 
         $violations = [];

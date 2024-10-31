@@ -29,10 +29,7 @@ use Attribute;
 #[Attribute(Attribute::TARGET_PROPERTY | Attribute::TARGET_PARAMETER)]
 final class Format
 {
-
     /**
-     * The attribute value
-     *
      * @var non-empty-string
      *
      * @readonly
@@ -40,8 +37,6 @@ final class Format
     public string $value;
 
     /**
-     * Constructor of the class
-     *
      * @param non-empty-string $value
      */
     public function __construct(string $value)

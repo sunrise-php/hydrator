@@ -29,8 +29,6 @@ use Attribute;
  * @since 3.0.0
  *
  * @deprecated 3.1.0 Use the {@see Subtype} annotation.
- *
- * @psalm-suppress InvalidExtendClass
  */
 #[Attribute(Attribute::TARGET_PROPERTY | Attribute::TARGET_PARAMETER)]
 final class Relationship extends Subtype

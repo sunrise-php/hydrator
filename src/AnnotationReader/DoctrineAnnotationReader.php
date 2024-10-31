@@ -30,27 +30,14 @@ use function sprintf;
  */
 final class DoctrineAnnotationReader implements AnnotationReaderInterface
 {
-
-    /**
-     * @var Reader
-     */
     private Reader $reader;
 
-    /**
-     * Constructor of the class
-     *
-     * @param Reader $reader
-     */
     public function __construct(Reader $reader)
     {
         $this->reader = $reader;
     }
 
     /**
-     * Creates a new instance of the class with the doctrine's default annotation reader
-     *
-     * @return self
-     *
      * @throws LogicException If the doctrine/annotations package isn't installed on the server.
      */
     public static function default(): self

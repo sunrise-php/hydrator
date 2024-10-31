@@ -29,10 +29,7 @@ use Attribute;
 #[Attribute(Attribute::TARGET_PROPERTY | Attribute::TARGET_PARAMETER)]
 final class Context
 {
-
     /**
-     * The attribute value
-     *
      * @var array<non-empty-string, mixed>
      *
      * @readonly
@@ -40,8 +37,6 @@ final class Context
     public array $value;
 
     /**
-     * Constructor of the class
-     *
      * @param array<non-empty-string, mixed> $value
      */
     public function __construct(array $value)

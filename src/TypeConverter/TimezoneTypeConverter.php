@@ -28,18 +28,17 @@ use function trim;
  */
 final class TimezoneTypeConverter implements TypeConverterInterface
 {
-
     /**
      * @inheritDoc
      */
     public function castValue($value, Type $type, array $path, array $context): Generator
     {
-        if ($type->getName() <> DateTimeZone::class) {
+        if ($type->getName() !== DateTimeZone::class) {
             return;
         }
 
         if (!is_string($value)) {
-            throw InvalidValueException::mustBeString($path);
+            throw InvalidValueException::mustBeString($path, $value);
         }
 
         $value = trim($value);
@@ -52,13 +51,13 @@ final class TimezoneTypeConverter implements TypeConverterInterface
                 return yield null;
             }
 
-            throw InvalidValueException::mustNotBeEmpty($path);
+            throw InvalidValueException::mustNotBeEmpty($path, $value);
         }
 
         try {
             yield new DateTimeZone($value);
         } catch (Exception $e) {
-            throw InvalidValueException::invalidTimezone($path);
+            throw InvalidValueException::invalidTimezone($path, $value);
         }
     }
 

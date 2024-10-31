@@ -17,29 +17,6 @@
 composer require sunrise/hydrator
 ```
 
-## Navigation
-
-* [Allowed property types](#allowed-property-types)
-* * [Required](#required)
-* * [Optional](#optional)
-* * [Null](#null)
-* * [Boolean](#boolean)
-* * [Integer](#integer)
-* * [Number](#number)
-* * [String](#string)
-* * [Array](#array)
-* * [Timestamp](#timestamp)
-* * [Timezone](#timezone)
-* * [Enumeration](#enumeration)
-* * [UUID](#uuid)
-* * [Relationship](#relationship)
-* * [Custom type](#support-for-custom-types)
-* [Ignored property](#ignored-property)
-* [Property alias](#property-alias)
-* [Error handling](#error-handling)
-* [Localization](#localization)
-* [Doctrine annotations](#doctrine-annotations)
-
 ## How to use
 
 Let's consider a typical DTO set:
@@ -436,7 +413,7 @@ final class UriTypeConverter implements TypeConverterInterface
         }
 
         if (!\is_string($value)) {
-            throw InvalidValueException::mustBeString($path);
+            throw InvalidValueException::mustBeString($path, $value);
         }
 
         try {

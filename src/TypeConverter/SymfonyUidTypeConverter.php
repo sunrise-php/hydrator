@@ -31,7 +31,6 @@ use function trim;
  */
 final class SymfonyUidTypeConverter implements TypeConverterInterface
 {
-
     /**
      * @inheritDoc
      */
@@ -43,7 +42,7 @@ final class SymfonyUidTypeConverter implements TypeConverterInterface
         }
 
         if (!is_string($value)) {
-            throw InvalidValueException::mustBeString($path);
+            throw InvalidValueException::mustBeString($path, $value);
         }
 
         $value = trim($value);
@@ -56,13 +55,13 @@ final class SymfonyUidTypeConverter implements TypeConverterInterface
                 return yield null;
             }
 
-            throw InvalidValueException::mustNotBeEmpty($path);
+            throw InvalidValueException::mustNotBeEmpty($path, $value);
         }
 
         try {
             yield $className::fromString($value);
         } catch (InvalidArgumentException $e) {
-            throw InvalidValueException::invalidUid($path);
+            throw InvalidValueException::invalidUid($path, $value);
         }
     }
 

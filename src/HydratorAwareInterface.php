@@ -18,13 +18,5 @@ namespace Sunrise\Hydrator;
  */
 interface HydratorAwareInterface
 {
-
-    /**
-     * Sets the given hydrator to the object
-     *
-     * @param HydratorInterface $hydrator
-     *
-     * @return void
-     */
     public function setHydrator(HydratorInterface $hydrator): void;
 }

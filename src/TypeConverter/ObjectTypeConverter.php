@@ -33,15 +33,8 @@ use function is_array;
  */
 final class ObjectTypeConverter implements TypeConverterInterface, HydratorAwareInterface
 {
-
-    /**
-     * @var HydratorInterface
-     */
     private HydratorInterface $hydrator;
 
-    /**
-     * @inheritDoc
-     */
     public function setHydrator(HydratorInterface $hydrator): void
     {
         $this->hydrator = $hydrator;
@@ -68,7 +61,7 @@ final class ObjectTypeConverter implements TypeConverterInterface, HydratorAware
         }
 
         if (!is_array($value)) {
-            throw InvalidValueException::mustBeArray($path);
+            throw InvalidValueException::mustBeArray($path, $value);
         }
 
         $object = $class->newInstanceWithoutConstructor();

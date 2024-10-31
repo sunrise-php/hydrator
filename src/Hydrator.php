@@ -59,20 +59,13 @@ use const JSON_THROW_ON_ERROR;
 use const PHP_MAJOR_VERSION;
 use const PHP_VERSION_ID;
 
-/**
- * Hydrator
- */
 class Hydrator implements HydratorInterface
 {
-
     /**
      * @var array<string, mixed>
      */
     private array $context;
 
-    /**
-     * @var AnnotationReaderInterface
-     */
     private AnnotationReaderInterface $annotationReader;
 
     /**
@@ -81,8 +74,6 @@ class Hydrator implements HydratorInterface
     private array $typeConverters = [];
 
     /**
-     * Constructor of the class
-     *
      * @param array<string, mixed> $context
      * @param list<TypeConverterInterface> $typeConverters
      */
@@ -90,19 +81,13 @@ class Hydrator implements HydratorInterface
     {
         $this->context = $context;
 
-        $this->annotationReader = PHP_MAJOR_VERSION >= 8 ?
-            new BuiltinAnnotationReader() :
-            new NullAnnotationReader();
+        $this->annotationReader = PHP_MAJOR_VERSION >= 8 ? new BuiltinAnnotationReader() : new NullAnnotationReader();
 
         $this->addTypeConverter(...self::defaultTypeConverters(), ...$typeConverters);
     }
 
     /**
-     * Sets the given annotation reader to the hydrator
-     *
      * @param AnnotationReaderInterface|\Doctrine\Common\Annotations\Reader $annotationReader
-     *
-     * @return self
      *
      * @since 3.0.0
      */
@@ -114,6 +99,7 @@ class Hydrator implements HydratorInterface
         }
 
         $this->annotationReader = $annotationReader;
+
         foreach ($this->typeConverters as $typeConverter) {
             if ($typeConverter instanceof AnnotationReaderAwareInterface) {
                 $typeConverter->setAnnotationReader($annotationReader);
@@ -124,40 +110,19 @@ class Hydrator implements HydratorInterface
     }
 
     /**
-     * Sets the doctrine's default annotation reader to the hydrator
-     *
-     * @return self
-     *
-     * @since 3.0.0
-     *
-     * @deprecated 3.2.0 Use the {@see setAnnotationReader()} method
-     *                   with the {@see DoctrineAnnotationReader::default()} attribute.
-     */
-    public function useDefaultAnnotationReader(): self
-    {
-        return $this->setAnnotationReader(DoctrineAnnotationReader::default());
-    }
-
-    /**
-     * Adds the given type converter(s) to the hydrator
-     *
-     * @param TypeConverterInterface ...$typeConverters
-     *
-     * @return self
-     *
      * @since 3.1.0
      */
     public function addTypeConverter(TypeConverterInterface ...$typeConverters): self
     {
         foreach ($typeConverters as $typeConverter) {
+            $this->typeConverters[] = $typeConverter;
+
             if ($typeConverter instanceof AnnotationReaderAwareInterface) {
                 $typeConverter->setAnnotationReader($this->annotationReader);
             }
             if ($typeConverter instanceof HydratorAwareInterface) {
                 $typeConverter->setHydrator($this);
             }
-
-            $this->typeConverters[] = $typeConverter;
         }
 
         usort($this->typeConverters, static fn(
@@ -199,7 +164,7 @@ class Hydrator implements HydratorInterface
      */
     public function hydrate($object, array $data, array $path = [], array $context = []): object
     {
-        [$object, $class] = self::instantObject($object);
+        [$object, $class] = self::initObject($object);
         $properties = $class->getProperties();
         $constructorDefaultValues = self::getConstructorDefaultValues($class);
 
@@ -222,7 +187,7 @@ class Hydrator implements HydratorInterface
             $key = $this->annotationReader->getAnnotations(Alias::class, $property)->current()->value
                 ?? $property->getName();
 
-            if (array_key_exists($key, $data) === false) {
+            if (!array_key_exists($key, $data)) {
                 if ($property->isInitialized($object)) {
                     continue;
                 }
@@ -232,12 +197,13 @@ class Hydrator implements HydratorInterface
                     continue;
                 }
 
-                $defaultValue = $this->annotationReader->getAnnotations(DefaultValue::class, $property)->current();
-                if ($defaultValue !== null) {
-                    $property->setValue($object, $defaultValue->value);
+                $default = $this->annotationReader->getAnnotations(DefaultValue::class, $property)->current();
+                if ($default !== null) {
+                    $property->setValue($object, $default->value);
                     continue;
                 }
 
+                // @phpstan-ignore-next-line Unreachable statement - code above always terminates.
                 $violations[] = InvalidValueException::mustBeProvided([...$path, $key]);
                 continue;
             }
@@ -287,17 +253,15 @@ class Hydrator implements HydratorInterface
     }
 
     /**
-     * Instantiates the given object
-     *
      * @param class-string<T>|T $object
      *
-     * @return array{0: T, 1: ReflectionClass}
+     * @return array{0: T, 1: ReflectionClass<T>}
      *
-     * @throws InvalidObjectException If the object couldn't be instantiated.
+     * @throws InvalidObjectException
      *
      * @template T of object
      */
-    private static function instantObject($object): array
+    private static function initObject($object): array
     {
         if (is_object($object)) {
             return [$object, new ReflectionClass($object)];
@@ -316,6 +280,7 @@ class Hydrator implements HydratorInterface
         }
 
         $class = new ReflectionClass($object);
+
         if (!$class->isInstantiable()) {
             throw InvalidObjectException::uninstantiableObject($class->getName());
         }
@@ -324,8 +289,6 @@ class Hydrator implements HydratorInterface
     }
 
     /**
-     * Gets default values from the given class's constructor
-     *
      * @param ReflectionClass<T> $class
      *
      * @return array<non-empty-string, mixed>
@@ -380,5 +343,18 @@ class Hydrator implements HydratorInterface
         if (class_exists(\Symfony\Component\Uid\AbstractUid::class)) {
             yield new SymfonyUidTypeConverter();
         }
+    }
+
+    /**
+     * Sets the doctrine's default annotation reader to the hydrator
+     *
+     * @since 3.0.0
+     *
+     * @deprecated 3.2.0 Use the {@see setAnnotationReader()} method
+     *                   with the {@see DoctrineAnnotationReader::default()} attribute.
+     */
+    public function useDefaultAnnotationReader(): self
+    {
+        return $this->setAnnotationReader(DoctrineAnnotationReader::default());
     }
 }
