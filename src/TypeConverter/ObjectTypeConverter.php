@@ -28,11 +28,12 @@ use function is_array;
 
 /**
  * @since 3.1.0
- *
- * @psalm-suppress MissingConstructor
  */
 final class ObjectTypeConverter implements TypeConverterInterface, HydratorAwareInterface
 {
+    /**
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
     private HydratorInterface $hydrator;
 
     public function setHydrator(HydratorInterface $hydrator): void

@@ -39,8 +39,6 @@ use const PHP_MAJOR_VERSION;
 
 /**
  * @since 3.1.0
- *
- * @psalm-suppress MissingConstructor
  */
 final class TimestampTypeConverter implements TypeConverterInterface, AnnotationReaderAwareInterface
 {
@@ -51,11 +49,11 @@ final class TimestampTypeConverter implements TypeConverterInterface, Annotation
      */
     public const DEFAULT_FORMAT = DateTimeInterface::RFC3339_EXTENDED;
 
+    /**
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
     private AnnotationReaderInterface $annotationReader;
 
-    /**
-     * @inheritDoc
-     */
     public function setAnnotationReader(AnnotationReaderInterface $annotationReader): void
     {
         $this->annotationReader = $annotationReader;

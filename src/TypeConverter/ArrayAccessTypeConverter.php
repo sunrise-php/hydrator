@@ -38,15 +38,20 @@ use function is_subclass_of;
 
 /**
  * @since 3.1.0
- *
- * @psalm-suppress MissingConstructor
  */
 final class ArrayAccessTypeConverter implements
     TypeConverterInterface,
     AnnotationReaderAwareInterface,
     HydratorAwareInterface
 {
+    /**
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
     private AnnotationReaderInterface $annotationReader;
+
+    /**
+     * @psalm-suppress PropertyNotSetInConstructor
+     */
     private HydratorInterface $hydrator;
 
     public function setAnnotationReader(AnnotationReaderInterface $annotationReader): void
