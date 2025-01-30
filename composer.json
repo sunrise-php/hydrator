@@ -29,6 +29,7 @@
     "require-dev": {
         "doctrine/annotations": "^2.0",
         "myclabs/php-enum": "^1.8",
+        "php-di/php-di": "^6.3",
         "phpstan/phpstan": "^1.10",
         "phpunit/phpunit": "^9.6",
         "ramsey/uuid": "^4.2",
