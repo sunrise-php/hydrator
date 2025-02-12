@@ -31,9 +31,6 @@ use function is_array;
  */
 final class ObjectTypeConverter implements TypeConverterInterface, HydratorAwareInterface
 {
-    /**
-     * @psalm-suppress PropertyNotSetInConstructor
-     */
     private HydratorInterface $hydrator;
 
     public function setHydrator(HydratorInterface $hydrator): void

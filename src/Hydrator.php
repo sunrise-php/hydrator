@@ -172,7 +172,6 @@ class Hydrator implements HydratorInterface
         foreach ($properties as $property) {
             // @codeCoverageIgnoreStart
             if (PHP_VERSION_ID < 80100) {
-                /** @psalm-suppress UnusedMethodCall */
                 $property->setAccessible(true);
             } // @codeCoverageIgnoreEnd
 
@@ -197,13 +196,13 @@ class Hydrator implements HydratorInterface
                     continue;
                 }
 
+                /** @var DefaultValue|null $default */
                 $default = $this->annotationReader->getAnnotations(DefaultValue::class, $property)->current();
                 if ($default !== null) {
                     $property->setValue($object, $default->value);
                     continue;
                 }
 
-                // @phpstan-ignore-next-line Unreachable statement - code above always terminates.
                 $violations[] = InvalidValueException::mustBeProvided([...$path, $key]);
                 continue;
             }
@@ -268,6 +267,7 @@ class Hydrator implements HydratorInterface
         }
 
         /** @psalm-suppress DocblockTypeContradiction */
+        // @phpstan-ignore function.alreadyNarrowedType
         if (!is_string($object)) {
             throw new TypeError(sprintf(
                 'Argument #1 ($object) must be of type object or string, %s given',
@@ -305,7 +305,6 @@ class Hydrator implements HydratorInterface
         $result = [];
         foreach ($constructor->getParameters() as $parameter) {
             if ($parameter->isDefaultValueAvailable()) {
-                /** @psalm-suppress MixedAssignment */
                 $result[$parameter->getName()] = $parameter->getDefaultValue();
             }
         }
