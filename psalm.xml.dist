@@ -12,4 +12,13 @@
             <directory name="vendor" />
         </ignoreFiles>
     </projectFiles>
+
+    <issueHandlers>
+        <MissingConstructor errorLevel="suppress" />
+        <MixedAssignment errorLevel="suppress" />
+        <PossiblyUnusedMethod errorLevel="suppress"/>
+        <UnnecessaryVarAnnotation errorLevel="suppress" />
+        <UnusedClass errorLevel="suppress" />
+        <UnusedMethodCall errorLevel="suppress" />
+    </issueHandlers>
 </psalm>

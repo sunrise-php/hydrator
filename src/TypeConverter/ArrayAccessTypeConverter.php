@@ -44,14 +44,7 @@ final class ArrayAccessTypeConverter implements
     AnnotationReaderAwareInterface,
     HydratorAwareInterface
 {
-    /**
-     * @psalm-suppress PropertyNotSetInConstructor
-     */
     private AnnotationReaderInterface $annotationReader;
-
-    /**
-     * @psalm-suppress PropertyNotSetInConstructor
-     */
     private HydratorInterface $hydrator;
 
     public function setAnnotationReader(AnnotationReaderInterface $annotationReader): void
@@ -66,8 +59,6 @@ final class ArrayAccessTypeConverter implements
 
     /**
      * @inheritDoc
-     *
-     * @psalm-suppress MixedAssignment
      */
     public function castValue($value, Type $type, array $path, array $context): Generator
     {
@@ -97,12 +88,8 @@ final class ArrayAccessTypeConverter implements
             throw InvalidValueException::mustBeArray($path, $value);
         }
 
-        /**
-         * @phpstan-var Subtype|null $subtype
-         * @psalm-suppress UnnecessaryVarAnnotation
-         */
+        /** @phpstan-var Subtype|null $subtype */
         $subtype = $this->annotationReader->getAnnotations(Subtype::class, $type->getHolder())->current();
-
         $subtype ??= self::getContainerSubtype($containerReflection);
 
         if ($subtype === null) {

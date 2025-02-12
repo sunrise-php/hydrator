@@ -49,9 +49,6 @@ final class TimestampTypeConverter implements TypeConverterInterface, Annotation
      */
     public const DEFAULT_FORMAT = DateTimeInterface::RFC3339_EXTENDED;
 
-    /**
-     * @psalm-suppress PropertyNotSetInConstructor
-     */
     private AnnotationReaderInterface $annotationReader;
 
     public function setAnnotationReader(AnnotationReaderInterface $annotationReader): void
@@ -111,7 +108,7 @@ final class TimestampTypeConverter implements TypeConverterInterface, Annotation
             throw InvalidValueException::mustBeString($path, $value);
         }
 
-        // @phpstan-ignore-next-line Cannot cast mixed to string.
+        // @phpstan-ignore cast.string
         $value = (string) $value;
 
         $timezone = null;
