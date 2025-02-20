@@ -13,8 +13,8 @@ return [
     ErrorMessage::MUST_BE_STRING => 'Cette valeur doit être de type string.',
     ErrorMessage::MUST_BE_ARRAY => 'Cette valeur doit être de type array.',
     ErrorMessage::ARRAY_OVERFLOW => 'Cette valeur est limitée à {{ maximum_elements }} éléments.',
-    ErrorMessage::INVALID_CHOICE => 'Cette valeur n'est pas un choix valide ; valeurs attendues : {{ expected_values }}.',
-    ErrorMessage::INVALID_TIMESTAMP => 'Cette valeur n'est pas un horodatage valide ; format attendu : {{ expected_format }}.',
-    ErrorMessage::INVALID_TIMEZONE => 'Cette valeur n'est pas un fuseau horaire valide.',
-    ErrorMessage::INVALID_UID => 'Cette valeur n'est pas un UID valide.',
+    ErrorMessage::INVALID_CHOICE => 'Cette valeur n\'est pas un choix valide ; valeurs attendues : {{ expected_values }}.',
+    ErrorMessage::INVALID_TIMESTAMP => 'Cette valeur n\'est pas un horodatage valide ; format attendu : {{ expected_format }}.',
+    ErrorMessage::INVALID_TIMEZONE => 'Cette valeur n\'est pas un fuseau horaire valide.',
+    ErrorMessage::INVALID_UID => 'Cette valeur n\'est pas un UID valide.',
 ];
