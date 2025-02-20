@@ -1,20 +1,12 @@
 {
     "name": "sunrise/hydrator",
     "homepage": "https://github.com/sunrise-php/hydrator",
-    "description": "Object hydrator for PHP 7.4+",
+    "description": "Flexible strictly-typed hydrator",
     "license": "MIT",
     "keywords": [
         "fenric",
         "sunrise",
-        "hydrator",
-        "mapper",
-        "populator",
-        "object-hydrator",
-        "object-mapper",
-        "object-populator",
-        "data-mapper",
-        "php7",
-        "php8"
+        "hydrator"
     ],
     "authors": [
         {
