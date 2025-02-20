@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace Sunrise\Hydrator\Dictionary;
 
+/**
+ * @since 3.16.0
+ */
 final class TranslationDomain
 {
     public const HYDRATOR = 'hydrator';
