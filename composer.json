@@ -1,66 +1,58 @@
 {
-    "name": "sunrise/hydrator",
-    "homepage": "https://github.com/sunrise-php/hydrator",
-    "description": "Object hydrator for PHP 7.4+",
-    "license": "MIT",
-    "keywords": [
-        "fenric",
-        "sunrise",
-        "hydrator",
-        "mapper",
-        "populator",
-        "object-hydrator",
-        "object-mapper",
-        "object-populator",
-        "data-mapper",
-        "php7",
-        "php8"
-    ],
-    "authors": [
-        {
-            "name": "Anatoly Nekhay",
-            "email": "afenric@gmail.com",
-            "homepage": "https://github.com/fenric"
-        }
-    ],
-    "require": {
-        "php": ">=7.4"
-    },
-    "require-dev": {
-        "doctrine/annotations": "^2.0",
-        "myclabs/php-enum": "^1.8",
-        "php-di/php-di": "^6.4 || ^7.0",
-        "phpstan/phpstan": "^2.1",
-        "phpunit/phpunit": "^9.6",
-        "ramsey/uuid": "^4.2",
-        "sunrise/coding-standard": "^1.0",
-        "symfony/uid": "^5.4",
-        "symfony/validator": "^5.4",
-        "vimeo/psalm": "^5.26 || ^6.0"
-    },
-    "autoload": {
-        "psr-4": {
-            "Sunrise\\Hydrator\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Sunrise\\Hydrator\\Tests\\": "tests/"
-        }
-    },
-    "scripts": {
-        "phpcs": "@php phpcs --colors",
-        "psalm": "@php psalm --no-cache",
-        "phpstan": "@php phpstan analyse src --configuration=phpstan.neon.php --level=9 --memory-limit=-1",
-        "phpunit": "@php phpunit --colors=always",
-        "test": [
-            "@phpcs",
-            "@psalm",
-            "@phpstan",
-            "@phpunit"
-        ]
-    },
-    "config": {
-        "sort-packages": true
+  "name": "sunrise/hydrator",
+  "homepage": "https://github.com/sunrise-php/hydrator",
+  "description": "Flexible strictly-typed hydrator",
+  "license": "MIT",
+  "keywords": [
+    "fenric",
+    "sunrise",
+    "hydrator"
+  ],
+  "authors": [
+    {
+      "name": "Anatoly Nekhay",
+      "email": "afenric@gmail.com",
+      "homepage": "https://github.com/fenric"
     }
+  ],
+  "require": {
+    "php": ">=7.4"
+  },
+  "require-dev": {
+    "doctrine/annotations": "^2.0",
+    "myclabs/php-enum": "^1.8",
+    "php-di/php-di": "^6.4 || ^7.0",
+    "phpstan/phpstan": "^2.1",
+    "phpunit/phpunit": "^9.6",
+    "ramsey/uuid": "^4.2",
+    "sunrise/coding-standard": "^1.0",
+    "symfony/uid": "^5.4",
+    "symfony/validator": "^5.4",
+    "vimeo/psalm": "^5.26 || ^6.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Sunrise\\Hydrator\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Sunrise\\Hydrator\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "phpcs": "@php phpcs --colors",
+    "psalm": "@php psalm --no-cache",
+    "phpstan": "@php phpstan analyse src --configuration=phpstan.neon.php --level=9 --memory-limit=-1",
+    "phpunit": "@php phpunit --colors=always",
+    "test": [
+      "@phpcs",
+      "@psalm",
+      "@phpstan",
+      "@phpunit"
+    ]
+  },
+  "config": {
+    "sort-packages": true
+  }
 }
