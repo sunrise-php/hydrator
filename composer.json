@@ -1,7 +1,7 @@
 {
   "name": "sunrise/hydrator",
   "homepage": "https://github.com/sunrise-php/hydrator",
-  "description": "Flexible strictly-typed hydrator",
+  "description": "A flexible strictly-typed hydrator.",
   "license": "MIT",
   "keywords": [
     "fenric",
