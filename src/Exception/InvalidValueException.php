@@ -13,9 +13,10 @@ declare(strict_types=1);
 
 namespace Sunrise\Hydrator\Exception;
 
+use RuntimeException;
 use Sunrise\Hydrator\Dictionary\ErrorCode;
 use Sunrise\Hydrator\Dictionary\ErrorMessage;
-use RuntimeException;
+use Sunrise\Hydrator\Dictionary\TranslationDomain;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationInterface;
 
@@ -50,6 +51,11 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
     private $invalidValue;
 
     /**
+     * @see TranslationDomain
+     */
+    private string $translationDomain;
+
+    /**
      * @param list<array-key> $propertyPath
      * @param array<string, int|float|string> $messagePlaceholders
      * @param mixed $invalidValue
@@ -60,7 +66,8 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
         array $propertyPath,
         string $messageTemplate,
         array $messagePlaceholders,
-        $invalidValue = null
+        $invalidValue = null,
+        string $translationDomain = TranslationDomain::HYDRATOR
     ) {
         parent::__construct($message);
 
@@ -69,6 +76,7 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
         $this->messageTemplate = $messageTemplate;
         $this->messagePlaceholders = $messagePlaceholders;
         $this->invalidValue = $invalidValue;
+        $this->translationDomain = $translationDomain;
     }
 
     final public function getPropertyPath(): string
@@ -110,6 +118,14 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
     final public function getInvalidValue()
     {
         return $this->invalidValue;
+    }
+
+    /**
+     * @since 3.18.0
+     */
+    final public function getTranslationDomain(): string
+    {
+        return $this->translationDomain;
     }
 
     /**

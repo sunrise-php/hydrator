@@ -22,6 +22,7 @@ use Sunrise\Hydrator\Annotation\Subtype;
 use Sunrise\Hydrator\Dictionary\BuiltinType;
 use Sunrise\Hydrator\Dictionary\ContextKey;
 use Sunrise\Hydrator\Dictionary\ErrorCode;
+use Sunrise\Hydrator\Dictionary\TranslationDomain;
 use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidObjectException;
 use Sunrise\Hydrator\Hydrator;
@@ -46,6 +47,7 @@ class HydratorTest extends TestCase
     private array $invalidValueExceptionMessage = [];
     private array $invalidValueExceptionPropertyPath = [];
     private array $invalidValueExceptionErrorCode = [];
+    private array $invalidValueExceptionTranslationDomain = [];
 
     public function testIssue25(): void
     {
@@ -180,6 +182,7 @@ class HydratorTest extends TestCase
         $this->assertInvalidValueExceptionMessage(0, 'This value must not be empty.');
         $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_NOT_BE_EMPTY);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
+        $this->assertInvalidValueExceptionTranslationDomain(0, TranslationDomain::HYDRATOR);
         $this->createHydrator()->hydrate($object, $data);
     }
 
@@ -197,6 +200,7 @@ class HydratorTest extends TestCase
         $this->assertInvalidValueExceptionMessage(0, 'This value must be of type boolean.');
         $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_BOOLEAN);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
+        $this->assertInvalidValueExceptionTranslationDomain(0, TranslationDomain::HYDRATOR);
         $this->createHydrator()->hydrate($object, $data);
     }
 
@@ -213,6 +217,7 @@ class HydratorTest extends TestCase
         $this->assertInvalidValueExceptionMessage(0, 'This value must be provided.');
         $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_PROVIDED);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
+        $this->assertInvalidValueExceptionTranslationDomain(0, TranslationDomain::HYDRATOR);
         $this->createHydrator()->hydrate($object, []);
     }
 
@@ -282,6 +287,7 @@ class HydratorTest extends TestCase
         $this->assertInvalidValueExceptionMessage(0, 'This value must not be empty.');
         $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_NOT_BE_EMPTY);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
+        $this->assertInvalidValueExceptionTranslationDomain(0, TranslationDomain::HYDRATOR);
         $this->createHydrator()->hydrate($object, $data);
     }
 
@@ -299,6 +305,7 @@ class HydratorTest extends TestCase
         $this->assertInvalidValueExceptionMessage(0, 'This value must be of type integer.');
         $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_INTEGER);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
+        $this->assertInvalidValueExceptionTranslationDomain(0, TranslationDomain::HYDRATOR);
         $this->createHydrator()->hydrate($object, $data);
     }
 
@@ -315,6 +322,7 @@ class HydratorTest extends TestCase
         $this->assertInvalidValueExceptionMessage(0, 'This value must be provided.');
         $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_PROVIDED);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
+        $this->assertInvalidValueExceptionTranslationDomain(0, TranslationDomain::HYDRATOR);
         $this->createHydrator()->hydrate($object, []);
     }
 
@@ -384,6 +392,7 @@ class HydratorTest extends TestCase
         $this->assertInvalidValueExceptionMessage(0, 'This value must not be empty.');
         $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_NOT_BE_EMPTY);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
+        $this->assertInvalidValueExceptionTranslationDomain(0, TranslationDomain::HYDRATOR);
         $this->createHydrator()->hydrate($object, $data);
     }
 
@@ -401,6 +410,7 @@ class HydratorTest extends TestCase
         $this->assertInvalidValueExceptionMessage(0, 'This value must be of type number.');
         $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_NUMBER);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
+        $this->assertInvalidValueExceptionTranslationDomain(0, TranslationDomain::HYDRATOR);
         $this->createHydrator()->hydrate($object, $data);
     }
 
@@ -417,6 +427,7 @@ class HydratorTest extends TestCase
         $this->assertInvalidValueExceptionMessage(0, 'This value must be provided.');
         $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_PROVIDED);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
+        $this->assertInvalidValueExceptionTranslationDomain(0, TranslationDomain::HYDRATOR);
         $this->createHydrator()->hydrate($object, []);
     }
 
@@ -484,6 +495,7 @@ class HydratorTest extends TestCase
         $this->assertInvalidValueExceptionMessage(0, 'This value must not be empty.');
         $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_NOT_BE_EMPTY);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
+        $this->assertInvalidValueExceptionTranslationDomain(0, TranslationDomain::HYDRATOR);
         $this->createHydrator()->hydrate($object, $data);
     }
 
@@ -501,6 +513,7 @@ class HydratorTest extends TestCase
         $this->assertInvalidValueExceptionMessage(0, 'This value must be of type string.');
         $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_STRING);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
+        $this->assertInvalidValueExceptionTranslationDomain(0, TranslationDomain::HYDRATOR);
         $this->createHydrator()->hydrate($object, $data);
     }
 
@@ -517,6 +530,7 @@ class HydratorTest extends TestCase
         $this->assertInvalidValueExceptionMessage(0, 'This value must be provided.');
         $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_PROVIDED);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
+        $this->assertInvalidValueExceptionTranslationDomain(0, TranslationDomain::HYDRATOR);
         $this->createHydrator()->hydrate($object, []);
     }
 
@@ -3180,6 +3194,13 @@ class HydratorTest extends TestCase
         $this->invalidValueExceptionErrorCode[] = [$exceptionIndex, $expectedErrorCode];
     }
 
+    private function assertInvalidValueExceptionTranslationDomain(
+        int $exceptionIndex,
+        string $expectedTranslationDomain
+    ): void {
+        $this->invalidValueExceptionTranslationDomain[] = [$exceptionIndex, $expectedTranslationDomain];
+    }
+
     protected function runTest(): void
     {
         $invalidDataExceptionHandled = false;
@@ -3232,6 +3253,18 @@ class HydratorTest extends TestCase
                 );
             }
 
+            foreach ($this->invalidValueExceptionTranslationDomain as [
+                $index,
+                $invalidValueExceptionTranslationDomain,
+            ]) {
+                $invalidDataExceptionHandled = true;
+                $this->assertArrayHasKey($index, $invalidDataException->getExceptions());
+                $this->assertSame(
+                    $invalidValueExceptionTranslationDomain,
+                    $invalidDataException->getExceptions()[$index]->getTranslationDomain(),
+                );
+            }
+
             if (!$invalidDataExceptionHandled) {
                 throw $invalidDataException;
             }
@@ -3240,6 +3273,7 @@ class HydratorTest extends TestCase
             $this->invalidValueExceptionMessage = [];
             $this->invalidValueExceptionPropertyPath = [];
             $this->invalidValueExceptionErrorCode = [];
+            $this->invalidValueExceptionTranslationDomain = [];
 
             if ($invalidDataExceptionHandled) {
                 $this->assertTrue(true);
