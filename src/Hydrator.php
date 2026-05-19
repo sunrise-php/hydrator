@@ -20,6 +20,7 @@ use ReflectionClass;
 use Sunrise\Hydrator\Annotation\Alias;
 use Sunrise\Hydrator\Annotation\Context;
 use Sunrise\Hydrator\Annotation\DefaultValue;
+use Sunrise\Hydrator\Annotation\Filter;
 use Sunrise\Hydrator\Annotation\Ignore;
 use Sunrise\Hydrator\AnnotationReader\BuiltinAnnotationReader;
 use Sunrise\Hydrator\AnnotationReader\DoctrineAnnotationReader;
@@ -205,6 +206,11 @@ class Hydrator implements HydratorInterface
 
                 $violations[] = InvalidValueException::mustBeProvided([...$path, $key]);
                 continue;
+            }
+
+            /** @var Filter|null $filter */
+            foreach ($this->annotationReader->getAnnotations(Filter::class, $property) as $filter) {
+                $data[$key] = ($filter->value)($data[$key]);
             }
 
             try {
