@@ -17,6 +17,7 @@ use ReflectionParameter;
 use ReflectionUnionType;
 use Sunrise\Hydrator\Annotation\Alias;
 use Sunrise\Hydrator\Annotation\DefaultValue;
+use Sunrise\Hydrator\Annotation\Filter;
 use Sunrise\Hydrator\Annotation\Ignore;
 use Sunrise\Hydrator\Annotation\Subtype;
 use Sunrise\Hydrator\Dictionary\BuiltinType;
@@ -106,7 +107,7 @@ class HydratorTest extends TestCase
                         return $value;
                     };
                 }
-            }
+            },
         );
 
         $this->createHydrator([], [$typeConverter])->hydrate($object, [
@@ -2722,6 +2723,20 @@ class HydratorTest extends TestCase
         $type = Type::fromName(BuiltinType::BOOL);
 
         $this->assertSame($expected, $this->createHydrator()->castValue($element, $type));
+    }
+
+    public function testFilter(): void
+    {
+        $this->phpRequired('8.0');
+
+        $object = new class {
+            #[Filter('trim')]
+            #[Filter('strtolower')]
+            public string $value;
+        };
+
+        $this->createHydrator()->hydrate($object, ['value' => ' FOO ']);
+        $this->assertSame('foo', $object->value);
     }
 
     public function strictNullProvider(): Generator
