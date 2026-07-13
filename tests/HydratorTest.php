@@ -1224,6 +1224,7 @@ class HydratorTest extends TestCase
     {
         $object = new class {
             /**
+             * @ItemType(BuiltinType::BOOL)
              * @var list<\Sunrise\Hydrator\Tests\Fixture\BooleanAssociation>
              */
             #[ItemType(BuiltinType::BOOL)]
@@ -1570,6 +1571,7 @@ class HydratorTest extends TestCase
     public function testHydrateArrayAccessPropertyPrefersExplicitItemTypeOverConstructorInference(): void
     {
         $object = new class {
+            /** @ItemType(BuiltinType::STRING) */
             #[ItemType(BuiltinType::STRING)]
             public Fixture\BooleanCollection $value;
         };
