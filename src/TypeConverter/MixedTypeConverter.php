@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Nekhay <afenric@gmail.com>
- * @copyright Copyright (c) 2021, Anatoly Nekhay
+ * @author Anatolii Nekhai <afenric@gmail.com>
+ * @copyright Copyright (c) 2021, Anatolii Nekhai
  * @license https://github.com/sunrise-php/hydrator/blob/master/LICENSE
  * @link https://github.com/sunrise-php/hydrator
  */
@@ -15,8 +15,8 @@ namespace Sunrise\Hydrator\TypeConverter;
 
 use Generator;
 use Sunrise\Hydrator\Dictionary\BuiltinType;
-use Sunrise\Hydrator\Type;
 use Sunrise\Hydrator\TypeConverterInterface;
+use Sunrise\Hydrator\TypeInterface;
 
 /**
  * @since 3.2.0
@@ -26,7 +26,7 @@ final class MixedTypeConverter implements TypeConverterInterface
     /**
      * @inheritDoc
      */
-    public function castValue($value, Type $type, array $path, array $context): Generator
+    public function castValue($value, TypeInterface $type, array $path, array $context): Generator
     {
         if ($type->getName() !== BuiltinType::MIXED) {
             return;

@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Nekhay <afenric@gmail.com>
- * @copyright Copyright (c) 2021, Anatoly Nekhay
+ * @author Anatolii Nekhai <afenric@gmail.com>
+ * @copyright Copyright (c) 2021, Anatolii Nekhai
  * @license https://github.com/sunrise-php/hydrator/blob/master/LICENSE
  * @link https://github.com/sunrise-php/hydrator
  */
@@ -19,9 +19,6 @@ use Sunrise\Hydrator\Dictionary\ErrorMessage;
 use Sunrise\Hydrator\Dictionary\TranslationDomain;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationInterface;
-
-use function join;
-use function strtr;
 
 class InvalidValueException extends RuntimeException implements ExceptionInterface
 {
@@ -81,7 +78,7 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
 
     final public function getPropertyPath(): string
     {
-        return join('.', $this->propertyPath);
+        return \join('.', $this->propertyPath);
     }
 
     /**
@@ -283,7 +280,7 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
         ];
 
         return new self(
-            strtr(ErrorMessage::ARRAY_OVERFLOW, $placeholders),
+            \strtr(ErrorMessage::ARRAY_OVERFLOW, $placeholders),
             ErrorCode::ARRAY_OVERFLOW,
             $propertyPath,
             ErrorMessage::ARRAY_OVERFLOW,
@@ -302,11 +299,11 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
     final public static function invalidChoice(array $propertyPath, array $expectedValues, $invalidValue = null): self
     {
         $placeholders = [
-            '{{ expected_values }}' => join(', ', $expectedValues),
+            '{{ expected_values }}' => \join(', ', $expectedValues),
         ];
 
         return new self(
-            strtr(ErrorMessage::INVALID_CHOICE, $placeholders),
+            \strtr(ErrorMessage::INVALID_CHOICE, $placeholders),
             ErrorCode::INVALID_CHOICE,
             $propertyPath,
             ErrorMessage::INVALID_CHOICE,
@@ -331,11 +328,29 @@ class InvalidValueException extends RuntimeException implements ExceptionInterfa
         ];
 
         return new self(
-            strtr(ErrorMessage::INVALID_TIMESTAMP, $placeholders),
+            \strtr(ErrorMessage::INVALID_TIMESTAMP, $placeholders),
             ErrorCode::INVALID_TIMESTAMP,
             $propertyPath,
             ErrorMessage::INVALID_TIMESTAMP,
             $placeholders,
+            $invalidValue,
+        );
+    }
+
+    /**
+     * @param list<array-key> $propertyPath
+     * @param mixed $invalidValue
+     *
+     * @since 3.20.0
+     */
+    final public static function invalidDateInterval(array $propertyPath, $invalidValue = null): self
+    {
+        return new self(
+            ErrorMessage::INVALID_DATE_INTERVAL,
+            ErrorCode::INVALID_DATE_INTERVAL,
+            $propertyPath,
+            ErrorMessage::INVALID_DATE_INTERVAL,
+            [],
             $invalidValue,
         );
     }

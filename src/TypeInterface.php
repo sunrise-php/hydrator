@@ -11,19 +11,19 @@
 
 declare(strict_types=1);
 
-namespace Sunrise\Hydrator\Dictionary;
+namespace Sunrise\Hydrator;
 
 /**
- * Built-in types
- *
- * @since 3.1.0
+ * @since 3.20.0
  */
-final class BuiltinType
+interface TypeInterface
 {
-    public const MIXED = 'mixed';
-    public const BOOL = 'bool';
-    public const INT = 'int';
-    public const FLOAT = 'float';
-    public const STRING = 'string';
-    public const ARRAY = 'array';
+    /**
+     * @return mixed
+     */
+    public function getHolder();
+
+    public function getName(): string;
+
+    public function allowsNull(): bool;
 }

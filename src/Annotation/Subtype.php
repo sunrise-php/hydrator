@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Nekhay <afenric@gmail.com>
- * @copyright Copyright (c) 2021, Anatoly Nekhay
+ * @author Anatolii Nekhai <afenric@gmail.com>
+ * @copyright Copyright (c) 2021, Anatolii Nekhai
  * @license https://github.com/sunrise-php/hydrator/blob/master/LICENSE
  * @link https://github.com/sunrise-php/hydrator
  */
@@ -27,47 +27,10 @@ use Attribute;
  * })
  *
  * @since 3.1.0
+ *
+ * @deprecated 3.20.0 Use the {@see ItemType} annotation.
  */
 #[Attribute(Attribute::TARGET_PROPERTY | Attribute::TARGET_PARAMETER)]
-class Subtype
+class Subtype extends ItemType
 {
-    /**
-     * @var mixed
-     *
-     * @internal
-     */
-    public $holder = null;
-
-    /**
-     * @var non-empty-string
-     *
-     * @readonly
-     */
-    public string $name;
-
-    /**
-     * @var bool
-     *
-     * @readonly
-     */
-    public bool $allowsNull;
-
-    /**
-     * @var int<0, max>|null
-     *
-     * @readonly
-     */
-    public ?int $limit;
-
-    /**
-     * @param non-empty-string $name
-     * @param bool $allowsNull
-     * @param int<0, max>|null $limit
-     */
-    public function __construct(string $name, bool $allowsNull = false, ?int $limit = null)
-    {
-        $this->name = $name;
-        $this->allowsNull = $allowsNull;
-        $this->limit = $limit;
-    }
 }

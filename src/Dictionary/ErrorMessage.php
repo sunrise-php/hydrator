@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Nekhay <afenric@gmail.com>
- * @copyright Copyright (c) 2021, Anatoly Nekhay
+ * @author Anatolii Nekhai <afenric@gmail.com>
+ * @copyright Copyright (c) 2021, Anatolii Nekhai
  * @license https://github.com/sunrise-php/hydrator/blob/master/LICENSE
  * @link https://github.com/sunrise-php/hydrator
  */
@@ -30,6 +30,7 @@ final class ErrorMessage
     public const ARRAY_OVERFLOW = 'This value is limited to {{ maximum_elements }} elements.';
     public const INVALID_CHOICE = 'This value is not a valid choice; expected values: {{ expected_values }}.';
     public const INVALID_TIMESTAMP = 'This value is not a valid timestamp; expected format: {{ expected_format }}.';
+    public const INVALID_DATE_INTERVAL = 'This value is not a valid date interval.';
     public const INVALID_TIMEZONE = 'This value is not a valid timezone.';
     public const INVALID_UID = 'This value is not a valid UID.';
 }

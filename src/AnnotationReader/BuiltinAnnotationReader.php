@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Nekhay <afenric@gmail.com>
- * @copyright Copyright (c) 2021, Anatoly Nekhay
+ * @author Anatolii Nekhai <afenric@gmail.com>
+ * @copyright Copyright (c) 2021, Anatolii Nekhai
  * @license https://github.com/sunrise-php/hydrator/blob/master/LICENSE
  * @link https://github.com/sunrise-php/hydrator
  */
@@ -20,10 +20,6 @@ use ReflectionParameter;
 use ReflectionProperty;
 use Sunrise\Hydrator\AnnotationReaderInterface;
 
-use function sprintf;
-
-use const PHP_MAJOR_VERSION;
-
 /**
  * @since 3.1.0
  */
@@ -35,8 +31,8 @@ final class BuiltinAnnotationReader implements AnnotationReaderInterface
     public function __construct()
     {
         // @codeCoverageIgnoreStart
-        if (PHP_MAJOR_VERSION < 8) {
-            throw new LogicException(sprintf(
+        if (\PHP_MAJOR_VERSION < 8) {
+            throw new LogicException(\sprintf(
                 'The annotation reader {%s} requires PHP version greater than or equal to 8.0.',
                 __CLASS__,
             ));
@@ -49,12 +45,14 @@ final class BuiltinAnnotationReader implements AnnotationReaderInterface
     public function getAnnotations(string $name, $holder): Generator
     {
         // @codeCoverageIgnoreStart
-        if (PHP_MAJOR_VERSION < 8) {
+        if (\PHP_MAJOR_VERSION < 8) {
             return;
         } // @codeCoverageIgnoreEnd
 
-        if (! $holder instanceof ReflectionProperty &&
-            ! $holder instanceof ReflectionParameter) {
+        if (
+            ! $holder instanceof ReflectionProperty &&
+            ! $holder instanceof ReflectionParameter
+        ) {
             return;
         }
 

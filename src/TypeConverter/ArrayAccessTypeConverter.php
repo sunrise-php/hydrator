@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Nekhay <afenric@gmail.com>
- * @copyright Copyright (c) 2021, Anatoly Nekhay
+ * @author Anatolii Nekhai <afenric@gmail.com>
+ * @copyright Copyright (c) 2021, Anatolii Nekhai
  * @license https://github.com/sunrise-php/hydrator/blob/master/LICENSE
  * @link https://github.com/sunrise-php/hydrator
  */
@@ -19,7 +19,7 @@ use OverflowException;
 use ReflectionClass;
 use ReflectionNamedType;
 use stdClass;
-use Sunrise\Hydrator\Annotation\Subtype;
+use Sunrise\Hydrator\Annotation\ItemType;
 use Sunrise\Hydrator\AnnotationReaderAwareInterface;
 use Sunrise\Hydrator\AnnotationReaderInterface;
 use Sunrise\Hydrator\Exception\InvalidDataException;
@@ -27,14 +27,8 @@ use Sunrise\Hydrator\Exception\InvalidObjectException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorAwareInterface;
 use Sunrise\Hydrator\HydratorInterface;
-use Sunrise\Hydrator\Type;
 use Sunrise\Hydrator\TypeConverterInterface;
-
-use function count;
-use function end;
-use function get_object_vars;
-use function is_array;
-use function is_subclass_of;
+use Sunrise\Hydrator\TypeInterface;
 
 /**
  * @since 3.1.0
@@ -60,69 +54,65 @@ final class ArrayAccessTypeConverter implements
     /**
      * @inheritDoc
      */
-    public function castValue($value, Type $type, array $path, array $context): Generator
+    public function castValue($value, TypeInterface $type, array $path, array $context): Generator
     {
-        $typeName = $type->getName();
-        if (!is_subclass_of($typeName, ArrayAccess::class)) {
+        $className = $type->getName();
+        if (!\is_subclass_of($className, ArrayAccess::class)) {
             return;
         }
 
-        /** @var ReflectionClass<ArrayAccess<array-key, mixed>> $containerReflection */
-        $containerReflection = new ReflectionClass($typeName);
-        if (!$containerReflection->isInstantiable()) {
+        /** @var ReflectionClass<ArrayAccess<array-key, mixed>> $class */
+        $class = new ReflectionClass($className);
+        if (!$class->isInstantiable()) {
             throw InvalidObjectException::unsupportedType($type);
         }
 
-        $container = $containerReflection->newInstanceWithoutConstructor();
-
         // https://www.php.net/stdClass
         if ($value instanceof stdClass) {
-            $value = get_object_vars($value);
+            $value = \get_object_vars($value);
         }
 
-        if ($value === []) {
-            return yield $container;
-        }
-
-        if (!is_array($value)) {
+        if (!\is_array($value)) {
             throw InvalidValueException::mustBeArray($path, $value);
         }
 
-        /** @phpstan-var Subtype|null $subtype */
-        $subtype = $this->annotationReader->getAnnotations(Subtype::class, $type->getHolder())->current();
-        $subtype ??= self::getContainerSubtype($containerReflection);
+        $collection = $class->newInstanceWithoutConstructor();
 
-        if ($subtype === null) {
+        if (empty($value)) {
+            yield $collection;
+            return;
+        }
+
+        /** @phpstan-var ItemType|null $itemType */
+        $itemType = $this->annotationReader->getAnnotations(ItemType::class, $type->getHolder())->current()
+            ?? self::getItemTypeFromCollectionConstructor($class);
+
+        if ($itemType === null) {
             $counter = 0;
-            foreach ($value as $key => $element) {
+            foreach ($value as $key => $item) {
                 try {
-                    $container[$key] = $element;
+                    $collection[$key] = $item;
                     ++$counter;
                 } catch (OverflowException $e) {
                     throw InvalidValueException::arrayOverflow($path, $counter, $value);
                 }
             }
 
-            return yield $container;
+            yield $collection;
+            return;
         }
 
-        if ($subtype->limit !== null && count($value) > $subtype->limit) {
-            throw InvalidValueException::arrayOverflow($path, $subtype->limit, $value);
+        if ($itemType->limit !== null && \count($value) > $itemType->limit) {
+            throw InvalidValueException::arrayOverflow($path, $itemType->limit, $value);
         }
 
-        $subtype->holder ??= $type->getHolder();
+        $itemType->holder ??= $type->getHolder();
 
         $counter = 0;
         $violations = [];
-        foreach ($value as $key => $element) {
+        foreach ($value as $key => $item) {
             try {
-                $container[$key] = $this->hydrator->castValue(
-                    $element,
-                    new Type($subtype->holder, $subtype->name, $subtype->allowsNull),
-                    [...$path, $key],
-                    $context,
-                );
-
+                $collection[$key] = $this->hydrator->castValue($item, $itemType, [...$path, $key], $context);
                 $counter++;
             } catch (InvalidDataException $e) {
                 $violations = [...$violations, ...$e->getExceptions()];
@@ -138,7 +128,7 @@ final class ArrayAccessTypeConverter implements
             throw new InvalidDataException('Invalid data', $violations);
         }
 
-        yield $container;
+        yield $collection;
     }
 
     /**
@@ -150,13 +140,11 @@ final class ArrayAccessTypeConverter implements
     }
 
     /**
-     * Gets a subtype from the given container's constructor
-     *
      * @param ReflectionClass<ArrayAccess<array-key, mixed>> $class
      *
      * @codeCoverageIgnore
      */
-    private static function getContainerSubtype(ReflectionClass $class): ?Subtype
+    private static function getItemTypeFromCollectionConstructor(ReflectionClass $class): ?ItemType
     {
         $constructor = $class->getConstructor();
         if ($constructor === null) {
@@ -168,7 +156,7 @@ final class ArrayAccessTypeConverter implements
             return null;
         }
 
-        $lastConstructorParameter = end($constructorParameters);
+        $lastConstructorParameter = \end($constructorParameters);
         if (!$lastConstructorParameter->isVariadic()) {
             return null;
         }
@@ -183,13 +171,13 @@ final class ArrayAccessTypeConverter implements
             ? $lastConstructorParameterType->getName()
             : (string) $lastConstructorParameterType;
 
-        $subtype = new Subtype(
+        $itemType = new ItemType(
             $lastConstructorParameterTypeName,
             $lastConstructorParameterType->allowsNull(),
         );
 
-        $subtype->holder = $lastConstructorParameter;
+        $itemType->holder = $lastConstructorParameter;
 
-        return $subtype;
+        return $itemType;
     }
 }

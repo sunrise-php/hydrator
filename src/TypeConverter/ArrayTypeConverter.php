@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Nekhay <afenric@gmail.com>
- * @copyright Copyright (c) 2021, Anatoly Nekhay
+ * @author Anatolii Nekhai <afenric@gmail.com>
+ * @copyright Copyright (c) 2021, Anatolii Nekhai
  * @license https://github.com/sunrise-php/hydrator/blob/master/LICENSE
  * @link https://github.com/sunrise-php/hydrator
  */
@@ -14,8 +14,10 @@ declare(strict_types=1);
 namespace Sunrise\Hydrator\TypeConverter;
 
 use Generator;
+use phpDocumentor\Reflection as PhpDoc;
+use ReflectionProperty;
 use stdClass;
-use Sunrise\Hydrator\Annotation\Subtype;
+use Sunrise\Hydrator\Annotation\ItemType;
 use Sunrise\Hydrator\AnnotationReaderAwareInterface;
 use Sunrise\Hydrator\AnnotationReaderInterface;
 use Sunrise\Hydrator\Dictionary\BuiltinType;
@@ -23,12 +25,8 @@ use Sunrise\Hydrator\Exception\InvalidDataException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorAwareInterface;
 use Sunrise\Hydrator\HydratorInterface;
-use Sunrise\Hydrator\Type;
 use Sunrise\Hydrator\TypeConverterInterface;
-
-use function count;
-use function get_object_vars;
-use function is_array;
+use Sunrise\Hydrator\TypeInterface;
 
 /**
  * @since 3.1.0
@@ -40,6 +38,15 @@ final class ArrayTypeConverter implements
 {
     private AnnotationReaderInterface $annotationReader;
     private HydratorInterface $hydrator;
+
+    private PhpDoc\DocBlockFactoryInterface $docBlockFactory;
+    private PhpDoc\Types\ContextFactory $docBlockContextFactory;
+
+    public function __construct()
+    {
+        $this->docBlockFactory = PhpDoc\DocBlockFactory::createInstance();
+        $this->docBlockContextFactory = new PhpDoc\Types\ContextFactory();
+    }
 
     public function setAnnotationReader(AnnotationReaderInterface $annotationReader): void
     {
@@ -54,7 +61,7 @@ final class ArrayTypeConverter implements
     /**
      * @inheritDoc
      */
-    public function castValue($value, Type $type, array $path, array $context): Generator
+    public function castValue($value, TypeInterface $type, array $path, array $context): Generator
     {
         if ($type->getName() !== BuiltinType::ARRAY) {
             return;
@@ -62,37 +69,42 @@ final class ArrayTypeConverter implements
 
         // https://www.php.net/stdClass
         if ($value instanceof stdClass) {
-            $value = get_object_vars($value);
+            $value = \get_object_vars($value);
         }
 
-        if ($value === []) {
-            return yield [];
-        }
-
-        if (!is_array($value)) {
+        if (!\is_array($value)) {
             throw InvalidValueException::mustBeArray($path, $value);
         }
 
-        /** @phpstan-var Subtype|null $subtype */
-        $subtype = $this->annotationReader->getAnnotations(Subtype::class, $type->getHolder())->current();
-
-        if ($subtype === null) {
-            return yield $value;
+        if (empty($value)) {
+            yield $value;
+            return;
         }
 
-        if ($subtype->limit !== null && count($value) > $subtype->limit) {
-            throw InvalidValueException::arrayOverflow($path, $subtype->limit, $value);
+        $typeHolder = $type->getHolder();
+        if ($typeHolder === null) {
+            yield $value;
+            return;
         }
+
+        $itemType = $this->annotationReader->getAnnotations(ItemType::class, $typeHolder)->current()
+            ?? $this->getItemTypeFromVarTag($typeHolder);
+
+        if ($itemType === null) {
+            yield $value;
+            return;
+        }
+
+        if ($itemType->limit !== null && \count($value) > $itemType->limit) {
+            throw InvalidValueException::arrayOverflow($path, $itemType->limit, $value);
+        }
+
+        $itemType->holder ??= $type->getHolder();
 
         $violations = [];
-        foreach ($value as $key => $element) {
+        foreach ($value as $key => $item) {
             try {
-                $value[$key] = $this->hydrator->castValue(
-                    $element,
-                    new Type($type->getHolder(), $subtype->name, $subtype->allowsNull),
-                    [...$path, $key],
-                    $context,
-                );
+                $value[$key] = $this->hydrator->castValue($item, $itemType, [...$path, $key], $context);
             } catch (InvalidDataException $e) {
                 $violations = [...$violations, ...$e->getExceptions()];
             } catch (InvalidValueException $e) {
@@ -113,5 +125,85 @@ final class ArrayTypeConverter implements
     public function getWeight(): int
     {
         return 20;
+    }
+
+    /**
+     * @param mixed $holder
+     */
+    private function getItemTypeFromVarTag($holder): ?ItemType
+    {
+        if (! $holder instanceof ReflectionProperty) {
+            return null;
+        }
+
+        $docComment = $holder->getDocComment();
+        if ($docComment === false) {
+            return null;
+        }
+
+        $docBlock = $this->docBlockFactory->create(
+            $docComment,
+            $this->docBlockContextFactory->createFromReflector($holder),
+        );
+
+        $varTag = $docBlock->getTagsByName('var')[0] ?? null;
+        if (! $varTag instanceof PhpDoc\DocBlock\Tags\Var_) {
+            return null;
+        }
+
+        $varType = $varTag->getType();
+        if ($varType === null) {
+            return null;
+        }
+
+        $varType = self::unwrapNullablePhpDocType($varType);
+        if (! $varType instanceof PhpDoc\Types\AbstractList) {
+            return null;
+        }
+
+        $phpDocItemType = $varType->getValueType();
+        if ($phpDocItemType instanceof PhpDoc\Types\Mixed_) {
+            return null;
+        }
+
+        /** @var non-empty-string $itemTypeName */
+        $itemTypeName = \ltrim((string) self::unwrapNullablePhpDocType($phpDocItemType), '\\');
+        $isNullableItemType = self::isNullablePhpDocType($phpDocItemType);
+
+        return new ItemType($itemTypeName, $isNullableItemType);
+    }
+
+    private static function isNullablePhpDocType(PhpDoc\Type $phpDocType): bool
+    {
+        if ($phpDocType instanceof PhpDoc\Types\Nullable) {
+            return true;
+        }
+
+        if ($phpDocType instanceof PhpDoc\Types\Compound) {
+            foreach ($phpDocType as $type) {
+                if ($type instanceof PhpDoc\Types\Null_) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static function unwrapNullablePhpDocType(PhpDoc\Type $phpDocType): PhpDoc\Type
+    {
+        if ($phpDocType instanceof PhpDoc\Types\Nullable) {
+            return $phpDocType->getActualType();
+        }
+
+        if ($phpDocType instanceof PhpDoc\Types\Compound) {
+            foreach ($phpDocType as $type) {
+                if (! $type instanceof PhpDoc\Types\Null_) {
+                    return $type;
+                }
+            }
+        }
+
+        return $phpDocType;
     }
 }

@@ -13,28 +13,24 @@ declare(strict_types=1);
 
 namespace Sunrise\Hydrator\TypeConverter;
 
+use DateInterval;
 use Generator;
-use Sunrise\Hydrator\Dictionary\BuiltinType;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\TypeConverterInterface;
 use Sunrise\Hydrator\TypeInterface;
+use Throwable;
 
 /**
- * @since 3.1.0
+ * @since 3.20.0
  */
-final class StringTypeConverter implements TypeConverterInterface
+final class DateIntervalTypeConverter implements TypeConverterInterface
 {
     /**
      * @inheritDoc
      */
     public function castValue($value, TypeInterface $type, array $path, array $context): Generator
     {
-        if ($type->getName() !== BuiltinType::STRING) {
-            return;
-        }
-
-        if (\is_int($value)) {
-            yield (string) $value;
+        if ($type->getName() !== DateInterval::class) {
             return;
         }
 
@@ -42,7 +38,22 @@ final class StringTypeConverter implements TypeConverterInterface
             throw InvalidValueException::mustBeString($path, $value);
         }
 
-        yield $value;
+        $value = \trim($value);
+
+        if ($value === '') {
+            if ($type->allowsNull()) {
+                yield null;
+                return;
+            }
+
+            throw InvalidValueException::mustNotBeEmpty($path, $value);
+        }
+
+        try {
+            yield new DateInterval($value);
+        } catch (Throwable $e) {
+            throw InvalidValueException::invalidDateInterval($path, $value);
+        }
     }
 
     /**
@@ -50,6 +61,6 @@ final class StringTypeConverter implements TypeConverterInterface
      */
     public function getWeight(): int
     {
-        return 70;
+        return 45;
     }
 }

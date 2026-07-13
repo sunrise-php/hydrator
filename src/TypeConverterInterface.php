@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Nekhay <afenric@gmail.com>
- * @copyright Copyright (c) 2021, Anatoly Nekhay
+ * @author Anatolii Nekhai <afenric@gmail.com>
+ * @copyright Copyright (c) 2021, Anatolii Nekhai
  * @license https://github.com/sunrise-php/hydrator/blob/master/LICENSE
  * @link https://github.com/sunrise-php/hydrator
  */
@@ -36,7 +36,7 @@ interface TypeConverterInterface
      * @throws InvalidValueException
      * @throws InvalidDataException
      */
-    public function castValue($value, Type $type, array $path, array $context): Generator;
+    public function castValue($value, TypeInterface $type, array $path, array $context): Generator;
 
     /**
      * Gets the converter's weight

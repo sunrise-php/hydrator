@@ -33,15 +33,6 @@ use Sunrise\Hydrator\Type;
 use Sunrise\Hydrator\TypeConverter\TimestampTypeConverter;
 use Sunrise\Hydrator\TypeConverterInterface;
 
-use function date;
-use function get_class;
-use function join;
-use function sprintf;
-use function version_compare;
-
-use const PHP_VERSION;
-use const PHP_VERSION_ID;
-
 class HydratorTest extends TestCase
 {
     private ?int $invalidValueExceptionCount = null;
@@ -647,7 +638,7 @@ class HydratorTest extends TestCase
 
         $this->assertInvalidValueExceptionCount(1);
         // phpcs:ignore Generic.Files.LineLength
-        $this->assertInvalidValueExceptionMessage(0, 'This value is not a valid choice; expected values: ' . join(', ', Fixture\IntegerEnum::values()) . '.');
+        $this->assertInvalidValueExceptionMessage(0, 'This value is not a valid choice; expected values: ' . \join(', ', Fixture\IntegerEnum::values()) . '.');
         $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::INVALID_CHOICE);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate($object, ['value' => 42]);
@@ -784,7 +775,7 @@ class HydratorTest extends TestCase
 
         $this->assertInvalidValueExceptionCount(1);
         // phpcs:ignore Generic.Files.LineLength
-        $this->assertInvalidValueExceptionMessage(0, 'This value is not a valid choice; expected values: ' . join(', ', Fixture\StringEnum::values()) . '.');
+        $this->assertInvalidValueExceptionMessage(0, 'This value is not a valid choice; expected values: ' . \join(', ', Fixture\StringEnum::values()) . '.');
         $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::INVALID_CHOICE);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate($object, ['value' => 'foo']);
@@ -2145,7 +2136,7 @@ class HydratorTest extends TestCase
 
         $this->assertInvalidValueExceptionCount(1);
         // phpcs:ignore Generic.Files.LineLength
-        $this->assertInvalidValueExceptionMessage(0, 'This value is not a valid choice; expected values: ' . join(', ', Fixture\MyclabsEnum::toArray()) . '.');
+        $this->assertInvalidValueExceptionMessage(0, 'This value is not a valid choice; expected values: ' . \join(', ', Fixture\MyclabsEnum::toArray()) . '.');
         $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::INVALID_CHOICE);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate($object, ['value' => 'foo']);
@@ -2502,7 +2493,7 @@ class HydratorTest extends TestCase
         $this->assertSame('foo', $type->getName());
         $this->assertTrue($type->allowsNull());
 
-        if (PHP_VERSION_ID < 80000) {
+        if (\PHP_VERSION_ID < 80000) {
             return;
         }
 
@@ -2536,7 +2527,7 @@ class HydratorTest extends TestCase
         $this->assertSame('foo|bar|null', $type->getName());
         $this->assertTrue($type->allowsNull());
 
-        if (PHP_VERSION_ID < 80100) {
+        if (\PHP_VERSION_ID < 80100) {
             return;
         }
 
@@ -2651,11 +2642,11 @@ class HydratorTest extends TestCase
         };
 
         $this->assertInvalidValueExceptionCount(0);
-        $object = $this->createHydrator()->hydrate(get_class($proto), ['alias' => 'foo']);
+        $object = $this->createHydrator()->hydrate(\get_class($proto), ['alias' => 'foo']);
         $this->assertSame('foo', $object->value);
 
         $this->assertInvalidValueExceptionCount(1);
-        $this->createHydrator()->hydrate(get_class($proto), ['value' => 'foo']);
+        $this->createHydrator()->hydrate(\get_class($proto), ['value' => 'foo']);
         $this->assertInvalidValueExceptionMessage(0, 'This value must be provided.');
         $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_PROVIDED);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
@@ -3047,7 +3038,7 @@ class HydratorTest extends TestCase
 
     public function integerEnumDataProvider(): Generator
     {
-        if (PHP_VERSION_ID < 80100) {
+        if (\PHP_VERSION_ID < 80100) {
             return [[[], null]];
         }
 
@@ -3066,7 +3057,7 @@ class HydratorTest extends TestCase
 
     public function stringEnumDataProvider(): Generator
     {
-        if (PHP_VERSION_ID < 80100) {
+        if (\PHP_VERSION_ID < 80100) {
             return [[[], null]];
         }
 
@@ -3106,7 +3097,7 @@ class HydratorTest extends TestCase
     public function timestampDataProvider(): Generator
     {
         // default formatted timestamp
-        $timestamp = date(TimestampTypeConverter::DEFAULT_FORMAT);
+        $timestamp = \date(TimestampTypeConverter::DEFAULT_FORMAT);
 
         yield [['value' => $timestamp], $timestamp];
         yield [['value' => $timestamp], $timestamp, TimestampTypeConverter::DEFAULT_FORMAT];
@@ -3175,7 +3166,7 @@ class HydratorTest extends TestCase
     private function createHydrator(array $context = [], array $typeConverters = []): HydratorInterface
     {
         $hydrator = new Hydrator($context, $typeConverters);
-        if (PHP_VERSION_ID < 80000) {
+        if (\PHP_VERSION_ID < 80000) {
             $hydrator->useDefaultAnnotationReader();
         }
 
@@ -3184,8 +3175,8 @@ class HydratorTest extends TestCase
 
     private function phpRequired(string $version): void
     {
-        if (version_compare(PHP_VERSION, $version, '<')) {
-            $this->markTestSkipped(sprintf('PHP %s is required.', $version));
+        if (\version_compare(\PHP_VERSION, $version, '<')) {
+            $this->markTestSkipped(\sprintf('PHP %s is required.', $version));
         }
     }
 
@@ -3225,7 +3216,7 @@ class HydratorTest extends TestCase
         } catch (InvalidDataException $invalidDataException) {
             $invalidDataExceptionMessages = [];
             foreach ($invalidDataException->getExceptions() as $invalidValueException) {
-                $invalidDataExceptionMessages[] = sprintf(
+                $invalidDataExceptionMessages[] = \sprintf(
                     '[%s] %s',
                     $invalidValueException->getPropertyPath(),
                     $invalidValueException->getMessage(),
@@ -3268,10 +3259,9 @@ class HydratorTest extends TestCase
                 );
             }
 
-            foreach ($this->invalidValueExceptionTranslationDomain as [
-                $index,
-                $invalidValueExceptionTranslationDomain,
-            ]) {
+            foreach (
+                $this->invalidValueExceptionTranslationDomain as [$index, $invalidValueExceptionTranslationDomain]
+            ) {
                 $invalidDataExceptionHandled = true;
                 $this->assertArrayHasKey($index, $invalidDataException->getExceptions());
                 $this->assertSame(

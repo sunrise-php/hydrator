@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Nekhay <afenric@gmail.com>
- * @copyright Copyright (c) 2021, Anatoly Nekhay
+ * @author Anatolii Nekhai <afenric@gmail.com>
+ * @copyright Copyright (c) 2021, Anatolii Nekhai
  * @license https://github.com/sunrise-php/hydrator/blob/master/LICENSE
  * @link https://github.com/sunrise-php/hydrator
  */
@@ -21,7 +21,7 @@ use Sunrise\Hydrator\Dictionary\BuiltinType;
 /**
  * @since 3.1.0
  */
-final class Type
+final class Type implements TypeInterface
 {
     /**
      * @var mixed
@@ -85,7 +85,7 @@ final class Type
     }
 
     /**
-     * @return mixed
+     * @inheritDoc
      */
     public function getHolder()
     {

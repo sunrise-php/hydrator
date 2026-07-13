@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Nekhay <afenric@gmail.com>
- * @copyright Copyright (c) 2021, Anatoly Nekhay
+ * @author Anatolii Nekhai <afenric@gmail.com>
+ * @copyright Copyright (c) 2021, Anatolii Nekhai
  * @license https://github.com/sunrise-php/hydrator/blob/master/LICENSE
  * @link https://github.com/sunrise-php/hydrator
  */
@@ -19,9 +19,6 @@ use Generator;
 use LogicException;
 use ReflectionProperty;
 use Sunrise\Hydrator\AnnotationReaderInterface;
-
-use function class_exists;
-use function sprintf;
 
 /**
  * @link https://github.com/doctrine/annotations
@@ -43,8 +40,8 @@ final class DoctrineAnnotationReader implements AnnotationReaderInterface
     public static function default(): self
     {
         // @codeCoverageIgnoreStart
-        if (!class_exists(AnnotationReader::class)) {
-            throw new LogicException(sprintf(
+        if (!\class_exists(AnnotationReader::class)) {
+            throw new LogicException(\sprintf(
                 'The annotation reader {%s} requires the doctrine/annotations package, ' .
                 'run the command `composer require doctrine/annotations` to resolve it.',
                 __CLASS__,
