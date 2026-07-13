@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sunrise\Hydrator\Tests;
 
+use DateInterval;
 use DateTimeImmutable;
 use DateTimeZone;
 use Generator;
@@ -19,6 +20,7 @@ use Sunrise\Hydrator\Annotation\Alias;
 use Sunrise\Hydrator\Annotation\DefaultValue;
 use Sunrise\Hydrator\Annotation\Filter;
 use Sunrise\Hydrator\Annotation\Ignore;
+use Sunrise\Hydrator\Annotation\ItemType;
 use Sunrise\Hydrator\Annotation\Subtype;
 use Sunrise\Hydrator\Dictionary\BuiltinType;
 use Sunrise\Hydrator\Dictionary\ContextKey;
@@ -1157,6 +1159,164 @@ class HydratorTest extends TestCase
     }
 
     /**
+     * @group array
+     * @group phpdoc-reader
+     * @dataProvider strictBooleanProvider
+     * @dataProvider nonStrictBooleanProvider
+     */
+    public function testHydrateBooleanArrayPropertyFromPhpDoc($element, bool $expected): void
+    {
+        $object = new class {
+            /** @var list<bool> */
+            public array $value;
+        };
+
+        $this->assertInvalidValueExceptionCount(0);
+        $this->createHydrator([], [], true)->hydrate($object, ['value' => [$element]]);
+        $this->assertSame([$expected], $object->value);
+    }
+
+    /**
+     * @group array
+     * @group phpdoc-reader
+     * @dataProvider strictBooleanDataProvider
+     * @dataProvider nonStrictBooleanDataProvider
+     */
+    public function testHydrateAssociationArrayPropertyFromPhpDoc(array $data, bool $expected): void
+    {
+        $object = new class {
+            /** @var list<\Sunrise\Hydrator\Tests\Fixture\BooleanAssociation> */
+            public array $value;
+        };
+
+        $this->assertInvalidValueExceptionCount(0);
+        $this->createHydrator([], [], true)->hydrate($object, ['value' => [$data]]);
+        $this->assertSame($expected, $object->value[0]->value);
+    }
+
+    /**
+     * @group array
+     * @group phpdoc-reader
+     * @dataProvider strictBooleanProvider
+     * @dataProvider nonStrictBooleanProvider
+     * @dataProvider strictNullProvider
+     * @dataProvider nonStrictNullProvider
+     */
+    public function testHydrateNullableBooleanArrayPropertyFromPhpDoc($element, ?bool $expected): void
+    {
+        $object = new class {
+            /** @var list<bool|null> */
+            public array $value;
+        };
+
+        $this->assertInvalidValueExceptionCount(0);
+        $this->createHydrator([], [], true)->hydrate($object, ['value' => [$element]]);
+        $this->assertSame([$expected], $object->value);
+    }
+
+    /**
+     * @group array
+     * @group phpdoc-reader
+     * @dataProvider strictBooleanProvider
+     * @dataProvider nonStrictBooleanProvider
+     */
+    public function testHydrateArrayPropertyPrefersExplicitItemTypeOverPhpDoc($element, bool $expected): void
+    {
+        $object = new class {
+            /**
+             * @var list<\Sunrise\Hydrator\Tests\Fixture\BooleanAssociation>
+             */
+            #[ItemType(BuiltinType::BOOL)]
+            public array $value;
+        };
+
+        $this->assertInvalidValueExceptionCount(0);
+        $this->createHydrator([], [], true)->hydrate($object, ['value' => [$element]]);
+        $this->assertSame([$expected], $object->value);
+    }
+
+    /**
+     * @group array
+     * @group phpdoc-reader
+     * @dataProvider strictBooleanDataProvider
+     * @dataProvider nonStrictBooleanDataProvider
+     */
+    public function testHydrateAssociationArrayPropertyIgnoresPhpDocByDefault(array $data): void
+    {
+        $object = new class {
+            /** @var list<\Sunrise\Hydrator\Tests\Fixture\BooleanAssociation> */
+            public array $value;
+        };
+
+        $this->assertInvalidValueExceptionCount(0);
+        $this->createHydrator()->hydrate($object, ['value' => [$data]]);
+        $this->assertSame([$data], $object->value);
+    }
+
+    /**
+     * @group array
+     * @group phpdoc-reader
+     */
+    public function testHydrateArrayPropertyWithUnsupportedPhpDocItemType(): void
+    {
+        $object = new class {
+            /** @var list<Fixture\BooleanAssociation|\DateInterval> */
+            public array $value;
+        };
+
+        $this->expectException(InvalidObjectException::class);
+        $this->createHydrator([], [], true)->hydrate($object, ['value' => [[]]]);
+    }
+
+    /**
+     * @group array
+     * @group phpdoc-reader
+     */
+    public function testHydrateArrayPropertyWithoutVarTagFromPhpDoc(): void
+    {
+        $object = new class {
+            /** @deprecated */
+            public array $value;
+        };
+
+        $this->assertInvalidValueExceptionCount(0);
+        $this->createHydrator([], [], true)->hydrate($object, ['value' => [['value' => true]]]);
+        $this->assertSame([['value' => true]], $object->value);
+    }
+
+    /**
+     * @group array
+     * @group phpdoc-reader
+     */
+    public function testHydrateArrayPropertyWithUnsupportedVarTypeFromPhpDoc(): void
+    {
+        $object = new class {
+            /** @var string */
+            public array $value;
+        };
+
+        $this->assertInvalidValueExceptionCount(0);
+        $this->createHydrator([], [], true)->hydrate($object, ['value' => [['value' => true]]]);
+        $this->assertSame([['value' => true]], $object->value);
+    }
+
+    /**
+     * @group array
+     * @group phpdoc-reader
+     */
+    public function testHydrateArrayPropertyWithMixedItemsFromPhpDoc(): void
+    {
+        $object = new class {
+            /** @var list<mixed> */
+            public array $value;
+        };
+
+        $this->assertInvalidValueExceptionCount(0);
+        $this->createHydrator([], [], true)->hydrate($object, ['value' => [['value' => true]]]);
+        $this->assertSame([['value' => true]], $object->value);
+    }
+
+    /**
      * @group array-access
      * @dataProvider arrayDataProvider
      */
@@ -1401,6 +1561,22 @@ class HydratorTest extends TestCase
         $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::ARRAY_OVERFLOW);
         $this->assertInvalidValueExceptionPropertyPath(0, 'value');
         $this->createHydrator()->hydrate($object, ['value' => [true, $element]]);
+    }
+
+    /**
+     * @group array-access
+     * @group annotated-boolean-array-access
+     */
+    public function testHydrateArrayAccessPropertyPrefersExplicitItemTypeOverConstructorInference(): void
+    {
+        $object = new class {
+            #[ItemType(BuiltinType::STRING)]
+            public Fixture\BooleanCollection $value;
+        };
+
+        $this->assertInvalidValueExceptionCount(0);
+        $this->createHydrator()->hydrate($object, ['value' => [1]]);
+        $this->assertSame(['1'], $object->value->elements);
     }
 
     /**
@@ -1942,6 +2118,125 @@ class HydratorTest extends TestCase
         // phpcs:ignore Generic.Files.LineLength
         $this->createHydrator([ContextKey::TIMESTAMP_FORMAT => $format, ContextKey::TIMEZONE => $timezone])->hydrate($object, $data);
         $this->assertSame($expected, $object->value->format($format ?? TimestampTypeConverter::DEFAULT_FORMAT));
+    }
+
+    /**
+     * @group date-interval
+     */
+    public function testHydrateDateIntervalProperty(): void
+    {
+        $object = new class {
+            public DateInterval $value;
+        };
+
+        $this->assertInvalidValueExceptionCount(0);
+        $this->createHydrator()->hydrate($object, ['value' => 'P2DT3H4M']);
+        $this->assertSame('P2DT3H4M', $object->value->format('P%dDT%hH%iM'));
+    }
+
+    /**
+     * @group date-interval
+     * @dataProvider strictNullDataProvider
+     * @dataProvider nonStrictNullDataProvider
+     */
+    public function testHydrateNullableDateIntervalProperty(array $data): void
+    {
+        $object = new class {
+            public ?DateInterval $value;
+        };
+
+        $this->assertInvalidValueExceptionCount(0);
+        $this->createHydrator()->hydrate($object, $data);
+        $this->assertNull($object->value);
+    }
+
+    /**
+     * @group date-interval
+     * @dataProvider emptyArrayProvider
+     */
+    public function testHydrateOptionalDateIntervalProperty(array $data): void
+    {
+        $defaultValue = new DateInterval('P1D');
+
+        $object = new class ($defaultValue) {
+            public DateInterval $value;
+
+            public function __construct(DateInterval $value)
+            {
+                $this->value = $value;
+            }
+        };
+
+        $this->assertInvalidValueExceptionCount(0);
+        $this->createHydrator()->hydrate($object, $data);
+        $this->assertSame('P1D', $object->value->format('P%dD'));
+    }
+
+    /**
+     * @group date-interval
+     * @dataProvider strictNullDataProvider
+     * @dataProvider nonStrictNullDataProvider
+     */
+    public function testHydrateDateIntervalPropertyWithEmptyValue(array $data): void
+    {
+        $object = new class {
+            public DateInterval $value;
+        };
+
+        $this->assertInvalidValueExceptionCount(1);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must not be empty.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_NOT_BE_EMPTY);
+        $this->assertInvalidValueExceptionPropertyPath(0, 'value');
+        $this->createHydrator()->hydrate($object, $data);
+    }
+
+    /**
+     * @group date-interval
+     * @dataProvider strictNotStringDataProvider
+     */
+    public function testHydrateDateIntervalPropertyWithInvalidType(array $data): void
+    {
+        $object = new class {
+            public DateInterval $value;
+        };
+
+        $this->assertInvalidValueExceptionCount(1);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be of type string.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_STRING);
+        $this->assertInvalidValueExceptionPropertyPath(0, 'value');
+        $this->createHydrator()->hydrate($object, $data);
+    }
+
+    /**
+     * @group date-interval
+     */
+    public function testHydrateDateIntervalPropertyWithInvalidValue(): void
+    {
+        $object = new class {
+            public DateInterval $value;
+        };
+
+        $this->assertInvalidValueExceptionCount(1);
+        $this->assertInvalidValueExceptionMessage(0, 'This value is not a valid date interval.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::INVALID_DATE_INTERVAL);
+        $this->assertInvalidValueExceptionPropertyPath(0, 'value');
+        $this->createHydrator()->hydrate($object, ['value' => 'foo']);
+    }
+
+    /**
+     * @group date-interval
+     */
+    public function testHydrateDateIntervalPropertyWithoutValue(): void
+    {
+        $object = new class {
+            public DateInterval $value;
+        };
+
+        $this->assertInvalidValueExceptionCount(1);
+        $this->assertInvalidValueExceptionMessage(0, 'This value must be provided.');
+        $this->assertInvalidValueExceptionErrorCode(0, ErrorCode::MUST_BE_PROVIDED);
+        $this->assertInvalidValueExceptionPropertyPath(0, 'value');
+        $this->createHydrator()->hydrate($object, []);
     }
 
     /**
@@ -2716,6 +3011,13 @@ class HydratorTest extends TestCase
         $this->assertSame($expected, $this->createHydrator()->castValue($element, $type));
     }
 
+    public function testSourcelessArrayType(): void
+    {
+        $type = Type::fromName(BuiltinType::ARRAY);
+
+        $this->assertSame(['foo'], $this->createHydrator([], [], true)->castValue(['foo'], $type));
+    }
+
     public function testFilter(): void
     {
         $this->phpRequired('8.0');
@@ -3163,9 +3465,12 @@ class HydratorTest extends TestCase
         yield [['value' => '207ddb61-c300-4368-9f26-33d0a99eac00'], '207ddb61-c300-4368-9f26-33d0a99eac00'];
     }
 
-    private function createHydrator(array $context = [], array $typeConverters = []): HydratorInterface
-    {
-        $hydrator = new Hydrator($context, $typeConverters);
+    private function createHydrator(
+        array $context = [],
+        array $typeConverters = [],
+        bool $isDocBlockReaderEnabled = false
+    ): HydratorInterface {
+        $hydrator = new Hydrator($context, $typeConverters, $isDocBlockReaderEnabled);
         if (\PHP_VERSION_ID < 80000) {
             $hydrator->useDefaultAnnotationReader();
         }
