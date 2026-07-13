@@ -18,8 +18,8 @@ use Generator;
 use ReflectionEnum;
 use Sunrise\Hydrator\Dictionary\BuiltinType;
 use Sunrise\Hydrator\Exception\InvalidValueException;
+use Sunrise\Hydrator\Type;
 use Sunrise\Hydrator\TypeConverterInterface;
-use Sunrise\Hydrator\TypeInterface;
 use ValueError;
 
 /**
@@ -30,7 +30,7 @@ final class BackedEnumTypeConverter implements TypeConverterInterface
     /**
      * @inheritDoc
      */
-    public function castValue($value, TypeInterface $type, array $path, array $context): Generator
+    public function castValue($value, Type $type, array $path, array $context): Generator
     {
         // @codeCoverageIgnoreStart
         if (\PHP_VERSION_ID < 80100) {

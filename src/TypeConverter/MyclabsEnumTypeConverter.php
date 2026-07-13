@@ -16,8 +16,8 @@ namespace Sunrise\Hydrator\TypeConverter;
 use Generator;
 use MyCLabs\Enum\Enum;
 use Sunrise\Hydrator\Exception\InvalidValueException;
+use Sunrise\Hydrator\Type;
 use Sunrise\Hydrator\TypeConverterInterface;
-use Sunrise\Hydrator\TypeInterface;
 use UnexpectedValueException;
 
 /**
@@ -30,7 +30,7 @@ final class MyclabsEnumTypeConverter implements TypeConverterInterface
     /**
      * @inheritDoc
      */
-    public function castValue($value, TypeInterface $type, array $path, array $context): Generator
+    public function castValue($value, Type $type, array $path, array $context): Generator
     {
         $enumName = $type->getName();
         if (!\is_subclass_of($enumName, Enum::class)) {

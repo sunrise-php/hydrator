@@ -18,7 +18,7 @@ use ReflectionFunctionAbstract;
 use ReflectionMethod;
 use ReflectionParameter;
 use ReflectionProperty;
-use Sunrise\Hydrator\TypeInterface;
+use Sunrise\Hydrator\Type;
 
 class InvalidObjectException extends LogicException implements ExceptionInterface
 {
@@ -36,7 +36,7 @@ class InvalidObjectException extends LogicException implements ExceptionInterfac
     /**
      * @since 3.2.0
      */
-    final public static function unsupportedType(TypeInterface $type): self
+    final public static function unsupportedType(Type $type): self
     {
         $holder = $type->getHolder();
 
@@ -56,7 +56,7 @@ class InvalidObjectException extends LogicException implements ExceptionInterfac
     /**
      * @since 3.2.0
      */
-    final public static function unsupportedPropertyType(TypeInterface $type, ReflectionProperty $property): self
+    final public static function unsupportedPropertyType(Type $type, ReflectionProperty $property): self
     {
         return new self(\sprintf(
             'The property {%s::$%s} is associated with an unsupported type {%s}.',
@@ -69,7 +69,7 @@ class InvalidObjectException extends LogicException implements ExceptionInterfac
     /**
      * @since 3.2.0
      */
-    final public static function unsupportedParameterType(TypeInterface $type, ReflectionParameter $parameter): self
+    final public static function unsupportedParameterType(Type $type, ReflectionParameter $parameter): self
     {
         $holder = $parameter->getDeclaringFunction();
 
@@ -82,7 +82,7 @@ class InvalidObjectException extends LogicException implements ExceptionInterfac
      * @since 3.2.0
      */
     final public static function unsupportedMethodParameterType(
-        TypeInterface $type,
+        Type $type,
         ReflectionParameter $parameter,
         ReflectionMethod $method
     ): self {
@@ -100,7 +100,7 @@ class InvalidObjectException extends LogicException implements ExceptionInterfac
      * @since 3.2.0
      */
     final public static function unsupportedFunctionParameterType(
-        TypeInterface $type,
+        Type $type,
         ReflectionParameter $parameter,
         ReflectionFunctionAbstract $function
     ): self {

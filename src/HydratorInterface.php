@@ -34,7 +34,7 @@ interface HydratorInterface
      *
      * @since 3.1.0
      */
-    public function castValue($value, TypeInterface $type, array $path = [], array $context = []);
+    public function castValue($value, Type $type, array $path = [], array $context = []);
 
     /**
      * Hydrates the given object with the given data

@@ -16,8 +16,8 @@ namespace Sunrise\Hydrator\TypeConverter;
 use Generator;
 use InvalidArgumentException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
+use Sunrise\Hydrator\Type;
 use Sunrise\Hydrator\TypeConverterInterface;
-use Sunrise\Hydrator\TypeInterface;
 use Symfony\Component\Uid\AbstractUid;
 
 /**
@@ -30,7 +30,7 @@ final class SymfonyUidTypeConverter implements TypeConverterInterface
     /**
      * @inheritDoc
      */
-    public function castValue($value, TypeInterface $type, array $path, array $context): Generator
+    public function castValue($value, Type $type, array $path, array $context): Generator
     {
         $className = $type->getName();
         if (!\is_subclass_of($className, AbstractUid::class)) {

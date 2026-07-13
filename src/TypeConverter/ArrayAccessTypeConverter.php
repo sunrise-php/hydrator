@@ -27,8 +27,8 @@ use Sunrise\Hydrator\Exception\InvalidObjectException;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorAwareInterface;
 use Sunrise\Hydrator\HydratorInterface;
+use Sunrise\Hydrator\Type;
 use Sunrise\Hydrator\TypeConverterInterface;
-use Sunrise\Hydrator\TypeInterface;
 
 /**
  * @since 3.1.0
@@ -54,7 +54,7 @@ final class ArrayAccessTypeConverter implements
     /**
      * @inheritDoc
      */
-    public function castValue($value, TypeInterface $type, array $path, array $context): Generator
+    public function castValue($value, Type $type, array $path, array $context): Generator
     {
         $className = $type->getName();
         if (!\is_subclass_of($className, ArrayAccess::class)) {
@@ -87,6 +87,8 @@ final class ArrayAccessTypeConverter implements
         $itemType = $this->annotationReader->getAnnotations(ItemType::class, $type->getHolder())->current()
             ?? self::getItemTypeFromCollectionConstructor($class);
 
+        $itemType->holder ??= $type->getHolder();
+
         if ($itemType === null) {
             $counter = 0;
             foreach ($value as $key => $item) {
@@ -106,13 +108,16 @@ final class ArrayAccessTypeConverter implements
             throw InvalidValueException::arrayOverflow($path, $itemType->limit, $value);
         }
 
-        $itemType->holder ??= $type->getHolder();
-
         $counter = 0;
         $violations = [];
         foreach ($value as $key => $item) {
             try {
-                $collection[$key] = $this->hydrator->castValue($item, $itemType, [...$path, $key], $context);
+                $collection[$key] = $this->hydrator->castValue(
+                    $item,
+                    new Type($itemType->holder, $itemType->name, $itemType->allowsNull),
+                    [...$path, $key],
+                    $context,
+                );
                 $counter++;
             } catch (InvalidDataException $e) {
                 $violations = [...$violations, ...$e->getExceptions()];

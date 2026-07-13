@@ -16,8 +16,8 @@ namespace Sunrise\Hydrator\TypeConverter;
 use Generator;
 use Sunrise\Hydrator\Dictionary\BuiltinType;
 use Sunrise\Hydrator\Exception\InvalidValueException;
+use Sunrise\Hydrator\Type;
 use Sunrise\Hydrator\TypeConverterInterface;
-use Sunrise\Hydrator\TypeInterface;
 
 /**
  * @since 3.1.0
@@ -27,7 +27,7 @@ final class BooleanTypeConverter implements TypeConverterInterface
     /**
      * @inheritDoc
      */
-    public function castValue($value, TypeInterface $type, array $path, array $context): Generator
+    public function castValue($value, Type $type, array $path, array $context): Generator
     {
         if ($type->getName() !== BuiltinType::BOOL) {
             return;

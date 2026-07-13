@@ -124,7 +124,7 @@ class Hydrator implements HydratorInterface
     /**
      * @inheritDoc
      */
-    public function castValue($value, TypeInterface $type, array $path = [], array $context = [])
+    public function castValue($value, Type $type, array $path = [], array $context = [])
     {
         if ($value === null) {
             if ($type->allowsNull()) {

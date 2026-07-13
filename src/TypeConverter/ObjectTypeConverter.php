@@ -19,8 +19,8 @@ use stdClass;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\HydratorAwareInterface;
 use Sunrise\Hydrator\HydratorInterface;
+use Sunrise\Hydrator\Type;
 use Sunrise\Hydrator\TypeConverterInterface;
-use Sunrise\Hydrator\TypeInterface;
 
 /**
  * @since 3.1.0
@@ -37,7 +37,7 @@ final class ObjectTypeConverter implements TypeConverterInterface, HydratorAware
     /**
      * @inheritDoc
      */
-    public function castValue($value, TypeInterface $type, array $path, array $context): Generator
+    public function castValue($value, Type $type, array $path, array $context): Generator
     {
         $className = $type->getName();
         if (!\class_exists($className)) {

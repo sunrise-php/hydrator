@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Sunrise\Hydrator\Annotation;
 
 use Attribute;
-use Sunrise\Hydrator\TypeInterface;
 
 /**
  * @Annotation
@@ -30,7 +29,7 @@ use Sunrise\Hydrator\TypeInterface;
  * @since 3.20.0
  */
 #[Attribute(Attribute::TARGET_PROPERTY | Attribute::TARGET_PARAMETER)]
-class ItemType implements TypeInterface
+class ItemType
 {
     /**
      * @var non-empty-string
@@ -71,23 +70,5 @@ class ItemType implements TypeInterface
         $this->name = $name;
         $this->allowsNull = $allowsNull;
         $this->limit = $limit;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getHolder()
-    {
-        return $this->holder;
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    public function allowsNull(): bool
-    {
-        return $this->allowsNull;
     }
 }

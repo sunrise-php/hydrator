@@ -21,7 +21,7 @@ use Sunrise\Hydrator\Dictionary\BuiltinType;
 /**
  * @since 3.1.0
  */
-final class Type implements TypeInterface
+final class Type
 {
     /**
      * @var mixed
@@ -85,7 +85,7 @@ final class Type implements TypeInterface
     }
 
     /**
-     * @inheritDoc
+     * @return mixed
      */
     public function getHolder()
     {
