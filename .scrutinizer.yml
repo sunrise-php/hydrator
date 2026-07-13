@@ -59,6 +59,7 @@ build:
         override:
           - command: composer test
     php74:
+      image: default-bionic
       environment:
         php: '7.4.33'
       tests:
