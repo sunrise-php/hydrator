@@ -52,6 +52,8 @@ class Hydrator implements HydratorInterface
      */
     private array $context;
 
+    private bool $isDocBlockReaderEnabled;
+
     private AnnotationReaderInterface $annotationReader;
 
     /**
@@ -63,15 +65,20 @@ class Hydrator implements HydratorInterface
      * @param array<string, mixed> $context
      * @param list<TypeConverterInterface> $typeConverters
      */
-    public function __construct(array $context = [], array $typeConverters = [])
-    {
+    public function __construct(
+        array $context = [],
+        array $typeConverters = [],
+        bool $isDocBlockReaderEnabled = false
+    ) {
         $this->context = $context;
+
+        $this->isDocBlockReaderEnabled = $isDocBlockReaderEnabled;
 
         $this->annotationReader = \PHP_MAJOR_VERSION >= 8
             ? new BuiltinAnnotationReader()
             : new NullAnnotationReader();
 
-        $this->addTypeConverter(...self::defaultTypeConverters(), ...$typeConverters);
+        $this->addTypeConverter(...$this->defaultTypeConverters(), ...$typeConverters);
     }
 
     /**
@@ -309,7 +316,7 @@ class Hydrator implements HydratorInterface
      *
      * @return Generator<int, TypeConverterInterface>
      */
-    private static function defaultTypeConverters(): Generator
+    private function defaultTypeConverters(): Generator
     {
         yield new MixedTypeConverter();
         yield new BooleanTypeConverter();
@@ -319,7 +326,7 @@ class Hydrator implements HydratorInterface
         yield new TimestampTypeConverter();
         yield new DateIntervalTypeConverter();
         yield new TimezoneTypeConverter();
-        yield new ArrayTypeConverter();
+        yield new ArrayTypeConverter($this->isDocBlockReaderEnabled);
         yield new ArrayAccessTypeConverter();
         yield new ObjectTypeConverter();
 

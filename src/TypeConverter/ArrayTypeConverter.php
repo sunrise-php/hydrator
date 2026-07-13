@@ -39,13 +39,15 @@ final class ArrayTypeConverter implements
     private AnnotationReaderInterface $annotationReader;
     private HydratorInterface $hydrator;
 
-    private PhpDoc\DocBlockFactoryInterface $docBlockFactory;
-    private PhpDoc\Types\ContextFactory $docBlockContextFactory;
+    private bool $isDocBlockReaderEnabled;
+    private ?PhpDoc\DocBlockFactoryInterface $docBlockFactory = null;
+    private ?PhpDoc\Types\ContextFactory $docBlockContextFactory = null;
+    /** @var array<string, ItemType|null> */
+    private array $dockBlockReaderCache = [];
 
-    public function __construct()
+    public function __construct(bool $isDocBlockReaderEnabled = false)
     {
-        $this->docBlockFactory = PhpDoc\DocBlockFactory::createInstance();
-        $this->docBlockContextFactory = new PhpDoc\Types\ContextFactory();
+        $this->isDocBlockReaderEnabled = $isDocBlockReaderEnabled;
     }
 
     public function setAnnotationReader(AnnotationReaderInterface $annotationReader): void
@@ -138,9 +140,23 @@ final class ArrayTypeConverter implements
      */
     private function getItemTypeFromVarTag($holder): ?ItemType
     {
+        if (! $this->isDocBlockReaderEnabled) {
+            return null;
+        }
+
+        $this->docBlockFactory ??= PhpDoc\DocBlockFactory::createInstance();
+        $this->docBlockContextFactory ??= new PhpDoc\Types\ContextFactory();
+
         if (! $holder instanceof ReflectionProperty) {
             return null;
         }
+
+        $cacheKey = \sprintf('%s::$%s', $holder->getDeclaringClass()->getName(), $holder->getName());
+        if (\array_key_exists($cacheKey, $this->dockBlockReaderCache)) {
+            return $this->dockBlockReaderCache[$cacheKey];
+        }
+
+        $this->dockBlockReaderCache[$cacheKey] = null;
 
         $docComment = $holder->getDocComment();
         if ($docComment === false) {
@@ -174,12 +190,13 @@ final class ArrayTypeConverter implements
 
         /** @var non-empty-string $itemTypeName */
         $itemTypeName = \ltrim((string) self::unwrapNullablePhpDocType($phpDocItemType), '\\');
-        $isNullableItemType = self::isNullablePhpDocType($phpDocItemType);
+        $isItemTypeNullable = self::isPhpDocTypeNullable($phpDocItemType);
+        $this->dockBlockReaderCache[$cacheKey] = new ItemType($itemTypeName, $isItemTypeNullable);
 
-        return new ItemType($itemTypeName, $isNullableItemType);
+        return $this->dockBlockReaderCache[$cacheKey];
     }
 
-    private static function isNullablePhpDocType(PhpDoc\Type $phpDocType): bool
+    private static function isPhpDocTypeNullable(PhpDoc\Type $phpDocType): bool
     {
         if ($phpDocType instanceof PhpDoc\Types\Nullable) {
             return true;
@@ -203,10 +220,16 @@ final class ArrayTypeConverter implements
         }
 
         if ($phpDocType instanceof PhpDoc\Types\Compound) {
-            foreach ($phpDocType as $type) {
-                if (! $type instanceof PhpDoc\Types\Null_) {
-                    return $type;
+            $notNullablePhpDocTypes = [];
+            foreach ($phpDocType as $compoundPhpDocTypeItem) {
+                if (! $compoundPhpDocTypeItem instanceof PhpDoc\Types\Null_) {
+                    $notNullablePhpDocTypes[] = $compoundPhpDocTypeItem;
                 }
+            }
+
+            // The hydrator doesn't support the compound type.
+            if (\count($notNullablePhpDocTypes) === 1) {
+                return $notNullablePhpDocTypes[0];
             }
         }
 
