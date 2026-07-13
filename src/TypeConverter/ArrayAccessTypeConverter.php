@@ -84,10 +84,8 @@ final class ArrayAccessTypeConverter implements
         }
 
         /** @phpstan-var ItemType|null $itemType */
-        $itemType = $this->annotationReader->getAnnotations(ItemType::class, $type->getHolder())->current()
-            ?? self::getItemTypeFromCollectionConstructor($class);
-
-        $itemType->holder ??= $type->getHolder();
+        $itemType = $this->annotationReader->getAnnotations(ItemType::class, $type->getHolder())->current();
+        $itemType ??= self::getItemTypeFromCollectionConstructor($class);
 
         if ($itemType === null) {
             $counter = 0;
@@ -103,6 +101,8 @@ final class ArrayAccessTypeConverter implements
             yield $collection;
             return;
         }
+
+        $itemType->holder ??= $type->getHolder();
 
         if ($itemType->limit !== null && \count($value) > $itemType->limit) {
             throw InvalidValueException::arrayOverflow($path, $itemType->limit, $value);

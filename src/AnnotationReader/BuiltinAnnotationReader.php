@@ -44,11 +44,6 @@ final class BuiltinAnnotationReader implements AnnotationReaderInterface
      */
     public function getAnnotations(string $name, $holder): Generator
     {
-        // @codeCoverageIgnoreStart
-        if (\PHP_MAJOR_VERSION < 8) {
-            return;
-        } // @codeCoverageIgnoreEnd
-
         if (
             ! $holder instanceof ReflectionProperty &&
             ! $holder instanceof ReflectionParameter

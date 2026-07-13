@@ -95,7 +95,6 @@ final class TimestampTypeConverter implements TypeConverterInterface, Annotation
             throw InvalidValueException::mustBeString($path, $value);
         }
 
-        // @phpstan-ignore cast.string
         $value = (string) $value;
 
         $timezone = null;

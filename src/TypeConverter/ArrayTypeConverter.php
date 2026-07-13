@@ -87,15 +87,16 @@ final class ArrayTypeConverter implements
             return;
         }
 
-        $itemType = $this->annotationReader->getAnnotations(ItemType::class, $typeHolder)->current()
-            ?? $this->getItemTypeFromVarTag($typeHolder);
-
-        $itemType->holder ??= $type->getHolder();
+        /** @var ItemType|null $itemType */
+        $itemType = $this->annotationReader->getAnnotations(ItemType::class, $typeHolder)->current();
+        $itemType ??= $this->getItemTypeFromVarTag($typeHolder);
 
         if ($itemType === null) {
             yield $value;
             return;
         }
+
+        $itemType->holder ??= $type->getHolder();
 
         if ($itemType->limit !== null && \count($value) > $itemType->limit) {
             throw InvalidValueException::arrayOverflow($path, $itemType->limit, $value);
