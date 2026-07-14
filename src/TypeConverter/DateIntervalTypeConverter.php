@@ -13,27 +13,24 @@ declare(strict_types=1);
 
 namespace Sunrise\Hydrator\TypeConverter;
 
+use DateInterval;
 use Generator;
-use InvalidArgumentException;
-use Ramsey\Uuid\Uuid;
-use Ramsey\Uuid\UuidInterface;
 use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\Type;
 use Sunrise\Hydrator\TypeConverterInterface;
+use Throwable;
 
 /**
- * @link https://github.com/ramsey/uuid
- *
- * @since 3.2.0
+ * @since 3.20.0
  */
-final class RamseyUuidTypeConverter implements TypeConverterInterface
+final class DateIntervalTypeConverter implements TypeConverterInterface
 {
     /**
      * @inheritDoc
      */
     public function castValue($value, Type $type, array $path, array $context): Generator
     {
-        if ($type->getName() !== UuidInterface::class) {
+        if ($type->getName() !== DateInterval::class) {
             return;
         }
 
@@ -53,9 +50,9 @@ final class RamseyUuidTypeConverter implements TypeConverterInterface
         }
 
         try {
-            yield Uuid::fromString($value);
-        } catch (InvalidArgumentException $e) {
-            throw InvalidValueException::invalidUid($path, $value);
+            yield new DateInterval($value);
+        } catch (Throwable $e) {
+            throw InvalidValueException::invalidDateInterval($path, $value);
         }
     }
 
@@ -64,6 +61,6 @@ final class RamseyUuidTypeConverter implements TypeConverterInterface
      */
     public function getWeight(): int
     {
-        return 30;
+        return 45;
     }
 }

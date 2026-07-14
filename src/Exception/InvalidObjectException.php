@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Nekhay <afenric@gmail.com>
- * @copyright Copyright (c) 2021, Anatoly Nekhay
+ * @author Anatolii Nekhai <afenric@gmail.com>
+ * @copyright Copyright (c) 2021, Anatolii Nekhai
  * @license https://github.com/sunrise-php/hydrator/blob/master/LICENSE
  * @link https://github.com/sunrise-php/hydrator
  */
@@ -20,8 +20,6 @@ use ReflectionParameter;
 use ReflectionProperty;
 use Sunrise\Hydrator\Type;
 
-use function sprintf;
-
 class InvalidObjectException extends LogicException implements ExceptionInterface
 {
     /**
@@ -29,7 +27,7 @@ class InvalidObjectException extends LogicException implements ExceptionInterfac
      */
     final public static function uninstantiableObject(string $className): self
     {
-        return new self(sprintf(
+        return new self(\sprintf(
             'The uninstantiable class %s cannot be hydrated.',
             $className,
         ));
@@ -40,7 +38,6 @@ class InvalidObjectException extends LogicException implements ExceptionInterfac
      */
     final public static function unsupportedType(Type $type): self
     {
-        /** @var mixed $holder */
         $holder = $type->getHolder();
 
         if ($holder instanceof ReflectionProperty) {
@@ -50,7 +47,7 @@ class InvalidObjectException extends LogicException implements ExceptionInterfac
             return self::unsupportedParameterType($type, $holder);
         }
 
-        return new self(sprintf(
+        return new self(\sprintf(
             'The type {%s} is not supported.',
             $type->getName(),
         ));
@@ -61,7 +58,7 @@ class InvalidObjectException extends LogicException implements ExceptionInterfac
      */
     final public static function unsupportedPropertyType(Type $type, ReflectionProperty $property): self
     {
-        return new self(sprintf(
+        return new self(\sprintf(
             'The property {%s::$%s} is associated with an unsupported type {%s}.',
             $property->getDeclaringClass()->getName(),
             $property->getName(),
@@ -89,7 +86,7 @@ class InvalidObjectException extends LogicException implements ExceptionInterfac
         ReflectionParameter $parameter,
         ReflectionMethod $method
     ): self {
-        return new self(sprintf(
+        return new self(\sprintf(
             'The parameter {%s::%s($%s[%d])} is associated with an unsupported type {%s}.',
             $method->getDeclaringClass()->getName(),
             $method->getName(),
@@ -107,7 +104,7 @@ class InvalidObjectException extends LogicException implements ExceptionInterfac
         ReflectionParameter $parameter,
         ReflectionFunctionAbstract $function
     ): self {
-        return new self(sprintf(
+        return new self(\sprintf(
             'The parameter {%s($%s[%d])} is associated with an unsupported type {%s}.',
             $function->getName(),
             $parameter->getName(),

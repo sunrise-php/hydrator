@@ -15,6 +15,7 @@ return [
     ErrorMessage::ARRAY_OVERFLOW => 'Această valoare este limitată la {{ maximum_elements }} elemente.',
     ErrorMessage::INVALID_CHOICE => 'Această valoare nu este o alegere validă; valorile așteptate: {{ expected_values }}.',
     ErrorMessage::INVALID_TIMESTAMP => 'Această valoare nu este un marcaj temporal valid; formatul așteptat: {{ expected_format }}.',
+    ErrorMessage::INVALID_DATE_INTERVAL => 'Această valoare nu este un interval de dată valid.',
     ErrorMessage::INVALID_TIMEZONE => 'Această valoare nu este un fus orar valid.',
     ErrorMessage::INVALID_UID => 'Această valoare nu este un UID valid.',
 ];

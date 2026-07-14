@@ -15,6 +15,7 @@ return [
     ErrorMessage::ARRAY_OVERFLOW => 'ഈ മൂല്യം {{ maximum_elements }} ഘടകങ്ങളിലേക്ക് പരിമിതപ്പെടുത്തിയിരിക്കുന്നു.',
     ErrorMessage::INVALID_CHOICE => 'ഈ മൂല്യം സാധുവായ തിരഞ്ഞെടുപ്പല്ല; പ്രതീക്ഷിക്കപ്പെട്ട മൂല്യങ്ങൾ: {{ expected_values }}.',
     ErrorMessage::INVALID_TIMESTAMP => 'ഈ മൂല്യം ഒരു സാധുവായ ടൈംസ്റ്റാംപ് അല്ല; പ്രതീക്ഷിക്കുന്ന ഫോർമാറ്റ്: {{ expected_format }}.',
+    ErrorMessage::INVALID_DATE_INTERVAL => 'ഈ മൂല്യം സാധുവായ തീയതി ഇടവേളയല്ല.',
     ErrorMessage::INVALID_TIMEZONE => 'ഈ മൂല്യം സാധുവായ സമയംമേഖല അല്ല.',
     ErrorMessage::INVALID_UID => 'ഈ മൂല്യം സാധുവായ UID അല്ല.',
 ];

@@ -15,6 +15,7 @@ return [
     ErrorMessage::ARRAY_OVERFLOW => 'Ez az érték legfeljebb {{ maximum_elements }} elemet tartalmazhat.',
     ErrorMessage::INVALID_CHOICE => 'Ez az érték nem érvényes választás; a várt értékek: {{ expected_values }}.',
     ErrorMessage::INVALID_TIMESTAMP => 'Ez az érték nem érvényes időbélyeg; a várt formátum: {{ expected_format }}.',
+    ErrorMessage::INVALID_DATE_INTERVAL => 'Ez az érték nem érvényes dátumintervallum.',
     ErrorMessage::INVALID_TIMEZONE => 'Ez az érték nem érvényes időzóna.',
     ErrorMessage::INVALID_UID => 'Ez az érték nem érvényes UID.',
 ];

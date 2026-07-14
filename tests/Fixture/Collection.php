@@ -9,8 +9,6 @@ use Countable;
 use OverflowException;
 use ReturnTypeWillChange;
 
-use function count;
-
 /**
  * @implements ArrayAccess<TKey, TValue>
  *
@@ -82,6 +80,6 @@ class Collection implements ArrayAccess, Countable
      */
     public function count(): int
     {
-        return count($this->elements);
+        return \count($this->elements);
     }
 }

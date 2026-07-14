@@ -15,6 +15,7 @@ return [
     ErrorMessage::ARRAY_OVERFLOW => 'இந்த மதிப்பு {{ maximum_elements }} பொருட்களாகக் குறிக்கப்படுகிறது.',
     ErrorMessage::INVALID_CHOICE => 'இந்த மதிப்பு சரியான தேர்வாக இல்லை; எதிர்பார்க்கப்பட்ட மதிப்புகள்: {{ expected_values }}.',
     ErrorMessage::INVALID_TIMESTAMP => 'இந்த மதிப்பு சரியான காலமுத்திரையல்ல; எதிர்பார்க்கப்படும் வடிவம்: {{ expected_format }}.',
+    ErrorMessage::INVALID_DATE_INTERVAL => 'இந்த மதிப்பு செல்லுபடியான தேதி இடைவெளி அல்ல.',
     ErrorMessage::INVALID_TIMEZONE => 'இந்த மதிப்பு செல்லுபடியான நேர மண்டலம் அல்ல.',
     ErrorMessage::INVALID_UID => 'இந்த மதிப்பு செல்லுபடியான UID அல்ல.',
 ];

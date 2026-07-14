@@ -15,6 +15,7 @@ return [
     ErrorMessage::ARRAY_OVERFLOW => 'Aquest valor es limita a {{ maximum_elements }} elements.',
     ErrorMessage::INVALID_CHOICE => 'Aquest valor no és una opció vàlida; valors esperats: {{ expected_values }}.',
     ErrorMessage::INVALID_TIMESTAMP => 'Aquest valor no és una marca de temps vàlida; format esperat: {{ expected_format }}.',
+    ErrorMessage::INVALID_DATE_INTERVAL => 'Aquest valor no és un interval de data vàlid.',
     ErrorMessage::INVALID_TIMEZONE => 'Aquest valor no és una zona horària vàlida.',
     ErrorMessage::INVALID_UID => 'Aquest valor no és un UID vàlid.',
 ];

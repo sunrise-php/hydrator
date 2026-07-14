@@ -15,6 +15,7 @@ return [
     ErrorMessage::ARRAY_OVERFLOW => 'এই মানটি {{ maximum_elements }} উপাদানে সীমাবদ্ধ।',
     ErrorMessage::INVALID_CHOICE => 'এই মানটি একটি বৈধ পছন্দ নয়; প্রত্যাশিত মান: {{ expected_values }}।',
     ErrorMessage::INVALID_TIMESTAMP => 'এই মানটি একটি সঠিক টাইমস্ট্যাম্প নয়; প্রত্যাশিত ফর্ম্যাট: {{ expected_format }}।',
+    ErrorMessage::INVALID_DATE_INTERVAL => 'এই মানটি একটি বৈধ তারিখের ব্যবধান নয়।',
     ErrorMessage::INVALID_TIMEZONE => 'এই মানটি একটি বৈধ সময় অঞ্চল নয়।',
     ErrorMessage::INVALID_UID => 'এই মানটি একটি বৈধ UID নয়।',
 ];

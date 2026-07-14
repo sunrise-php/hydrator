@@ -15,6 +15,7 @@ return [
     ErrorMessage::ARRAY_OVERFLOW => 'Це значення обмежено {{ maximum_elements }} елементами.',
     ErrorMessage::INVALID_CHOICE => 'Це значення не є допустимим вибором; очікувані значення: {{ expected_values }}.',
     ErrorMessage::INVALID_TIMESTAMP => 'Це значення не є дійсним часовим штампом; очікуваний формат: {{ expected_format }}.',
+    ErrorMessage::INVALID_DATE_INTERVAL => 'Це значення не є дійсним інтервалом дати.',
     ErrorMessage::INVALID_TIMEZONE => 'Це значення не є дійсним часовим поясом.',
     ErrorMessage::INVALID_UID => 'Це значення не є дійсним UID.',
 ];

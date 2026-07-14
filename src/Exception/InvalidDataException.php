@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Nekhay <afenric@gmail.com>
- * @copyright Copyright (c) 2021, Anatoly Nekhay
+ * @author Anatolii Nekhai <afenric@gmail.com>
+ * @copyright Copyright (c) 2021, Anatolii Nekhai
  * @license https://github.com/sunrise-php/hydrator/blob/master/LICENSE
  * @link https://github.com/sunrise-php/hydrator
  */
@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Sunrise\Hydrator\Exception;
 
+use RuntimeException;
 use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\ConstraintViolationListInterface;
-use RuntimeException;
 
 /**
  * @since 3.0.0

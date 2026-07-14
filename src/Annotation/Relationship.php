@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Nekhay <afenric@gmail.com>
- * @copyright Copyright (c) 2021, Anatoly Nekhay
+ * @author Anatolii Nekhai <afenric@gmail.com>
+ * @copyright Copyright (c) 2021, Anatolii Nekhai
  * @license https://github.com/sunrise-php/hydrator/blob/master/LICENSE
  * @link https://github.com/sunrise-php/hydrator
  */
@@ -29,6 +29,8 @@ use Attribute;
  * @since 3.0.0
  *
  * @deprecated 3.1.0 Use the {@see Subtype} annotation.
+ *
+ * @psalm-suppress DeprecatedClass
  */
 #[Attribute(Attribute::TARGET_PROPERTY | Attribute::TARGET_PARAMETER)]
 final class Relationship extends Subtype

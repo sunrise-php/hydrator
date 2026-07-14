@@ -26,11 +26,49 @@ use Attribute;
  *     @Attribute("limit", type="integer", required=false),
  * })
  *
- * @since 3.1.0
- *
- * @deprecated 3.20.0 Use the {@see ItemType} annotation.
+ * @since 3.20.0
  */
 #[Attribute(Attribute::TARGET_PROPERTY | Attribute::TARGET_PARAMETER)]
-class Subtype extends ItemType
+class ItemType
 {
+    /**
+     * @var non-empty-string
+     *
+     * @readonly
+     */
+    public string $name;
+
+    /**
+     * @var bool
+     *
+     * @readonly
+     */
+    public bool $allowsNull;
+
+    /**
+     * @var int<0, max>|null
+     *
+     * @readonly
+     */
+    public ?int $limit;
+
+    /**
+     * @var mixed
+     */
+    public $holder = null;
+
+    /**
+     * @param non-empty-string $name
+     * @param bool $allowsNull
+     * @param int<0, max>|null $limit
+     */
+    public function __construct(
+        string $name,
+        bool $allowsNull = false,
+        ?int $limit = null
+    ) {
+        $this->name = $name;
+        $this->allowsNull = $allowsNull;
+        $this->limit = $limit;
+    }
 }

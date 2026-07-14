@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Nekhay <afenric@gmail.com>
- * @copyright Copyright (c) 2021, Anatoly Nekhay
+ * @author Anatolii Nekhai <afenric@gmail.com>
+ * @copyright Copyright (c) 2021, Anatolii Nekhai
  * @license https://github.com/sunrise-php/hydrator/blob/master/LICENSE
  * @link https://github.com/sunrise-php/hydrator
  */
@@ -20,9 +20,6 @@ use Sunrise\Hydrator\Exception\InvalidValueException;
 use Sunrise\Hydrator\Type;
 use Sunrise\Hydrator\TypeConverterInterface;
 
-use function is_string;
-use function trim;
-
 /**
  * @since 3.1.0
  */
@@ -37,18 +34,16 @@ final class TimezoneTypeConverter implements TypeConverterInterface
             return;
         }
 
-        if (!is_string($value)) {
+        if (!\is_string($value)) {
             throw InvalidValueException::mustBeString($path, $value);
         }
 
-        $value = trim($value);
+        $value = \trim($value);
 
-        // As part of the support for HTML forms and other untyped data sources,
-        // empty strings should not be used to instantiate timezones;
-        // instead, they should be considered as NULL.
         if ($value === '') {
             if ($type->allowsNull()) {
-                return yield null;
+                yield null;
+                return;
             }
 
             throw InvalidValueException::mustNotBeEmpty($path, $value);

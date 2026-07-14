@@ -15,6 +15,7 @@ return [
     ErrorMessage::ARRAY_OVERFLOW => 'Tämä arvo on rajattu {{ maximum_elements }} elementtiin.',
     ErrorMessage::INVALID_CHOICE => 'Tämä arvo ei ole kelvollinen valinta; odotetut arvot: {{ expected_values }}.',
     ErrorMessage::INVALID_TIMESTAMP => 'Tämä arvo ei ole kelvollinen aikaleima; odotettu muoto: {{ expected_format }}.',
+    ErrorMessage::INVALID_DATE_INTERVAL => 'Tämä arvo ei ole kelvollinen päivämääräväli.',
     ErrorMessage::INVALID_TIMEZONE => 'Tämä arvo ei ole kelvollinen aikavyöhyke.',
     ErrorMessage::INVALID_UID => 'Tämä arvo ei ole kelvollinen UID.',
 ];

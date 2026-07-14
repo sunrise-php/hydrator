@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Nekhay <afenric@gmail.com>
- * @copyright Copyright (c) 2021, Anatoly Nekhay
+ * @author Anatolii Nekhai <afenric@gmail.com>
+ * @copyright Copyright (c) 2021, Anatolii Nekhai
  * @license https://github.com/sunrise-php/hydrator/blob/master/LICENSE
  * @link https://github.com/sunrise-php/hydrator
  */
@@ -21,10 +21,6 @@ use Sunrise\Hydrator\HydratorAwareInterface;
 use Sunrise\Hydrator\HydratorInterface;
 use Sunrise\Hydrator\Type;
 use Sunrise\Hydrator\TypeConverterInterface;
-
-use function class_exists;
-use function get_object_vars;
-use function is_array;
 
 /**
  * @since 3.1.0
@@ -44,7 +40,7 @@ final class ObjectTypeConverter implements TypeConverterInterface, HydratorAware
     public function castValue($value, Type $type, array $path, array $context): Generator
     {
         $className = $type->getName();
-        if (!class_exists($className)) {
+        if (!\class_exists($className)) {
             return;
         }
 
@@ -55,10 +51,10 @@ final class ObjectTypeConverter implements TypeConverterInterface, HydratorAware
 
         // https://www.php.net/stdClass
         if ($value instanceof stdClass) {
-            $value = get_object_vars($value);
+            $value = \get_object_vars($value);
         }
 
-        if (!is_array($value)) {
+        if (!\is_array($value)) {
             throw InvalidValueException::mustBeArray($path, $value);
         }
 

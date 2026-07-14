@@ -15,6 +15,7 @@ return [
     ErrorMessage::ARRAY_OVERFLOW => 'Стойността е ограничена до {{ maximum_elements }} елементи.',
     ErrorMessage::INVALID_CHOICE => 'Тази стойност не е валиден избор; очаквани стойности: {{ expected_values }}.',
     ErrorMessage::INVALID_TIMESTAMP => 'Тази стойност не е валиден timestamp; очакван формат: {{ expected_format }}.',
+    ErrorMessage::INVALID_DATE_INTERVAL => 'Тази стойност не е валиден интервал от дати.',
     ErrorMessage::INVALID_TIMEZONE => 'Тази стойност не е валидна часова зона.',
-    ErrorMessage::INVALID_UID => 'Това стойност няма валиден UID.',
+    ErrorMessage::INVALID_UID => 'Тази стойност няма валиден UID.',
 ];

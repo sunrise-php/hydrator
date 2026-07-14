@@ -15,6 +15,7 @@ return [
     ErrorMessage::ARRAY_OVERFLOW => 'Nilai iki diwatesi nganti {{ maximum_elements }} unsur.',
     ErrorMessage::INVALID_CHOICE => 'Nilai iki ora pilihan sing sah; nilai sing diarepake: {{ expected_values }}.',
     ErrorMessage::INVALID_TIMESTAMP => 'Nilai iki ora minangka timestamp sing sah; format sing diarepake: {{ expected_format }}.',
+    ErrorMessage::INVALID_DATE_INTERVAL => 'Nilai iki dudu interval tanggal sing sah.',
     ErrorMessage::INVALID_TIMEZONE => 'Nilai iki dudu zona wektu sing sah.',
     ErrorMessage::INVALID_UID => 'Nilai iki ora UID sing sah.',
 ];

@@ -1,6 +1,3 @@
-# More info at:
-# https://editorconfig.org/
-
 root = true
 
 [*]
@@ -11,5 +8,5 @@ indent_size = 4
 trim_trailing_whitespace = true
 insert_final_newline = true
 
-[*{.json,.neon,.xml,.xml.dist,.yml}]
+[*{.json,.neon,.xml.dist,.yml}]
 indent_size = 2

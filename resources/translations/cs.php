@@ -14,7 +14,8 @@ return [
     ErrorMessage::MUST_BE_ARRAY => 'Tato hodnota musí být typu pole.',
     ErrorMessage::ARRAY_OVERFLOW => 'Tato hodnota je omezena na {{ maximum_elements }} prvků.',
     ErrorMessage::INVALID_CHOICE => 'Tato hodnota není platnou volbou; očekávané hodnoty: {{ expected_values }}.',
-    ErrorMessage::INVALID_TIMESTAMP => 'Tato hodnota není platný časový razítko; očekávaný formát: {{ expected_format }}.',
+    ErrorMessage::INVALID_TIMESTAMP => 'Tato hodnota není platné časové razítko; očekávaný formát: {{ expected_format }}.',
+    ErrorMessage::INVALID_DATE_INTERVAL => 'Tato hodnota není platný interval dat.',
     ErrorMessage::INVALID_TIMEZONE => 'Tato hodnota není platné časové pásmo.',
     ErrorMessage::INVALID_UID => 'Tato hodnota není platné UID.',
 ];

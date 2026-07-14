@@ -13,8 +13,9 @@ return [
     ErrorMessage::MUST_BE_STRING => 'ఈ విలువ string రకం కలిగి ఉండాలి.',
     ErrorMessage::MUST_BE_ARRAY => 'ఈ విలువ తప్పనిసరిగా array రకంగా ఉండాలి.',
     ErrorMessage::ARRAY_OVERFLOW => 'ఈ విలువ {{ maximum_elements }} మూలకాలకు పరిమితం చేయబడింది.',
-    ErrorMessage::INVALID_CHOICE => 'ఈ వెల్‍यూ చెల్లుబాటు అయ్యే ఎంపిక కాదు;иниచినించు వెల్‍यూతలు: {{ expected_values }}.',
+    ErrorMessage::INVALID_CHOICE => 'ఈ విలువ చెల్లుబాటు అయ్యే ఎంపిక కాదు; ఆశించిన విలువలు: {{ expected_values }}.',
     ErrorMessage::INVALID_TIMESTAMP => 'ఈ విలువ చెల్లుబాటు అయ్యే టైమ్స్టాంప్ కాదు; అంచనా విధానం: {{ expected_format }}.',
+    ErrorMessage::INVALID_DATE_INTERVAL => 'ఈ విలువ చెల్లుబాటు అయ్యే తేదీ విరామం కాదు.',
     ErrorMessage::INVALID_TIMEZONE => 'ఈ విలువ చెల్లుబాటు అయ్యే కాలమండలం కాదు.',
-    ErrorMessage::INVALID_UID => 'ఈ విలువ చెల్లు UID కాదు.',
+    ErrorMessage::INVALID_UID => 'ఈ విలువ చెల్లుబాటు అయ్యే UID కాదు.',
 ];

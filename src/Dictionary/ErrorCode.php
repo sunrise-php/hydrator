@@ -3,8 +3,8 @@
 /**
  * It's free open-source software released under the MIT License.
  *
- * @author Anatoly Nekhay <afenric@gmail.com>
- * @copyright Copyright (c) 2021, Anatoly Nekhay
+ * @author Anatolii Nekhai <afenric@gmail.com>
+ * @copyright Copyright (c) 2021, Anatolii Nekhai
  * @license https://github.com/sunrise-php/hydrator/blob/master/LICENSE
  * @link https://github.com/sunrise-php/hydrator
  */
@@ -30,6 +30,7 @@ final class ErrorCode
     public const ARRAY_OVERFLOW = '917e1646-b996-4f34-a4f2-1c075bb6e715';
     public const INVALID_CHOICE = 'e5bd8e3f-60a0-4066-b89b-ef5a186f2836';
     public const INVALID_TIMESTAMP = 'b0a14918-9e20-470d-8ba3-3d85953ddbce';
+    public const INVALID_DATE_INTERVAL = '2e304187-fb87-4b02-8f92-b4ca089ce430';
     public const INVALID_TIMEZONE = '14249d2e-ddbb-4cb0-9e86-8dc2b46b9313';
     public const INVALID_UID = '55b9ba29-57d0-4fd9-988d-678a3b8e819c';
 }

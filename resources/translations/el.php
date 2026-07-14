@@ -15,6 +15,7 @@ return [
     ErrorMessage::ARRAY_OVERFLOW => 'Αυτή η τιμή περιορίζεται σε {{ maximum_elements }} στοιχεία.',
     ErrorMessage::INVALID_CHOICE => 'Αυτή η τιμή δεν είναι έγκυρη επιλογή· αναμενόμενες τιμές: {{ expected_values }}.',
     ErrorMessage::INVALID_TIMESTAMP => 'Αυτή η τιμή δεν είναι έγκυρη χρονική σήμανση· αναμενόμενη μορφή: {{ expected_format }}.',
+    ErrorMessage::INVALID_DATE_INTERVAL => 'Αυτή η τιμή δεν είναι έγκυρο διάστημα ημερομηνίας.',
     ErrorMessage::INVALID_TIMEZONE => 'Αυτή η τιμή δεν είναι έγκυρη ζώνη ώρας.',
     ErrorMessage::INVALID_UID => 'Αυτή η τιμή δεν είναι έγκυρο UID.',
 ];

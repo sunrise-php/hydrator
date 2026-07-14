@@ -15,6 +15,7 @@ return [
     ErrorMessage::ARRAY_OVERFLOW => 'この値は{{ maximum_elements }}個の要素に制限されています。',
     ErrorMessage::INVALID_CHOICE => 'この値は有効な選択ではありません。予想される値: {{ expected_values }}。',
     ErrorMessage::INVALID_TIMESTAMP => 'この値は有効なタイムスタンプではありません。期待される形式: {{ expected_format }}。',
+    ErrorMessage::INVALID_DATE_INTERVAL => 'この値は有効な日付間隔ではありません。',
     ErrorMessage::INVALID_TIMEZONE => 'この値は有効なタイムゾーンではありません。',
     ErrorMessage::INVALID_UID => 'この値は有効なUIDではありません。',
 ];

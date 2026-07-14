@@ -15,6 +15,7 @@ return [
     ErrorMessage::ARRAY_OVERFLOW => 'Ova vrednost je ograničena na {{ maximum_elements }} elemenata.',
     ErrorMessage::INVALID_CHOICE => 'Ova vrednost nije važeći izbor; očekivane vrednosti: {{ expected_values }}.',
     ErrorMessage::INVALID_TIMESTAMP => 'Ova vrednost nije ispravna vremenska oznaka; očekivani format: {{ expected_format }}.',
+    ErrorMessage::INVALID_DATE_INTERVAL => 'Ova vrednost nije ispravan interval datuma.',
     ErrorMessage::INVALID_TIMEZONE => 'Ova vrednost nije važeća vremenska zona.',
     ErrorMessage::INVALID_UID => 'Ova vrednost nije važeći UID.',
 ];

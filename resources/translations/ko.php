@@ -15,6 +15,7 @@ return [
     ErrorMessage::ARRAY_OVERFLOW => '이 값은 {{ maximum_elements }} 요소로 제한됩니다.',
     ErrorMessage::INVALID_CHOICE => '이 값은 유효한 선택이 아닙니다. 예상 값: {{ expected_values }}.',
     ErrorMessage::INVALID_TIMESTAMP => '이 값은 유효한 타임스탬프가 아닙니다. 예상 형식: {{ expected_format }}.',
+    ErrorMessage::INVALID_DATE_INTERVAL => '이 값은 올바른 날짜 간격이 아닙니다.',
     ErrorMessage::INVALID_TIMEZONE => '이 값은 유효한 시간대가 아닙니다.',
     ErrorMessage::INVALID_UID => '이 값은 유효한 UID가 아닙니다.',
 ];

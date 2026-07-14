@@ -15,6 +15,7 @@ return [
     ErrorMessage::ARRAY_OVERFLOW => 'ค่านี้ถูกจำกัดไว้ที่ {{ maximum_elements }} องค์ประกอบ',
     ErrorMessage::INVALID_CHOICE => 'ค่านี้ไม่ใช่ตัวเลือกที่ถูกต้อง; ค่าที่คาดไว้: {{ expected_values }}.',
     ErrorMessage::INVALID_TIMESTAMP => 'ค่านี้ไม่ใช่ timestamp ที่ถูกต้อง; รูปแบบที่คาดไว้: {{ expected_format }}.',
+    ErrorMessage::INVALID_DATE_INTERVAL => 'ค่านี้ไม่ใช่ช่วงวันที่ที่ถูกต้อง',
     ErrorMessage::INVALID_TIMEZONE => 'ค่านี้ไม่ใช่เขตเวลา (timezone) ที่ถูกต้อง',
     ErrorMessage::INVALID_UID => 'ค่านี้ไม่ใช่ UID ที่ถูกต้อง',
 ];
