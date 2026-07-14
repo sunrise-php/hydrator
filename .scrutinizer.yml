@@ -22,6 +22,12 @@ build:
             coverage:
               file: coverage.xml
               format: clover
+    tests:
+      environment:
+        php: '8.5.6'
+      tests:
+        override:
+          - command: composer test
     php85:
       environment:
         php: '8.5.6'
@@ -52,6 +58,3 @@ build:
       tests:
         override:
           - command: composer test
-    tests:
-      environment:
-        php: '8.5.6'
