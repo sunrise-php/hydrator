@@ -15,6 +15,7 @@ return [
     ErrorMessage::ARRAY_OVERFLOW => 'Giá trị này bị giới hạn ở {{ maximum_elements }} phần tử.',
     ErrorMessage::INVALID_CHOICE => 'Giá trị này không phải là lựa chọn hợp lệ; các giá trị mong đợi: {{ expected_values }}.',
     ErrorMessage::INVALID_TIMESTAMP => 'Giá trị này không phải là timestamp hợp lệ; định dạng mong đợi: {{ expected_format }}.',
+    ErrorMessage::INVALID_DATE_INTERVAL => 'Giá trị này không phải là khoảng thời gian hợp lệ.',
     ErrorMessage::INVALID_TIMEZONE => 'Giá trị này không phải là múi giờ hợp lệ.',
     ErrorMessage::INVALID_UID => 'Giá trị này không phải là UID hợp lệ.',
 ];

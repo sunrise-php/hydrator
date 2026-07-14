@@ -15,6 +15,7 @@ return [
     ErrorMessage::ARRAY_OVERFLOW => 'Ta wartość jest ograniczona do {{ maximum_elements }} elementów.',
     ErrorMessage::INVALID_CHOICE => 'Ta wartość nie jest prawidłowym wyborem; oczekiwane wartości: {{ expected_values }}.',
     ErrorMessage::INVALID_TIMESTAMP => 'Ta wartość nie jest prawidłowym znacznikiem czasu; oczekiwany format: {{ expected_format }}.',
+    ErrorMessage::INVALID_DATE_INTERVAL => 'Ta wartość nie jest prawidłowym przedziałem czasu.',
     ErrorMessage::INVALID_TIMEZONE => 'To nie jest prawidłowa strefa czasowa.',
     ErrorMessage::INVALID_UID => 'Ta wartość nie jest prawidłowym UID.',
 ];

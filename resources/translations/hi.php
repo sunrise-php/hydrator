@@ -15,6 +15,7 @@ return [
     ErrorMessage::ARRAY_OVERFLOW => 'यह मान {{ maximum_elements }} तत्वों तक सीमित है।',
     ErrorMessage::INVALID_CHOICE => 'यह मान एक वैध विकल्प नहीं है; अपेक्षित मान: {{ expected_values }}।',
     ErrorMessage::INVALID_TIMESTAMP => 'यह मान एक मान्य टाइमस्टैम्प नहीं है; अपेक्षित प्रारूप: {{ expected_format }}।',
+    ErrorMessage::INVALID_DATE_INTERVAL => 'यह मान एक मान्य दिनांक अंतराल नहीं है।',
     ErrorMessage::INVALID_TIMEZONE => 'यह मान एक मान्य समय क्षेत्र नहीं है।',
     ErrorMessage::INVALID_UID => 'यह मान एक मान्य UID नहीं है।',
 ];

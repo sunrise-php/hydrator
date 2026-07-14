@@ -15,6 +15,7 @@ return [
     ErrorMessage::ARRAY_OVERFLOW => 'ही किंमत {{ maximum_elements }} तत्वांपुरती मर्यादित आहे.',
     ErrorMessage::INVALID_CHOICE => 'हे मूल्य वैध पर्याय नाही; अपेक्षित मूल्ये: {{ expected_values }}.',
     ErrorMessage::INVALID_TIMESTAMP => 'हे मूल्य वैध timestamp नाही; अपेक्षित स्वरूप: {{ expected_format }}.',
+    ErrorMessage::INVALID_DATE_INTERVAL => 'हे मूल्य वैध दिनांक अंतराल नाही.',
     ErrorMessage::INVALID_TIMEZONE => 'हे मूल्य वैध टाइमझोन नाही.',
     ErrorMessage::INVALID_UID => 'हे मूल्य वैध UID नाही.',
 ];

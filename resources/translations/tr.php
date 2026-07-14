@@ -15,6 +15,7 @@ return [
     ErrorMessage::ARRAY_OVERFLOW => 'Bu değer {{ maximum_elements }} öğe ile sınırlıdır.',
     ErrorMessage::INVALID_CHOICE => 'Bu değer geçerli bir seçenek değil; beklenen değerler: {{ expected_values }}.',
     ErrorMessage::INVALID_TIMESTAMP => 'Bu değer geçerli bir zaman damgası değil; beklenen format: {{ expected_format }}.',
+    ErrorMessage::INVALID_DATE_INTERVAL => 'Bu değer geçerli bir tarih aralığı değil.',
     ErrorMessage::INVALID_TIMEZONE => 'Bu değer geçerli bir saat dilimi değil.',
     ErrorMessage::INVALID_UID => 'Bu değer geçerli bir UID değil.',
 ];

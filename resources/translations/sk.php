@@ -14,7 +14,8 @@ return [
     ErrorMessage::MUST_BE_ARRAY => 'Táto hodnota musí byť typu array.',
     ErrorMessage::ARRAY_OVERFLOW => 'Táto hodnota je obmedzená na {{ maximum_elements }} prvkov.',
     ErrorMessage::INVALID_CHOICE => 'Táto hodnota nie je platnou voľbou; očakávané hodnoty: {{ expected_values }}.',
-    ErrorMessage::INVALID_TIMESTAMP => 'Táto hodnota nie je platným časovým pečiatkom; očakávaný formát: {{ expected_format }}.',
+    ErrorMessage::INVALID_TIMESTAMP => 'Táto hodnota nie je platná časová pečiatka; očakávaný formát: {{ expected_format }}.',
+    ErrorMessage::INVALID_DATE_INTERVAL => 'Táto hodnota nie je platný interval dátumov.',
     ErrorMessage::INVALID_TIMEZONE => 'Táto hodnota nie je platné časové pásmo.',
     ErrorMessage::INVALID_UID => 'Táto hodnota nie je platný UID.',
 ];

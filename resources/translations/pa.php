@@ -15,6 +15,7 @@ return [
     ErrorMessage::ARRAY_OVERFLOW => 'ਇਸ ਮੁੱਲ ਨੂੰ {{ maximum_elements }} ਤੱਤਾਂ ਤੱਕ ਸੀਮਿਤ ਕੀਤਾ ਗਿਆ ਹੈ।',
     ErrorMessage::INVALID_CHOICE => 'ਇਹ ਮুলਵਤ ਚੋਣ ਨਹੀਂ ਹੈ; ਉਮੀਦ ਕੀਤੀਆਂ ਮੁੱਲ: {{ expected_values }}.',
     ErrorMessage::INVALID_TIMESTAMP => 'ਇਹ ਮੁੱਲ ਸਹੀ ਟਾਈਮਸਟੈਂਪ ਨਹੀਂ ਹੈ; ਉਮੀਦ ਕੀਤੀ ਫਾਰਮੈਟ: {{ expected_format }}.',
+    ErrorMessage::INVALID_DATE_INTERVAL => 'ਇਹ ਮੁੱਲ ਇਕ ਵੈਧ ਮਿਤੀ ਅੰਤਰਾਲ ਨਹੀਂ ਹੈ।',
     ErrorMessage::INVALID_TIMEZONE => 'ਇਹ ਮਾਤਰਾ ਸਹੀ ਸਮਾਂ ਖੇਤਰ ਨਹੀਂ ਹੈ।',
     ErrorMessage::INVALID_UID => 'ਇਹ ਮੁੱਲ ਇੱਕ ਵੈਧ UID ਨਹੀਂ ਹੈ।',
 ];

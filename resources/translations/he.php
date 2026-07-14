@@ -15,6 +15,7 @@ return [
     ErrorMessage::ARRAY_OVERFLOW => 'ערך זה מוגבל ל-{{ maximum_elements }} אלמנטים.',
     ErrorMessage::INVALID_CHOICE => 'ערך זה אינו בחירה חוקית; הערכים הצפויים: {{ expected_values }}.',
     ErrorMessage::INVALID_TIMESTAMP => 'ערך זה אינו תוֹקף ציון זמן; הפורמט הצפוי: {{ expected_format }}.',
+    ErrorMessage::INVALID_DATE_INTERVAL => 'ערך זה אינו מרווח תאריכים תקין.',
     ErrorMessage::INVALID_TIMEZONE => 'ערך זה אינו אזור זמן חוקי.',
     ErrorMessage::INVALID_UID => 'ערך זה אינו UID חוקי.',
 ];

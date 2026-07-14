@@ -15,6 +15,7 @@ return [
     ErrorMessage::ARRAY_OVERFLOW => 'Este valor está limitado a {{ maximum_elements }} elementos.',
     ErrorMessage::INVALID_CHOICE => 'Este valor no es una opción válida; valores esperados: {{ expected_values }}.',
     ErrorMessage::INVALID_TIMESTAMP => 'Este valor no es una marca de tiempo válida; formato esperado: {{ expected_format }}.',
+    ErrorMessage::INVALID_DATE_INTERVAL => 'Este valor no es un intervalo de fecha válido.',
     ErrorMessage::INVALID_TIMEZONE => 'Este valor no es una zona horaria válida.',
     ErrorMessage::INVALID_UID => 'Este valor no es un UID válido.',
 ];

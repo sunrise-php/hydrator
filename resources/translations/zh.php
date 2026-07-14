@@ -15,6 +15,7 @@ return [
     ErrorMessage::ARRAY_OVERFLOW => '该值限制为{{ maximum_elements }}个元素。',
     ErrorMessage::INVALID_CHOICE => '此值不是有效选项；预期值：{{ expected_values }}。',
     ErrorMessage::INVALID_TIMESTAMP => '此值不是有效的时间戳，预期格式：{{ expected_format }}。',
+    ErrorMessage::INVALID_DATE_INTERVAL => '此值不是有效的日期间隔。',
     ErrorMessage::INVALID_TIMEZONE => '该值不是有效的时区。',
     ErrorMessage::INVALID_UID => '此值不是有效的UID。',
 ];

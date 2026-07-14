@@ -15,6 +15,7 @@ return [
     ErrorMessage::ARRAY_OVERFLOW => 'یہ قدر {{ maximum_elements }} عناصر تک محدود ہے۔',
     ErrorMessage::INVALID_CHOICE => 'یہ قدر ایک درست انتخاب نہیں ہے؛ متوقع اقدار: {{ expected_values }}۔',
     ErrorMessage::INVALID_TIMESTAMP => 'یہ قدر ایک درست ٹائم اسٹیمپ نہیں ہے؛ متوقع فارمیٹ: {{ expected_format }}۔',
+    ErrorMessage::INVALID_DATE_INTERVAL => 'یہ قدر ایک درست تاریخی وقفہ نہیں ہے۔',
     ErrorMessage::INVALID_TIMEZONE => 'یہ قدر ایک درست ٹائم زون نہیں ہے۔',
     ErrorMessage::INVALID_UID => 'یہ قدر ایک درست UID نہیں ہے۔',
 ];

@@ -15,6 +15,7 @@ return [
     ErrorMessage::ARRAY_OVERFLOW => 'هذا القيمة مُقتصرة على {{ maximum_elements }} من العناصر.',
     ErrorMessage::INVALID_CHOICE => 'هذه القيمة ليست اختيارًا صالحًا؛ القيم المتوقعة: {{ expected_values }}.',
     ErrorMessage::INVALID_TIMESTAMP => 'هذه القيمة ليست طابع زمني صالح; التنسيق المتوقع: {{ expected_format }}.',
+    ErrorMessage::INVALID_DATE_INTERVAL => 'هذه القيمة ليست فاصلًا زمنيًا صالحًا للتاريخ.',
     ErrorMessage::INVALID_TIMEZONE => 'هذه القيمة ليست منطقة زمنية صالحة.',
     ErrorMessage::INVALID_UID => 'هذه القيمة ليست UID صالحًا.',
 ];

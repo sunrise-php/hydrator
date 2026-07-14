@@ -141,6 +141,7 @@ final class UserCollection extends ArrayObject
 ```
 
 The constructor is not called during hydration: the hydrator only reads the type of its last variadic parameter and creates the object without the constructor. An explicit `#[ItemType]` takes precedence over the constructor parameter type.
+If the collection throws `OverflowException` while adding an element, the hydrator treats it as an element limit overflow and returns an array overflow error to the user.
 
 ### Element Types from PHPDoc
 
