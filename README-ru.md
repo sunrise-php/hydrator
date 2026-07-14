@@ -46,10 +46,13 @@ $request = (new Hydrator())->hydrate(CreateUserRequest::class, [
 
 - создает объект без вызова конструктора либо заполняет переданный объект;
 - пропускает свойства с `#[Ignore]`;
+- игнорирует входные ключи, которым не соответствует ни одно свойство;
 - рекурсивно гидрирует вложенные объекты;
-- собирает ошибки гидрации в одном `InvalidDataException`.
+- собирает ошибки отдельных свойств и элементов в одном `InvalidDataException`.
 
 Входное значение обязательно, если соответствующее свойство не инициализировано и для него не задано значение по умолчанию. Значение по умолчанию можно задать в объявлении свойства, в одноименном параметре конструктора или через `#[DefaultValue]`.
+
+Значение по умолчанию используется только при отсутствии входного ключа. Переданный `null` считается входным значением и проверяется согласно типу свойства.
 
 ### Гидрация из JSON
 
@@ -88,7 +91,7 @@ $value = (new Hydrator())->castValue(
 | `DateTimeImmutable` и наследники | Строка заданного формата; целое число или строка для формата `U` |
 | `DateInterval` | Строка, принимаемая конструктором `DateInterval` |
 | `DateTimeZone` | Идентификатор часового пояса |
-| `BackedEnum` | Значение перечисления типа `int` или `string` |
+| Конкретное backed-перечисление | Значение соответствующего backing-типа; для `int` также принимается строковое представление целого числа |
 | Инстанцируемый пользовательский класс | `array` или `stdClass` |
 | Класс, реализующий `ArrayAccess` | `array` или `stdClass` |
 
@@ -96,7 +99,7 @@ $value = (new Hydrator())->castValue(
 
 | Тип | Пакет |
 | --- | --- |
-| `MyCLabs\Enum\Enum` | `myclabs/php-enum` |
+| Наследник `MyCLabs\Enum\Enum` | `myclabs/php-enum` |
 | `Ramsey\Uuid\UuidInterface` | `ramsey/uuid` |
 | Наследники `Symfony\Component\Uid\AbstractUid` | `symfony/uid` |
 
@@ -125,7 +128,7 @@ final class OrderRequest
 public array $ids;
 ```
 
-Для классов, реализующих `ArrayAccess`, тип элементов также можно задать типом последнего параметра конструктора с `...`:
+Для инстанцируемого класса, реализующего `ArrayAccess`, тип элементов также можно задать типом последнего параметра конструктора с `...`:
 
 ```php
 final class UserCollection extends ArrayObject
@@ -137,9 +140,11 @@ final class UserCollection extends ArrayObject
 }
 ```
 
+При гидрации конструктор не вызывается: гидратор только читает тип последнего вариативного параметра и создает объект без конструктора. Явный `#[ItemType]` имеет приоритет над типом параметра конструктора.
+
 ### Тип элементов из PHPDoc
 
-Гидратор может читать тип элементов массива из `@var`:
+Гидратор может читать тип элементов свойства `array` из `@var`:
 
 ```php
 final class OrderRequest
@@ -152,6 +157,7 @@ $hydrator = new Hydrator(isDocBlockReaderEnabled: true);
 ```
 
 Чтение PHPDoc по умолчанию выключено. `#[ItemType]` имеет приоритет над `@var`.
+Чтение `@var` не применяется к классам, реализующим `ArrayAccess`. Для них используйте `#[ItemType]` или тип вариативного параметра конструктора.
 
 ## Атрибуты
 
@@ -230,17 +236,19 @@ try {
 
 `InvalidValueException` содержит:
 
-- путь к значению;
-- код ошибки;
-- шаблон сообщения;
-- исходное значение;
-- параметры шаблона.
+- `getPropertyPath()` — путь к значению через точку;
+- `getErrorCode()` — код ошибки;
+- `getMessage()` — сформированное сообщение;
+- `getMessageTemplate()` — шаблон сообщения;
+- `getMessagePlaceholders()` — параметры шаблона;
+- `getInvalidValue()` — исходное значение;
+- `getTranslationDomain()` — домен перевода.
 
 Исключения методов:
 
-- `hydrate()` и `hydrateWithJson()` выбрасывают `InvalidDataException`;
-- `castValue()` выбрасывает `InvalidValueException`, а для ошибок вложенных объектов и массивов — `InvalidDataException`;
-- `InvalidObjectException` используется, если тип не поддерживается или объект нельзя создать.
+- `hydrate()` выбрасывает `InvalidDataException` при ошибках входных значений и `InvalidObjectException`, если объект нельзя создать или свойство имеет неподдерживаемый тип;
+- `hydrateWithJson()` дополнительно использует `InvalidDataException` для ошибок декодирования JSON и недопустимого корневого значения;
+- `castValue()` выбрасывает `InvalidValueException` для одного недопустимого значения, `InvalidDataException` для ошибок вложенного объекта или массива и `InvalidObjectException` для неподдерживаемого целевого типа.
 
 При установленном `symfony/validator` методы `InvalidValueException::getViolation()` и `InvalidDataException::getViolations()` возвращают нарушения в формате Symfony Validator.
 
