@@ -52,17 +52,3 @@ build:
       tests:
         override:
           - command: composer test
-
-# Not compatible with the "default-jammy" image.
-#    php80:
-#      environment:
-#        php: '8.0.30'
-#      tests:
-#        override:
-#          - command: composer test
-#    php74:
-#      environment:
-#        php: '7.4.33'
-#      tests:
-#        override:
-#          - command: composer test
