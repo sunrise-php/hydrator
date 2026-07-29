@@ -10,9 +10,7 @@ use function DI\create;
 use function DI\get;
 
 return [
-    // See https://dev.sunrise-studio.io/docs/reference/parameters?id=appinput_timestamp_format
     'hydrator.context.timestamp_format' => get('app.input_timestamp_format'),
-    // See https://dev.sunrise-studio.io/docs/reference/parameters?id=apptimezone_identifier
     'hydrator.context.timezone_identifier' => get('app.timezone_identifier'),
 
     'hydrator.context' => [
@@ -22,9 +20,12 @@ return [
 
     'hydrator.type_converters' => [],
 
+    'hydrator.is_doc_block_reader_enabled' => false,
+
     HydratorInterface::class => create(Hydrator::class)
         ->constructor(
             get('hydrator.context'),
             get('hydrator.type_converters'),
+            get('hydrator.is_doc_block_reader_enabled'),
         ),
 ];
