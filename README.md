@@ -5,7 +5,7 @@
 [![Build Status](https://scrutinizer-ci.com/g/sunrise-php/hydrator/badges/build.png?b=main)](https://scrutinizer-ci.com/g/sunrise-php/hydrator/build-status/main)
 [![Code Intelligence Status](https://scrutinizer-ci.com/g/sunrise-php/hydrator/badges/code-intelligence.svg?b=main)](https://scrutinizer-ci.com/code-intelligence)
 
-Languages: [🇬🇧 English](README.md) | [🇷🇺 Русский](README-ru.md)
+🇬🇧 **English version** | [🇷🇺 Русская версия](README-ru.md)
 
 The package hydrates object properties from arrays and JSON with casting to declared PHP types. Individual values can also be cast without hydrating an object.
 
@@ -17,7 +17,7 @@ composer require sunrise/hydrator
 
 The package supports PHP 7.4 and newer. Examples in this README target PHP 8+.
 
-## Object Hydration
+## Quick Start
 
 ```php
 use Sunrise\Hydrator\Annotation\Filter;

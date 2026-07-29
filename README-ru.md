@@ -5,7 +5,7 @@
 [![Build Status](https://scrutinizer-ci.com/g/sunrise-php/hydrator/badges/build.png?b=main)](https://scrutinizer-ci.com/g/sunrise-php/hydrator/build-status/main)
 [![Code Intelligence Status](https://scrutinizer-ci.com/g/sunrise-php/hydrator/badges/code-intelligence.svg?b=main)](https://scrutinizer-ci.com/code-intelligence)
 
-Языки: [🇬🇧 English](README.md) | [🇷🇺 Русский](README-ru.md)
+[🇬🇧 English version](README.md) | 🇷🇺 **Русская версия**
 
 Пакет гидрирует строго типизированные объекты из массивов и JSON и приводит отдельные значения к заданным PHP-типам.
 
@@ -17,7 +17,7 @@ composer require sunrise/hydrator
 
 Пакет поддерживает PHP 7.4 и новее. Примеры в этом README ориентированы на PHP 8+.
 
-## Гидрация объектов
+## Быстрый старт
 
 ```php
 use Sunrise\Hydrator\Annotation\Filter;
